@@ -44,7 +44,6 @@ def main():
     lists_parse = [base_url+element for element in list_info[1:]]
 
     print "Base URL is '{0}'.".format(base_url)
-    
     total_lists = len(lists_parse)
     if not total_lists:
         sys.exit('No mailing list to parse.')
@@ -70,8 +69,8 @@ def main():
             # Find all the <a> tags ending in '.txt.gz'.
             soup = BeautifulSoup(response)
             parse_dates = soup.findAll('a', href=re.compile('\.txt\.gz$'))
-            # Find the months from the <a> tags. This is used to download the
-            # mbox archive corresponding the months the list was active.
+            # Extract the months from the <a> tags. This is used to download the
+            # mbox archive corresponding to the months the list was active.
             dates.extend([str(element.get('href')) for element in parse_dates])
 
             # Skip if there are no dates.
@@ -83,11 +82,11 @@ def main():
             print 'Downloading {0} mbox archives...'.format(len(dates))
             for date in dates:
                 mbox_url = '{0}/{1}'.format(mailing_list, date)
-                mbox_archive_name = '{0}-{1}'.format(mailing_list.split('/')[-1], date)
+                mbox_archive_name = '{0}-{1}'.format(mailing_list.split('/')[-1],
+                                                                            date)
                 path_to_archive = os.path.join(DIRECTORY_PATH, mbox_archive_name)
-                # Open the mbox archive.
+                # Open the mbox archive and save it to the local disk.
                 mbox = urllib2.urlopen(mbox_url)
-                # Save it to the local path.
                 with open(path_to_archive, 'wb') as f:
                     mbox_archives.append(path_to_archive)
                     f.write(mbox.read())
@@ -111,8 +110,8 @@ def main():
     # Open each local mbox archive and then parse it to get the 'From' header.
     from_header = []
     for files in mbox_files:
-        mbox_file = mailbox.mbox(files)
-        for message in mbox_file:
+        mbox_ = mailbox.mbox(files)
+        for message in mbox_:
             from_header.append(message['From'])
         f.close()
 
