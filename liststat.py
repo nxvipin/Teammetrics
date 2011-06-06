@@ -13,7 +13,6 @@ Pipermail is used as the mail archiver. You just need to specify the list URL
 and the script will automatically download all the mbox archives, parse them
 and generate statistical data. The data generated is stored in a mapping, so 
 it's easy to output it in the format you desire. 
-  
 """
 
 import os
@@ -22,6 +21,7 @@ import sys
 import gzip
 import mailbox
 import urllib2
+import datetime
 import collections
 import ConfigParser
 
@@ -38,8 +38,23 @@ ARCHIVES_SAVE_DIR = '/var/cache'
 ARCHIVES_FILE_PATH = os.path.join(ARCHIVES_SAVE_DIR, PROJECT_DIR)
 
 
+def get_current_month():
+    """Return the current month and year."""
+    today = datetime.date.today()
+    # Append the .txt.gz extension to match Pipermail archives extension format.
+    # %Y is the current year and %B the current month. 
+    current_month = today.strftime("%Y-%B") + '.txt.gz'
+    return [current_month] 
+
+
 def get_configuration():
-    """Read the lists to be parsed from the configuration file."""
+    """Read the lists to be parsed from the configuration file.
+    
+    This function returns a mapping of list-name to list-addresses. In case 
+    there are multiple lists per list-name, a list of list-addresses is used
+    as the value for the list-name key. 
+    """
+
     config = ConfigParser.SafeConfigParser()
     try:
         config.read(CONF_FILE_PATH)
@@ -86,7 +101,13 @@ def is_root():
 
 
 def main(conf_info): 
-    """Parse the mbox file and return the frequency of contributors."""
+    """Download the mbox archives, parse them and return the data gathered.
+
+        mbox_archives   -   mbox archives in gzip format 
+        mbox_files      -   mbox archives in plain text format
+        from_frequency  -   mapping of usernames to frequency of contribution
+    """ 
+
     # Calculate the total number of lists by iterating through the values of 
     # conf_info. Note that there are multiple values per key. 
     total_lists = len([item for items in conf_info.values() for item in items])
@@ -105,9 +126,9 @@ def main(conf_info):
                 print "Reading: {0}".format(list_)
                 try:
                     url = urllib2.urlopen(list_)
-                except (urllib2.URLError, ValueError) as e:
+                except (urllib2.URLError, ValueError) as detail:
                     print("Error: Unable to fetch mailing list archive"
-                                                    "\nReason: {0}".format(e))
+                                                "\nReason: {0}".format(detail))
                     count += 1
                     continue                
                 response = url.read()
@@ -117,8 +138,12 @@ def main(conf_info):
                 parse_dates = soup.findAll('a', href=re.compile('\.txt\.gz$'))
                 # Extract the months from the <a> tags. This is used to download
                 # the mbox archive corresponding to the months the list was active.
-                dates = []
-                dates.extend([str(element.get('href')) for element in parse_dates])
+                archive_dates = []
+                archive_dates.extend([str(element.get('href')) for element in parse_dates])
+
+                # Download all lists except that of the current month. 
+                current_month = get_current_month()
+                dates = list(set(archive_dates) - set(current_month))
 
                 # Skip if there are no dates.
                 if not dates:
@@ -179,15 +204,14 @@ def main(conf_info):
     for sender in from_header:
         from_frequency[sender] += 1
 
+    if not from_header:
+        sys.exit('Nothing to parse')
+
     # Output the result to the console for now.
     print ''
     print '-- Statistics --'
     for sender, count in from_frequency.iteritems():
         print '{0} - {1}'.format(sender, count)
-
-    # The highest contributor. 
-    max_contrib = max(from_frequency, key=from_frequency.get)
-    print 'Maximum contributions by: ', max_contrib, from_frequency[max_contrib]
 
     sys.exit('\nQuit')
 
