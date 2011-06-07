@@ -36,11 +36,11 @@ CONF_SAVE_DIR = '/etc'
 CONF_PATH = os.path.join(CONF_SAVE_DIR, PROJECT_DIR) 
 CONF_FILE_PATH = os.path.join(CONF_SAVE_DIR, PROJECT_DIR, CONF_FILE)
 
-HASH_FILE = 'lists.hash' 
-HASH_FILE_PATH = os.path.join(CONF_PATH, HASH_FILE)
-
 ARCHIVES_SAVE_DIR = '/var/cache'
 ARCHIVES_FILE_PATH = os.path.join(ARCHIVES_SAVE_DIR, PROJECT_DIR)
+
+HASH_FILE = 'lists.hash' 
+HASH_FILE_PATH = os.path.join(ARCHIVES_SAVE_DIR, PROJECT_DIR, HASH_FILE)
 
 
 def is_root():
@@ -228,6 +228,7 @@ def main(conf_info):
                         if parsed_hash[mbox_name] == mbox_hash[mbox_name]:
                             print 'mbox already downloaded and parsed.'
                             mbox_archives.remove(path_to_archive)
+                            os.remove(path_to_archive)
                             continue
 
                     # Extract the mbox file (plain text) from the gzip archive. 
@@ -294,4 +295,6 @@ if __name__ == '__main__':
         sys.exit('Directory created {0}'.format(CONF_PATH))
     if not os.path.isfile(CONF_FILE_PATH):
         sys.exit('File not found {0}'.format(CONF_FILE_PATH))
+    if not os.path.isfile(HASH_FILE_PATH):
+        open(HASH_FILE_PATH, 'w').close()
     main(conf_info)
