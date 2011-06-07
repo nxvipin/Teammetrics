@@ -18,8 +18,10 @@ it's easy to output it in the format you desire.
 import os
 import re
 import sys
+import csv
 import gzip
 import mailbox
+import hashlib
 import urllib2
 import datetime
 import collections
@@ -34,15 +36,68 @@ CONF_SAVE_DIR = '/etc'
 CONF_PATH = os.path.join(CONF_SAVE_DIR, PROJECT_DIR) 
 CONF_FILE_PATH = os.path.join(CONF_SAVE_DIR, PROJECT_DIR, CONF_FILE)
 
+HASH_FILE = 'lists.hash' 
+HASH_FILE_PATH = os.path.join(CONF_PATH, HASH_FILE)
+
 ARCHIVES_SAVE_DIR = '/var/cache'
 ARCHIVES_FILE_PATH = os.path.join(ARCHIVES_SAVE_DIR, PROJECT_DIR)
+
+
+def is_root():
+    """Check if the user has root privileges."""
+    # If the user doesn't have root privileges, quit. We plan to fix this
+    # later by creating a teammetrics group but for now this is the only way.
+    if os.getuid():
+        sys.exit('Please run this script with root privileges.')
+
+
+def write_checksum(hashes):
+    """Write the hashes generated from the downloaded mbox archives."""
+    with open(HASH_FILE_PATH, 'a') as f:
+        writer = csv.writer(f, delimiter=':')
+        writer.writerows(hashes.iteritems())
+    print 'Done writing checksums'
+
+
+def get_checksum():
+    """Read the hashes for the mbox file from HASH_FILE."""
+    hashes = {}
+    try:
+        with open(HASH_FILE_PATH) as f:
+            reader = csv.reader(f, delimiter=':')
+            try:
+                for row in reader:
+                    hashes[row[0]] = row[1]
+            except (csv.Error, IndexError) as detail:
+                sys.exit(detail)
+    except IOError:
+        sys.exit('File not found {0}'.format(HASH_FILE))
+
+    return hashes
+
+
+def generate_checksum(path, name):
+    """Return a mapping of a mbox archive to its SHA-1 checksum.
+
+    This function returns SHA-1 checksum of a mbox archive thus maintaining
+    consistency and reducing redundancy as the checksum is compared before
+    downloading or parsing the archive.
+    """
+
+    mbox_hash = {}
+    with open(path) as f:
+        hash_object = hashlib.sha1()
+        hash_object.update(f.read())
+        mbox_hash[name] = hash_object.hexdigest()
+        
+    return mbox_hash
 
 
 def get_current_month():
     """Return the current month and year."""
     today = datetime.date.today()
-    # Append the .txt.gz extension to match Pipermail archives extension format.
-    # %Y is the current year and %B the current month. 
+    # Append the .txt.gz extension to match the extension format of Pipermail's
+    # extnesion format. %Y is the current year and %B the current month. 
     current_month = today.strftime("%Y-%B") + '.txt.gz'
     return [current_month] 
 
@@ -50,7 +105,7 @@ def get_current_month():
 def get_configuration():
     """Read the lists to be parsed from the configuration file.
     
-    This function returns a mapping of list-name to list-addresses. In case 
+    This function returns a mapping of list-name to list-addresses. In case
     there are multiple lists per list-name, a list of list-addresses is used
     as the value for the list-name key. 
     """
@@ -92,14 +147,6 @@ def get_configuration():
     return mailing_list_parse
 
 
-def is_root():
-    """Check if the user has root privileges."""
-    # If the user doesn't have root privileges, quit. We plan to fix this 
-    # later by creating a teammetrics group but for now this is the only way.
-    if os.getuid():
-        sys.exit('Please run this script with root privileges.')
-
-
 def main(conf_info): 
     """Download the mbox archives, parse them and return the data gathered.
 
@@ -117,6 +164,9 @@ def main(conf_info):
     count = 0
     mbox_files = []
     mbox_archives = []
+    mbox_hashes = {}
+    parsed_hash = get_checksum()
+    current_month = get_current_month()
     # The conf_info has a mapping of {list-name : [list-url]}. So we go through
     # each value and download the corresponding list.
     for names, lists in conf_info.iteritems():
@@ -139,10 +189,10 @@ def main(conf_info):
                 # Extract the months from the <a> tags. This is used to download
                 # the mbox archive corresponding to the months the list was active.
                 archive_dates = []
-                archive_dates.extend([str(element.get('href')) for element in parse_dates])
+                archive_dates.extend([str(element.get('href')) for element 
+                                                                in parse_dates])
 
                 # Download all lists except that of the current month. 
-                current_month = get_current_month()
                 dates = list(set(archive_dates) - set(current_month))
 
                 # Skip if there are no dates.
@@ -155,30 +205,46 @@ def main(conf_info):
                 print 'Downloading {0} mbox archives...'.format(len(dates))
                 for date in dates:
                     mbox_url = '{0}/{1}'.format(list_, date)
-                    mbox_archive_name = '{0}-{1}'.format(list_.split('/')[-1], date)
-                    path_to_archive = os.path.join(ARCHIVES_FILE_PATH, 
-                                                    mbox_archive_name)
+                    mbox_name = '{0}-{1}'.format(list_.split('/')[-1], date)
+                    path_to_archive = os.path.join(ARCHIVES_FILE_PATH, mbox_name)
                     # Open the mbox archive and save it to the local disk.
                     try:
                         mbox = urllib2.urlopen(mbox_url)
-                    except urllib2.URLError, e:
-                        print "Error: ", e, mbox_url
+                    except urllib2.URLError as detail:
+                        print "Error: ", detail, mbox_url
                         count += 1
                         continue
                     with open(path_to_archive, 'wb') as f:
                         mbox_archives.append(path_to_archive)
                         f.write(mbox.read())
+                
+                    # Get the SHA-1 hash of the current mbox. 
+                    mbox_hash = generate_checksum(path_to_archive, mbox_name)
+                    # If the SHA-1 from the already parsed mbox archives is 
+                    # equal to the SHA-1 of the current mbox, don't parse the
+                    # archive and remove it from mbox_archives.
+                    mbox_hash_file = list(set(parsed_hash) & set(mbox_hash))
+                    if mbox_hash_file:
+                        if parsed_hash[mbox_name] == mbox_hash[mbox_name]:
+                            print 'mbox already downloaded and parsed.'
+                            mbox_archives.remove(path_to_archive)
+                            continue
 
                     # Extract the mbox file (plain text) from the gzip archive. 
-                    mbox_file_name = '{0}'.format(mbox_archive_name.rsplit('.', 1)[0])
-                    path_to_mbox = os.path.join(ARCHIVES_FILE_PATH, mbox_file_name)
-                    with open(path_to_mbox, 'w') as gzip_file:
+                    mbox_plain_text = '{0}'.format(mbox_name.rsplit('.', 1)[0])
+                    mbox_path = os.path.join(ARCHIVES_FILE_PATH, mbox_plain_text)
+                    with open(mbox_path, 'w') as gzip_file:
                         temp_file = gzip.open(path_to_archive, 'rb')
                         archive_contents = temp_file.read()
-                        mbox_files.append(path_to_mbox)
+                        mbox_files.append(mbox_path)
                         gzip_file.write(archive_contents)
+                        # Update the hash for the archive downloaded.
+                        mbox_hashes.update(mbox_hash)
                 count += 1
             break
+
+    # Write the checksums of the download mbox archives.
+    write_checksum(mbox_hashes)
 
     # We don't need the mbox archives, so delete them.
     if mbox_archives:
