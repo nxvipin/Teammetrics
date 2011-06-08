@@ -20,6 +20,7 @@ import re
 import sys
 import csv
 import gzip
+import logging
 import mailbox
 import hashlib
 import urllib2
@@ -34,7 +35,7 @@ PROJECT_DIR = 'teammetrics'
 CONF_FILE = 'listinfo.conf'
 CONF_SAVE_DIR = '/etc'
 CONF_PATH = os.path.join(CONF_SAVE_DIR, PROJECT_DIR) 
-CONF_FILE_PATH = os.path.join(CONF_SAVE_DIR, PROJECT_DIR, CONF_FILE)
+CONF_FILE_PATH = os.path.join(CONF_PATH, CONF_FILE)
 
 ARCHIVES_SAVE_DIR = '/var/cache'
 ARCHIVES_FILE_PATH = os.path.join(ARCHIVES_SAVE_DIR, PROJECT_DIR)
@@ -42,13 +43,19 @@ ARCHIVES_FILE_PATH = os.path.join(ARCHIVES_SAVE_DIR, PROJECT_DIR)
 HASH_FILE = 'lists.hash' 
 HASH_FILE_PATH = os.path.join(ARCHIVES_SAVE_DIR, PROJECT_DIR, HASH_FILE)
 
+LOG_FILE = 'liststat.log'
+LOG_SAVE_DIR = '/var/log'
+LOG_PATH = os.path.join(LOG_SAVE_DIR, PROJECT_DIR)
+LOG_FILE_PATH = os.path.join(LOG_PATH, LOG_FILE)
+
 
 def is_root():
     """Check if the user has root privileges."""
     # If the user doesn't have root privileges, quit. We plan to fix this
     # later by creating a teammetrics group but for now this is the only way.
     if os.getuid():
-        sys.exit('Please run this script with root privileges.')
+        logging.error('Please run this script with root privileges.')
+        sys.exit(1)
 
 
 def write_checksum(hashes):
@@ -56,7 +63,7 @@ def write_checksum(hashes):
     with open(HASH_FILE_PATH, 'a') as f:
         writer = csv.writer(f, delimiter=':')
         writer.writerows(hashes.iteritems())
-    print 'Done writing checksums'
+    logging.info('Done writing checksums')
 
 
 def get_checksum():
@@ -69,9 +76,10 @@ def get_checksum():
                 for row in reader:
                     hashes[row[0]] = row[1]
             except (csv.Error, IndexError) as detail:
-                sys.exit(detail)
+                logging.error(detail)
+                sys.exit()
     except IOError:
-        sys.exit('File not found {0}'.format(HASH_FILE))
+        logging.error("File not found %s" % HASH_FILE)
 
     return hashes
 
@@ -114,7 +122,7 @@ def get_configuration():
     try:
         config.read(CONF_FILE_PATH)
     except ConfigParser.Error as detail:
-        print detail
+        logging.error(detail)
     # Get the names for the mailing lists from the config file.
     sections = [section for section in config.sections()]
 
@@ -127,13 +135,13 @@ def get_configuration():
             base_url = config.get(section, 'url')
             list_ = config.get(section, 'lists').splitlines()
         except ConfigParser.NoOptionError as detail:
-            print detail
+            logging.error(detail)
             continue
         if not base_url:
-            print 'Base URL cannot be empty. Skipping', section
+            logging.error('Base URL cannot be empty. Skipping list %s' % section)
             continue
         if not list_:
-            print 'List URL cannot be empty. Skipping', section
+            logging.error('List URL cannot be empty. Skipping list %s' % section)
             continue
         # Just in case someone forgot to append the /.
         for each_list in list_:
@@ -159,7 +167,8 @@ def main(conf_info):
     # conf_info. Note that there are multiple values per key. 
     total_lists = len([item for items in conf_info.values() for item in items])
     if not total_lists:
-        sys.exit('Quit - no lists.')
+        logging.error('No lists found to parse as no lists were found')
+        sys.exit()
 
     count = 0
     mbox_files = []
@@ -172,13 +181,13 @@ def main(conf_info):
     for names, lists in conf_info.iteritems():
         for name in names:
             for list_ in lists:
-                print '\n[{0} of {1}]'.format(count+1, total_lists)
-                print "Reading: {0}".format(list_)
+                logging.info('\tList %d of %d' % (count+1, total_lists))
+                logging.info("Reading %s" % list_)
                 try:
                     url = urllib2.urlopen(list_)
                 except (urllib2.URLError, ValueError) as detail:
-                    print("Error: Unable to fetch mailing list archive"
-                                                "\nReason: {0}".format(detail))
+                    logging.error("Unable to fetch mailing list"
+                                                    " archive %s" % detail)
                     count += 1
                     continue                
                 response = url.read()
@@ -197,12 +206,12 @@ def main(conf_info):
 
                 # Skip if there are no dates.
                 if not dates:
-                    print 'No dates found. Skipping.'
+                    logging.warning('No dates found. Skipping.')
                     count += 1
                     continue
 
                 # Download the mbox archives and save them to DIRECTORY_PATH.
-                print 'Downloading {0} mbox archives...'.format(len(dates))
+                logging.info("Downloading %d mbox archives..." % len(dates))
                 for date in dates:
                     mbox_url = '{0}/{1}'.format(list_, date)
                     mbox_name = '{0}-{1}'.format(list_.split('/')[-1], date)
@@ -211,7 +220,7 @@ def main(conf_info):
                     try:
                         mbox = urllib2.urlopen(mbox_url)
                     except urllib2.URLError as detail:
-                        print "Error: ", detail, mbox_url
+                        logging.error('%s - %s' % (detail, mbox_url))
                         count += 1
                         continue
                     with open(path_to_archive, 'wb') as f:
@@ -226,7 +235,8 @@ def main(conf_info):
                     mbox_hash_file = list(set(parsed_hash) & set(mbox_hash))
                     if mbox_hash_file:
                         if parsed_hash[mbox_name] == mbox_hash[mbox_name]:
-                            print 'mbox already downloaded and parsed.'
+                            logging.warning("Skipping already downloaded "
+                                               "and parsed mbox %s" % mbox_name)
                             mbox_archives.remove(path_to_archive)
                             os.remove(path_to_archive)
                             continue
@@ -241,6 +251,7 @@ def main(conf_info):
                         gzip_file.write(archive_contents)
                         # Update the hash for the archive downloaded.
                         mbox_hashes.update(mbox_hash)
+                        logging.info('Finished processing %s' % mbox_name)
                 count += 1
             break
 
@@ -249,7 +260,7 @@ def main(conf_info):
 
     # We don't need the mbox archives, so delete them.
     if mbox_archives:
-        print '\nCleaning up...' 
+        logging.info('Cleaning up...')
         for archives in mbox_archives:
             os.remove(archives)
 
@@ -272,7 +283,8 @@ def main(conf_info):
         from_frequency[sender] += 1
 
     if not from_header:
-        sys.exit('Nothing to parse')
+        logging.info('Nothing to parse from the current mbox archives')
+        sys.exit()
 
     # Output the result to the console for now.
     print ''
@@ -280,21 +292,38 @@ def main(conf_info):
     for sender, count in from_frequency.iteritems():
         print '{0} - {1}'.format(sender, count)
 
+    logging.info('Quit')
     sys.exit('\nQuit')
 
 
 if __name__ == '__main__':
+    # Are we root?
     is_root()
-    conf_info = get_configuration()
     # Create the directories on first run. NOTE: This will be changed later. 
+    if not os.path.isdir(LOG_PATH):
+        os.mkdir(LOG_PATH)
+    if not os.path.isfile(LOG_FILE_PATH):
+        open(LOG_FILE_PATH, 'w').close()
+
+    # Initialze the logging.
+    logging.basicConfig(filename=LOG_FILE_PATH,
+                        level=logging.INFO,
+                        format='%(asctime)s %(levelname)s: %(message)s')
+    logging.info('\t\tStarting ListStat')
+
+    # Get the configuration.
+    conf_info = get_configuration()
+    
     if not os.path.isdir(ARCHIVES_FILE_PATH):
         os.mkdir(ARCHIVES_FILE_PATH)
-        print 'Directory created', ARCHIVES_FILE_PATH
+        logging.info("Directory created '%s'" % ARCHIVES_FILE_PATH)
     if not os.path.isdir(CONF_PATH):
         os.mkdir(CONF_PATH)
-        sys.exit('Directory created {0}'.format(CONF_PATH))
+        logging.info("Directory created '%s'" % CONF_PATH)
     if not os.path.isfile(CONF_FILE_PATH):
-        sys.exit('File not found {0}'.format(CONF_FILE_PATH))
+        logging.error("File not found '%s' " % CONF_FILE_PATH)
+        sys.exit()
     if not os.path.isfile(HASH_FILE_PATH):
         open(HASH_FILE_PATH, 'w').close()
+
     main(conf_info)
