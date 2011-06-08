@@ -51,10 +51,9 @@ LOG_FILE_PATH = os.path.join(LOG_PATH, LOG_FILE)
 
 def is_root():
     """Check if the user has root privileges."""
-    # If the user doesn't have root privileges, quit. We plan to fix this
-    # later by creating a teammetrics group but for now this is the only way.
-    if os.getuid():
-        sys.exit('Please run this script with root privileges.')
+    # If the user doesn't have root privileges return False. We plan to fix 
+    # this later by creating a teammetrics group.
+    return False if os.getuid() else True
 
 
 def write_checksum(hashes):
@@ -255,7 +254,8 @@ def main(conf_info):
             break
 
     # Write the checksums of the download mbox archives.
-    write_checksum(mbox_hashes)
+    if mbox_hashes:
+        write_checksum(mbox_hashes)
 
     # We don't need the mbox archives, so delete them.
     if mbox_archives:
@@ -297,7 +297,8 @@ def main(conf_info):
 
 if __name__ == '__main__':
     # Are we root?
-    is_root()
+    if not is_root():
+        sys.exit('Please run this script with root privileges.')
     # Create the directories on first run. NOTE: This will be changed later. 
     if not os.path.isdir(LOG_PATH):
         os.mkdir(LOG_PATH)
