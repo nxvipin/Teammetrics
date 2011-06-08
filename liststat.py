@@ -54,8 +54,7 @@ def is_root():
     # If the user doesn't have root privileges, quit. We plan to fix this
     # later by creating a teammetrics group but for now this is the only way.
     if os.getuid():
-        logging.error('Please run this script with root privileges.')
-        sys.exit(1)
+        sys.exit('Please run this script with root privileges.')
 
 
 def write_checksum(hashes):
@@ -247,8 +246,8 @@ def main(conf_info):
                     with open(mbox_path, 'w') as gzip_file:
                         temp_file = gzip.open(path_to_archive, 'rb')
                         archive_contents = temp_file.read()
-                        mbox_files.append(mbox_path)
                         gzip_file.write(archive_contents)
+                        mbox_files.append(mbox_path)
                         # Update the hash for the archive downloaded.
                         mbox_hashes.update(mbox_hash)
                         logging.info('Finished processing %s' % mbox_name)
