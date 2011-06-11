@@ -104,7 +104,7 @@ def get_current_month():
     """Return the current month and year."""
     today = datetime.date.today()
     # Append the .txt.gz extension to match the extension format of Pipermail's
-    # extnesion format. %Y is the current year and %B the current month. 
+    # extension format. %Y is the current year and %B the current month. 
     current_month = today.strftime("%Y-%B") + '.txt.gz'
     return [current_month] 
 
@@ -154,12 +154,59 @@ def get_configuration():
     return mailing_list_parse
 
 
-def main(conf_info): 
-    """Download the mbox archives, parse them and return the data gathered.
+def parse(mbox_files):
+    """Parse the mbox archives to extract the required information.
 
+    Opens each local mbox specified by mbox_files and extracts the required
+    information that is then saved to a database.
+    """
+
+    for files in mbox_files:
+        mbox_ = mailbox.mbox(files)
+        for message in mbox_:
+            # Name of the mailing list.
+            mailing_list = os.path.basename(files).split('.')[0]
+
+            # The 'From' field value returns a string of the format:
+            #   email-address (Name)
+            # from which the sender's name and email address is extracted.
+            from_field = message['From']           
+            name_start_pos = from_field.find("(")
+            name_end_pos  = from_field.find(")")
+            name = from_field[name_start_pos+1:name_end_pos]
+            
+            # The email address of the sender.
+            email_addr_raw = from_field[:name_start_pos-1]
+            email_addr = ''.join(email_addr_raw.replace('at', '@').split())
+
+            # The date the message was sent.
+            get_date = message['Date']
+            parsed_date = email.utils.parsedate(get_date)
+            format_date = datetime.datetime(*parsed_date[:4])
+            date = format_date.strftime("%Y-%m-%d")
+            
+            subject = ' '.join(message['Subject'].split())
+
+            today_ = datetime.date.today()
+            today_date = today_.strftime("%Y-%m-%d")
+
+            # The length of the message body excluding blank lines and 
+            # lines that start with a >. 
+            payload = message.get_payload()
+            message_len = len([line for line in payload.splitlines() if line
+                                                and not line.startswith('>')])
+        logging.info('Done parsing %s' % mailing_list)
+
+    logging.info('Quit')
+    sys.exit()
+
+
+def main(conf_info): 
+    """Fetch the mbox archives from the URLs specified.
+
+        conf_info       -   mapping of list names to their URLs
         mbox_archives   -   mbox archives in gzip format 
         mbox_files      -   mbox archives in plain text format
-        from_frequency  -   mapping of usernames to frequency of contribution
     """ 
 
     # Calculate the total number of lists by iterating through the values of 
@@ -251,7 +298,7 @@ def main(conf_info):
                         mbox_files.append(mbox_path)
                         # Update the hash for the archive downloaded.
                         mbox_hashes.update(mbox_hash)
-                        logging.info('Finished processing %s' % mbox_name)
+                        logging.info('Finished downloading %s' % mbox_name)
                 count += 1
             break
 
@@ -266,36 +313,7 @@ def main(conf_info):
             os.remove(archives)
 
     # Open each local mbox archive and then parse it.
-    from_header = []
-    for files in mbox_files:
-        mbox_ = mailbox.mbox(files)
-        for message in mbox_:
-            mailing_list = os.path.basename(files).split('.')[0]
-
-            from_field = message['From']           
-            name_start_pos = from_field.find("(")
-            name_end_pos  = from_field.find(")")
-            name = from_field[name_start_pos+1:name_end_pos]
-
-            get_date = message['Date']
-            parsed_date = email.utils.parsedate(get_date)
-            format_date = datetime.datetime(*parsed_date[:4])
-            date = format_date.strftime("%Y-%m-%d")
-            
-            subject = ' '.join(message['Subject'].split())
-
-            today_ = datetime.date.today()
-            today_date = today_.strftime("%Y-%m-%d")
- 
-            email_addr_raw = from_field[:name_start_pos-1]
-            email_addr = ''.join(email_addr_raw.replace('at', '@').split())
-
-            payload = message.get_payload()
-            message_len = len([line for line in payload.splitlines() if line
-                                                and not line.startswith('>')])
-
-    logging.info('Quit')
-    sys.exit()
+    parse(mbox_files)
 
 
 if __name__ == '__main__':
@@ -308,7 +326,7 @@ if __name__ == '__main__':
     if not os.path.isfile(LOG_FILE_PATH):
         open(LOG_FILE_PATH, 'w').close()
 
-    # Initialze the logging.
+    # Initialize the logging.
     logging.basicConfig(filename=LOG_FILE_PATH,
                         level=logging.INFO,
                         format='%(asctime)s %(levelname)s: %(message)s')
