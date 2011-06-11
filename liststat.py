@@ -290,6 +290,10 @@ def main(conf_info):
             email_addr_raw = from_field[:name_start_pos-1]
             email_addr = ''.join(email_addr_raw.replace('at', '@').split())
 
+            payload = message.get_payload()
+            message_len = len([line for line in payload.splitlines() if line
+                                                and not line.startswith('>')])
+
     logging.info('Quit')
     sys.exit()
 
