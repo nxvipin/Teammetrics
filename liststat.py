@@ -20,6 +20,7 @@ import re
 import sys
 import csv
 import gzip
+import email
 import logging
 import mailbox
 import hashlib
@@ -174,6 +175,7 @@ def main(conf_info):
     mbox_hashes = {}
     parsed_hash = get_checksum()
     current_month = get_current_month()
+
     # The conf_info has a mapping of {list-name : [list-url]}. So we go through
     # each value and download the corresponding list.
     for names, lists in conf_info.iteritems():
@@ -263,36 +265,33 @@ def main(conf_info):
         for archives in mbox_archives:
             os.remove(archives)
 
-    # Open each local mbox archive and then parse it to get the 'From' header.
+    # Open each local mbox archive and then parse it.
     from_header = []
     for files in mbox_files:
         mbox_ = mailbox.mbox(files)
         for message in mbox_:
-            from_header.append(message['From'])
+            mailing_list = os.path.basename(files).split('.')[0]
 
-    # Use only the first element (this will be changed later).  
-    from_header = [element.split()[0] for element in from_header 
-                                                    if element is not None]
+            from_field = message['From']           
+            name_start_pos = from_field.find("(")
+            name_end_pos  = from_field.find(")")
+            name = from_field[name_start_pos+1:name_end_pos]
 
-    # Count the frequency of each sender. Note that this is a mapping of
-    # address : frequency. So you can use this to output the data in any
-    # format you desire by iterating over this.
-    from_frequency = collections.defaultdict(int)
-    for sender in from_header:
-        from_frequency[sender] += 1
+            get_date = message['Date']
+            parsed_date = email.utils.parsedate(get_date)
+            format_date = datetime.datetime(*parsed_date[:4])
+            date = format_date.strftime("%Y-%m-%d")
+            
+            subject = ' '.join(message['Subject'].split())
 
-    if not from_header:
-        logging.info('Nothing to parse from the current mbox archives')
-        sys.exit()
-
-    # Output the result to the console for now.
-    print ''
-    print '-- Statistics --'
-    for sender, count in from_frequency.iteritems():
-        print '{0} - {1}'.format(sender, count)
+            today_ = datetime.date.today()
+            today_date = today_.strftime("%Y-%m-%d")
+ 
+            email_addr_raw = from_field[:name_start_pos-1]
+            email_addr = ''.join(email_addr_raw.replace('at', '@').split())
 
     logging.info('Quit')
-    sys.exit('\nQuit')
+    sys.exit()
 
 
 if __name__ == '__main__':
