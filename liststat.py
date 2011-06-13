@@ -106,12 +106,12 @@ def get_current_month():
     # Append the .txt.gz extension to match the extension format of Pipermail's
     # extension format. %Y is the current year and %B the current month. 
     current_month = today.strftime("%Y-%B") + '.txt.gz'
-    return [current_month] 
+    return current_month
 
 
 def get_configuration():
     """Read the lists to be parsed from the configuration file.
-    
+ 
     This function returns a mapping of list-name to list-addresses. In case
     there are multiple lists per list-name, a list of list-addresses is used
     as the value for the list-name key. 
@@ -154,7 +154,7 @@ def get_configuration():
     return mailing_list_parse
 
 
-def parse(mbox_files):
+def parse_and_save(mbox_files):
     """Parse the mbox archives to extract the required information.
 
     Opens each local mbox specified by mbox_files and extracts the required
@@ -166,13 +166,17 @@ def parse(mbox_files):
         for message in mbox_:
             # Name of the mailing list.
             mailing_list = os.path.basename(files).split('.')[0]
+            project = mailing_list.rsplit('-', 2)[0]
 
             # The 'From' field value returns a string of the format:
             #   email-address (Name)
             # from which the sender's name and email address is extracted.
-            from_field = message['From']           
+            from_field = message['From']
+            if from_field is None:
+                continue
+
             name_start_pos = from_field.find("(")
-            name_end_pos  = from_field.find(")")
+            name_end_pos = from_field.find(")")
             name = from_field[name_start_pos+1:name_end_pos]
             
             # The email address of the sender.
@@ -249,17 +253,18 @@ def main(conf_info):
                                                                 in parse_dates])
 
                 # Download all lists except that of the current month. 
-                dates = list(set(archive_dates) - set(current_month))
+                if current_month in archive_dates:
+                    archive_dates.remove(current_month)
 
                 # Skip if there are no dates.
-                if not dates:
+                if not archive_dates:
                     logging.warning('No dates found. Skipping.')
                     count += 1
                     continue
 
                 # Download the mbox archives and save them to DIRECTORY_PATH.
-                logging.info("Downloading %d mbox archives..." % len(dates))
-                for date in dates:
+                logging.info("Downloading %d mbox archives" % len(archive_dates))
+                for date in archive_dates:
                     mbox_url = '{0}/{1}'.format(list_, date)
                     mbox_name = '{0}-{1}'.format(list_.split('/')[-1], date)
                     path_to_archive = os.path.join(ARCHIVES_FILE_PATH, mbox_name)
@@ -283,7 +288,7 @@ def main(conf_info):
                     if mbox_hash_file:
                         if parsed_hash[mbox_name] == mbox_hash[mbox_name]:
                             logging.warning("Skipping already downloaded "
-                                               "and parsed mbox %s" % mbox_name)
+                                               "mbox %s" % mbox_name)
                             mbox_archives.remove(path_to_archive)
                             os.remove(path_to_archive)
                             continue
@@ -313,7 +318,7 @@ def main(conf_info):
             os.remove(archives)
 
     # Open each local mbox archive and then parse it.
-    parse(mbox_files)
+    parse_and_save(mbox_files)
 
 
 if __name__ == '__main__':

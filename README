@@ -1,7 +1,12 @@
 Debian Teams Activity Metrics
 =============================
 
-The aim of this project is to gauge the performance of teams in Debian Pure Blends by inspecting postings on relevant mailing lists, package upload records from the Ultimate Debian Database and commit statistics from project repositories. The information gathered will help in evaluating team performance by measuring how people in a team are working together and an interface to access this information easily will also be developed.
+The aim of this project is to gauge the performance of teams in Debian Pure Blends
+by inspecting postings on relevant mailing lists, package upload records from the
+Ultimate Debian Database and commit statistics from project repositories. The
+information gathered will help in evaluating team performance by measuring how
+people in a team are working together and an interface to access this information
+easily will also be developed.
 
 Get in touch: http://lists.alioth.debian.org/pipermail/teammetrics-discuss/
 
