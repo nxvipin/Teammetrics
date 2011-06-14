@@ -68,17 +68,14 @@ def write_checksum(hashes):
 def get_checksum():
     """Read the hashes for the mbox file from HASH_FILE."""
     hashes = {}
-    try:
-        with open(HASH_FILE_PATH) as f:
-            reader = csv.reader(f, delimiter=':')
-            try:
-                for row in reader:
-                    hashes[row[0]] = row[1]
-            except (csv.Error, IndexError) as detail:
-                logging.error(detail)
-                sys.exit()
-    except IOError:
-        logging.error("File not found %s" % HASH_FILE)
+    with open(HASH_FILE_PATH) as f:
+        reader = csv.reader(f, delimiter=':')
+        try:
+            for row in reader:
+                hashes[row[0]] = row[1]
+        except (csv.Error, IndexError) as detail:
+            logging.error(detail)
+            sys.exit()
 
     return hashes
 
@@ -161,7 +158,7 @@ def parse_and_save(mbox_files):
     information that is then saved to a database.
     """
 
-    for files in mbox_files:
+    for url, files in mbox_files.iteritems():
         mbox_ = mailbox.mbox(files)
         for message in mbox_:
             # Name of the mailing list.
@@ -194,11 +191,17 @@ def parse_and_save(mbox_files):
             today_ = datetime.date.today()
             today_date = today_.strftime("%Y-%m-%d")
 
-            # The length of the message body excluding blank lines and 
-            # lines that start with a >. 
+            # Get the message body. 
             payload = message.get_payload()
-            message_len = len([line for line in payload.splitlines() if line
-                                                and not line.startswith('>')])
+            # The lines in the message body excluding blank lines. 
+            msg_blank = [line for line in payload.splitlines() if line]
+            msg_blank_len = len(msg_blank)
+            # The lines in the message body excluding quotes (starting with >).
+            msg_quotes_len = len([line for line in msg_blank
+                                                if not line.startswith('>')])
+            # The number of characters in the message body.
+            msg_raw_len = len(''.join(element for element in msg_blank))
+
         logging.info('Done parsing %s' % mailing_list)
 
     logging.info('Quit')
@@ -208,9 +211,10 @@ def parse_and_save(mbox_files):
 def main(conf_info): 
     """Fetch the mbox archives from the URLs specified.
 
+        mbox_files      -   mapping of URLs to the path of local mbox archives
+                            (in plain text format)
         conf_info       -   mapping of list names to their URLs
         mbox_archives   -   mbox archives in gzip format 
-        mbox_files      -   mbox archives in plain text format
     """ 
 
     # Calculate the total number of lists by iterating through the values of 
@@ -221,7 +225,7 @@ def main(conf_info):
         sys.exit()
 
     count = 0
-    mbox_files = []
+    mbox_files = {}
     mbox_archives = []
     mbox_hashes = {}
     parsed_hash = get_checksum()
@@ -300,7 +304,7 @@ def main(conf_info):
                         temp_file = gzip.open(path_to_archive, 'rb')
                         archive_contents = temp_file.read()
                         gzip_file.write(archive_contents)
-                        mbox_files.append(mbox_path)
+                        mbox_files[mbox_url] = mbox_path
                         # Update the hash for the archive downloaded.
                         mbox_hashes.update(mbox_hash)
                         logging.info('Finished downloading %s' % mbox_name)
