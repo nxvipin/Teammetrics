@@ -25,7 +25,9 @@ import logging
 import mailbox
 import hashlib
 import urllib2
+import urlparse
 import datetime
+import psycopg2
 import collections
 import ConfigParser
 
@@ -49,6 +51,11 @@ LOG_SAVE_DIR = '/var/log'
 LOG_PATH = os.path.join(LOG_SAVE_DIR, PROJECT_DIR)
 LOG_FILE_PATH = os.path.join(LOG_PATH, LOG_FILE)
 
+DATABASE = {
+                'name': '',
+                'username': '',
+            }
+            
 
 def is_root():
     """Check if the user has root privileges."""
@@ -158,6 +165,11 @@ def parse_and_save(mbox_files):
     information that is then saved to a database.
     """
 
+    # Connect to an existing database.
+    conn = psycopg2.connect(database=DATABASE['name'], 
+                            user=DATABASE['username']) 
+    cur = conn.cursor()
+
     for url, files in mbox_files.iteritems():
         mbox_ = mailbox.mbox(files)
         for message in mbox_:
@@ -202,7 +214,24 @@ def parse_and_save(mbox_files):
             # The number of characters in the message body.
             msg_raw_len = len(''.join(element for element in msg_blank))
 
-        logging.info('Done parsing %s' % mailing_list)
+            # The netloc from the mailing list URL.
+            netloc = urlparse.urlparse(url).netloc
+
+            # Save the required information to the database.
+            cur.execute(
+                    """INSERT INTO liststat (project, netloc, name, email_addr, 
+                        subject, date, today_date, msg_blank_len, 
+                        msg_quotes_len, msg_raw_len)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
+                        (project, netloc, name, email_addr, subject,
+                        date, today_date, msg_blank_len, 
+                        msg_quotes_len, msg_raw_len)
+                    )
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    logging.info('Done parsing %s' % mailing_list)
 
     logging.info('Quit')
     sys.exit()
@@ -344,6 +373,20 @@ if __name__ == '__main__':
     # Get the configuration.
     conf_info = get_configuration()
     
+    # Check whether the DATABASE dictionary is populated.
+    for keys, items in DATABASE.iteritems():
+        if not items:
+            logging.error('Please set a value for DATABASE %s' % keys)
+            sys.exit(1)
+    # Simulate a connection just to check whether everything is OK.
+    try:
+        psycopg2.connect(database=DATABASE['name'],
+                        user=DATABASE['username'])
+    except psycopg2.Error as detail:
+        logging.error(detail)
+        sys.exit(1)
+    logging.info('Connection to database successful')
+
     if not os.path.isdir(ARCHIVES_FILE_PATH):
         os.mkdir(ARCHIVES_FILE_PATH)
         logging.info("Directory created '%s'" % ARCHIVES_FILE_PATH)
