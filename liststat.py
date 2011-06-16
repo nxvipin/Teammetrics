@@ -196,7 +196,7 @@ def parse_and_save(mbox_files):
             get_date = message['Date']
             parsed_date = email.utils.parsedate(get_date)
             format_date = datetime.datetime(*parsed_date[:4])
-            date = format_date.strftime("%Y-%m-%d")
+            archive_date = format_date.strftime("%Y-%m-%d")
             
             subject = ' '.join(message['Subject'].split())
 
@@ -219,14 +219,13 @@ def parse_and_save(mbox_files):
 
             # Save the required information to the database.
             cur.execute(
-                    """INSERT INTO liststat (project, netloc, name, email_addr, 
-                        subject, date, today_date, msg_blank_len, 
-                        msg_quotes_len, msg_raw_len)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
-                        (project, netloc, name, email_addr, subject,
-                        date, today_date, msg_blank_len, 
-                        msg_quotes_len, msg_raw_len)
-                    )
+            """INSERT INTO listarchives
+                (project, netloc, name, email_addr, subject, archive_date, 
+                today_date, msg_blank_len, msg_quotes_len, msg_raw_len)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
+                (project, netloc, name, email_addr, subject, archive_date, 
+                today_date, msg_blank_len, msg_quotes_len, msg_raw_len)
+                        )
 
     conn.commit()
     cur.close()
