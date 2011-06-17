@@ -3,15 +3,17 @@
 """Generates mailing list statistics for measuring team performance.
 
 This script downloads mbox archives for the mailing list(s) specified, parses
-them and generates statistical data about:
+them and generates statistical data about the most active contributors, which
+is calculated using various metrics such as:
 
-  * the most active contributors, which is calculated using the frequency of a
-sender using the 'From' header.
+    - frequency of the 'From' header,
+    - the raw length of the message body,
+    - the length of the message body excluding quoted lines (>).
 
 This script works for any mailing list that runs on GNU Mailman and where 
 Pipermail is used as the mail archiver. You just need to specify the list URL
 and the script will automatically download all the mbox archives, parse them
-and generate statistical data. The data generated is stored in a mapping, so 
+and generate the data required. The data generated is stored in a mapping, so 
 it's easy to output it in the format you desire. 
 """
 
@@ -51,10 +53,7 @@ LOG_SAVE_DIR = '/var/log'
 LOG_PATH = os.path.join(LOG_SAVE_DIR, PROJECT_DIR)
 LOG_FILE_PATH = os.path.join(LOG_PATH, LOG_FILE)
 
-DATABASE = {
-                'name': '',
-                'username': '',
-            }
+DATABASE = {'name': 'liststat'}
             
 
 def is_root():
@@ -158,7 +157,7 @@ def get_configuration():
     return mailing_list_parse
 
 
-def parse_and_save(mbox_files):
+def parse_and_save(mbox_files, mbox_hashes):
     """Parse the mbox archives to extract the required information.
 
     Opens each local mbox specified by mbox_files and extracts the required
@@ -166,8 +165,7 @@ def parse_and_save(mbox_files):
     """
 
     # Connect to an existing database.
-    conn = psycopg2.connect(database=DATABASE['name'], 
-                            user=DATABASE['username']) 
+    conn = psycopg2.connect(database=DATABASE['name'])
     cur = conn.cursor()
 
     for url, files in mbox_files.iteritems():
@@ -218,19 +216,29 @@ def parse_and_save(mbox_files):
             netloc = urlparse.urlparse(url).netloc
 
             # Save the required information to the database.
-            cur.execute(
-            """INSERT INTO listarchives
-                (project, netloc, name, email_addr, subject, archive_date, 
-                today_date, msg_blank_len, msg_quotes_len, msg_raw_len)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
-                (project, netloc, name, email_addr, subject, archive_date, 
-                today_date, msg_blank_len, msg_quotes_len, msg_raw_len)
-                        )
+            try:
+                cur.execute(
+                """INSERT INTO listarchives
+                    (project, netloc, name, email_addr, subject, archive_date, 
+                    today_date, msg_blank_len, msg_quotes_len, msg_raw_len)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
+                    (project, netloc, name, email_addr, subject, archive_date, 
+                    today_date, msg_blank_len, msg_quotes_len, msg_raw_len)
+                            )
+            except psycopg2.DataError as detail:
+                conn.rollback()
+                logging.error(detail)
+                continue
 
-    conn.commit()
+            conn.commit()
+        logging.info('Done parsing %s' % mailing_list)
+
     cur.close()
     conn.close()
-    logging.info('Done parsing %s' % mailing_list)
+
+    # Write the checksums of the download mbox archives.
+    if mbox_hashes:
+        write_checksum(mbox_hashes)
 
     logging.info('Quit')
     sys.exit()
@@ -320,7 +328,7 @@ def main(conf_info):
                     if mbox_hash_file:
                         if parsed_hash[mbox_name] == mbox_hash[mbox_name]:
                             logging.warning("Skipping already downloaded "
-                                               "mbox %s" % mbox_name)
+                                               "and parsed mbox %s" % mbox_name)
                             mbox_archives.remove(path_to_archive)
                             os.remove(path_to_archive)
                             continue
@@ -339,18 +347,19 @@ def main(conf_info):
                 count += 1
             break
 
-    # Write the checksums of the download mbox archives.
-    if mbox_hashes:
-        write_checksum(mbox_hashes)
-
     # We don't need the mbox archives, so delete them.
     if mbox_archives:
         logging.info('Cleaning up...')
         for archives in mbox_archives:
             os.remove(archives)
 
+    # If nothing to parse, quit.
+    if not mbox_files:
+        logging.info('Quit: nothing to parse')
+        sys.exit()
+
     # Open each local mbox archive and then parse it.
-    parse_and_save(mbox_files)
+    parse_and_save(mbox_files, mbox_hashes)
 
 
 if __name__ == '__main__':
@@ -379,8 +388,7 @@ if __name__ == '__main__':
             sys.exit(1)
     # Simulate a connection just to check whether everything is OK.
     try:
-        psycopg2.connect(database=DATABASE['name'],
-                        user=DATABASE['username'])
+        psycopg2.connect(database=DATABASE['name'])
     except psycopg2.Error as detail:
         logging.error(detail)
         sys.exit(1)

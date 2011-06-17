@@ -6,7 +6,7 @@ psql liststat <<EOF
 
 BEGIN;
 
-CREATE TABLE listarchive (
+CREATE TABLE listarchives (
     project         text,
     netloc          text,
     name            text,
