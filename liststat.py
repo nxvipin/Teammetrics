@@ -8,7 +8,8 @@ is calculated using various metrics such as:
 
     - frequency of the 'From' header,
     - the raw length of the message body,
-    - the length of the message body excluding quoted lines (>).
+    - the length of the message body excluding quoted lines (>)
+    and blank lines (individually).
 
 This script works for any mailing list that runs on GNU Mailman and where 
 Pipermail is used as the mail archiver. You just need to specify the list URL
@@ -29,11 +30,11 @@ import hashlib
 import urllib2
 import urlparse
 import datetime
-import psycopg2
 import collections
 import ConfigParser
 
-from BeautifulSoup import BeautifulSoup
+import psycopg2
+import BeautifulSoup
 
 PROJECT_DIR = 'teammetrics'
 
@@ -164,7 +165,7 @@ def parse_and_save(mbox_files, mbox_hashes):
     information that is then saved to a database.
     """
 
-    # Connect to an existing database.
+    # Connect to the database.
     conn = psycopg2.connect(database=DATABASE['name'])
     cur = conn.cursor()
 
@@ -219,7 +220,7 @@ def parse_and_save(mbox_files, mbox_hashes):
             try:
                 cur.execute(
                 """INSERT INTO listarchives
-                    (project, netloc, name, email_addr, subject, archive_date, 
+                    (project, domain, name, email_addr, subject, archive_date, 
                     today_date, msg_blank_len, msg_quotes_len, msg_raw_len)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
                     (project, netloc, name, email_addr, subject, archive_date, 
@@ -284,7 +285,7 @@ def main(conf_info):
                 response = url.read()
 
                 # Find all the <a> tags ending in '.txt.gz'.
-                soup = BeautifulSoup(response)
+                soup = BeautifulSoup.BeautifulSoup(response)
                 parse_dates = soup.findAll('a', href=re.compile('\.txt\.gz$'))
                 # Extract the months from the <a> tags. This is used to download
                 # the mbox archive corresponding to the months the list was active.
@@ -298,7 +299,7 @@ def main(conf_info):
 
                 # Skip if there are no dates.
                 if not archive_dates:
-                    logging.warning('No dates found. Skipping.')
+                    logging.warning('No dates found. Skipping')
                     count += 1
                     continue
 
