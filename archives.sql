@@ -8,7 +8,7 @@ BEGIN;
 
 CREATE TABLE listarchives (
     project         text,
-    netloc          text,
+    domain          text,
     name            text,
     email_addr      text,
     subject         text,
