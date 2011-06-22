@@ -36,13 +36,13 @@ def check_spam(name, subject):
             logging.warning(logging_msg % reason)
 
         # If the name is in capital letters only.
-        elif field.isupper():
+        if field.isupper():
             spam_detected = True
             reason = '%s is in upper case' % fields[field]
             logging.warning(logging_msg % reason)
 
         # If the name is all digits.
-        elif field.isdigit():
+        if field.isdigit():
             spam_detected = True
             reason = '%s is all digits' % fields[field]
             logging.warning(logging_msg % reason)

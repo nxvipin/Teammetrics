@@ -38,6 +38,7 @@ import BeautifulSoup
 
 import spamfilter
 
+
 PROJECT_DIR = 'teammetrics'
 
 CONF_FILE = 'listinfo.conf'
