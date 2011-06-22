@@ -19,5 +19,14 @@ CREATE TABLE listarchives (
     msg_raw_len     int
 );
 
+
+CREATE TABLE listspam (
+    project         text,
+    name            text,
+    email_addr      text,
+    subject         text,
+    reason          text
+);
+
 COMMIT;
 EOF

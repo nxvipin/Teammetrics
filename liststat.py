@@ -190,8 +190,13 @@ def parse_and_save(mbox_files, mbox_hashes):
             raw_name = from_field[name_start_pos+1:name_end_pos]
             # Resolve the encodings.
             decoded_name = email.header.decode_header(raw_name)
-            name = u" ".join([unicode(text, charset or 'ascii') 
+            try:
+                name = u" ".join([unicode(text, charset or 'ascii') 
                                         for text, charset in decoded_name])
+            except UnicodeDecodeError as detail:
+                logging.error(detail)
+                conn.rollback()
+                continue
 
             # The email address of the sender.
             email_addr_raw = from_field[:name_start_pos-1]
@@ -203,9 +208,33 @@ def parse_and_save(mbox_files, mbox_hashes):
             format_date = datetime.datetime(*parsed_date[:4])
             archive_date = format_date.strftime("%Y-%m-%d")
             
-            subject = ' '.join(message['Subject'].split())
+            raw_subject = ' '.join(message['Subject'].split())
+            decoded_subject = email.header.decode_header(raw_subject)
+            try:
+                subject = u" ".join([unicode(text, charset or 'ascii')
+                                        for text, charset in decoded_subject])
+            except UnicodeDecodeError as detail:
+                logging.error(detail)
+                conn.rollback()
+                continue
 
-            name, subject, reason = spamfilter.check_spam(name, subject)
+            name, subject, reason, spam = spamfilter.check_spam(name, subject)
+            # If there is spam, populate the listspam database instead.
+            if spam:
+                try:
+                    name = cur.execute(
+                            """INSERT INTO listspam
+                            (project, name, email_addr, subject, reason)
+                                VALUES (%s, %s, %s, %s, %s);""",
+                            (project, name, email_addr, subject, reason)
+                                      )
+                except psycopg2.DataError as detail:
+                    conn.rollback()
+                    logging.error(detail)
+                    continue
+
+                conn.commit()
+                continue
 
             today_ = datetime.date.today()
             today_date = today_.strftime("%Y-%m-%d")
@@ -229,10 +258,10 @@ def parse_and_save(mbox_files, mbox_hashes):
                 cur.execute(
                 """INSERT INTO listarchives
                     (project, domain, name, email_addr, subject, archive_date, 
-                    today_date, msg_blank_len, msg_quotes_len, msg_raw_len, spam)
+                    today_date, msg_blank_len, msg_quotes_len, msg_raw_len)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
                     (project, netloc, name, email_addr, subject, archive_date, 
-                    today_date, msg_blank_len, msg_quotes_len, msg_raw_len, spam)
+                    today_date, msg_blank_len, msg_quotes_len, msg_raw_len)
                             )
             except psycopg2.DataError as detail:
                 conn.rollback()

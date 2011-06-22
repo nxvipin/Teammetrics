@@ -4,7 +4,7 @@
 
 import logging
 
-SPAM_KEYWORDS = ('lottery', 'promotion', 'loan', 'Mr', 'Mrs', 'Dr', '.com', '.net')
+SPAM_KEYWORDS = ('lottery', 'promotion', 'loan')
 
 
 def check_spam(name, subject):
@@ -15,29 +15,42 @@ def check_spam(name, subject):
     """
 
     reason = ''
+    spam_detected = False
     logging_msg = 'Spam detected: %s' 
-    return_items = name, subject, reason
+    name_field = name
+    subject_field = subject
 
-    fields = {name: 'Name', subject: 'Subject'}
+    fields = {name_field: 'Name', subject_field: 'Subject'}
     
-    for field, name in fields.iteritems():
+    for field, value in fields.iteritems():
+        # An empty name is spam.
+        if not field:
+            spam_detected = True
+            reason = "%s is an empty field" % fields[field]
+            logging.warning(logging_msg % reason)
+
         # If the name starts with a =.
         if field.startswith('='):
+            spam_detected = True
             reason = "%s starts with '='" % fields[field]
-            logging.info(logging_msg % reason)
+            logging.warning(logging_msg % reason)
 
         # If the name is in capital letters only.
         elif field.isupper():
+            spam_detected = True
             reason = '%s is in upper case' % fields[field]
-            logging.info(logging_msg % reason)
+            logging.warning(logging_msg % reason)
 
+        # If the name is all digits.
         elif field.isdigit():
+            spam_detected = True
             reason = '%s is all digits' % fields[field]
-            logging.info(logging_msg % reason)
+            logging.warning(logging_msg % reason)
 
         for ignore_name in SPAM_KEYWORDS:
             if ignore_name in field:
+                spam_detected = True
                 reason = 'Ignored keyword in %s: %s' % (fields[field], ignore_name)
-                logging.info(logging_msg % reason)
+                logging.warning(logging_msg % reason)
 
-    return name, subject, reason
+    return name, subject, reason, spam_detected
