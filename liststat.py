@@ -36,6 +36,8 @@ import ConfigParser
 import psycopg2
 import BeautifulSoup
 
+import spamfilter
+
 PROJECT_DIR = 'teammetrics'
 
 CONF_FILE = 'listinfo.conf'
@@ -185,8 +187,12 @@ def parse_and_save(mbox_files, mbox_hashes):
 
             name_start_pos = from_field.find("(")
             name_end_pos = from_field.find(")")
-            name = from_field[name_start_pos+1:name_end_pos]
-            
+            raw_name = from_field[name_start_pos+1:name_end_pos]
+            # Resolve the encodings.
+            decoded_name = email.header.decode_header(raw_name)
+            name = u" ".join([unicode(text, charset or 'ascii') 
+                                        for text, charset in decoded_name])
+
             # The email address of the sender.
             email_addr_raw = from_field[:name_start_pos-1]
             email_addr = ''.join(email_addr_raw.replace('at', '@').split())
@@ -198,6 +204,8 @@ def parse_and_save(mbox_files, mbox_hashes):
             archive_date = format_date.strftime("%Y-%m-%d")
             
             subject = ' '.join(message['Subject'].split())
+
+            name, subject, reason = spamfilter.check_spam(name, subject)
 
             today_ = datetime.date.today()
             today_date = today_.strftime("%Y-%m-%d")
@@ -221,10 +229,10 @@ def parse_and_save(mbox_files, mbox_hashes):
                 cur.execute(
                 """INSERT INTO listarchives
                     (project, domain, name, email_addr, subject, archive_date, 
-                    today_date, msg_blank_len, msg_quotes_len, msg_raw_len)
+                    today_date, msg_blank_len, msg_quotes_len, msg_raw_len, spam)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
                     (project, netloc, name, email_addr, subject, archive_date, 
-                    today_date, msg_blank_len, msg_quotes_len, msg_raw_len)
+                    today_date, msg_blank_len, msg_quotes_len, msg_raw_len, spam)
                             )
             except psycopg2.DataError as detail:
                 conn.rollback()
