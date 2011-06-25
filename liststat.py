@@ -14,8 +14,8 @@ is calculated using various metrics such as:
 This script works for any mailing list that runs on GNU Mailman and where 
 Pipermail is used as the mail archiver. You just need to specify the list URL
 and the script will automatically download all the mbox archives, parse them
-and generate the data required. The data generated is stored in a mapping, so 
-it's easy to output it in the format you desire. 
+and generate the data required. The data gathered is then stored in a database
+which you can query to get the specific statistics you desire.
 """
 
 import os
