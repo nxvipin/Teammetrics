@@ -175,7 +175,6 @@ def parse_and_save(mbox_files, mbox_hashes):
 
     for url, files in mbox_files.iteritems():
         mbox_ = mailbox.mbox(files)
-        logging.info('%s parsing' % mailing_list)
         for message in mbox_:
             # Name of the mailing list.
             mailing_list = os.path.basename(files).split('.')[0]
@@ -275,6 +274,7 @@ def parse_and_save(mbox_files, mbox_hashes):
                 continue
 
             conn.commit()
+        logging.info('%s parsed' % mailing_list)
 
     logging.info('Updating names')
     updatenames.update_names(cur, conn)
