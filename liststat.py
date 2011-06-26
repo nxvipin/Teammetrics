@@ -37,6 +37,7 @@ import psycopg2
 import BeautifulSoup
 
 import spamfilter
+import updatenames
 
 
 PROJECT_DIR = 'teammetrics'
@@ -174,6 +175,7 @@ def parse_and_save(mbox_files, mbox_hashes):
 
     for url, files in mbox_files.iteritems():
         mbox_ = mailbox.mbox(files)
+        logging.info('%s parsing' % mailing_list)
         for message in mbox_:
             # Name of the mailing list.
             mailing_list = os.path.basename(files).split('.')[0]
@@ -198,6 +200,9 @@ def parse_and_save(mbox_files, mbox_hashes):
                 logging.error(detail)
                 conn.rollback()
                 continue
+
+            if name.endswith('alioth.debian.org'):
+                name = name.split()[0]
 
             # The email address of the sender.
             email_addr_raw = from_field[:name_start_pos-1]
@@ -270,7 +275,10 @@ def parse_and_save(mbox_files, mbox_hashes):
                 continue
 
             conn.commit()
-        logging.info('Done parsing %s' % mailing_list)
+
+    logging.info('Updating names')
+    updatenames.update_names(cur, conn)
+    logging.info('Names updated')
 
     cur.close()
     conn.close()
@@ -382,13 +390,13 @@ def main(conf_info):
                         mbox_files[mbox_url] = mbox_path
                         # Update the hash for the archive downloaded.
                         mbox_hashes.update(mbox_hash)
-                        logging.info('Finished downloading %s' % mbox_name)
+                        logging.info('%s downloaded ' % mbox_name)
                 count += 1
             break
 
     # We don't need the mbox archives, so delete them.
     if mbox_archives:
-        logging.info('Cleaning up...')
+        logging.info('Cleaning up downloaded mbox archives...')
         for archives in mbox_archives:
             os.remove(archives)
 
