@@ -218,7 +218,7 @@ def parse_and_save(mbox_files, mbox_hashes):
             try:
                 subject = u" ".join([unicode(text, charset or 'ascii')
                                         for text, charset in decoded_subject])
-            except UnicodeDecodeError as detail:
+            except (UnicodeDecodeError, LookupError) as detail:
                 logging.error(detail)
                 conn.rollback()
                 continue
