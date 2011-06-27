@@ -14,7 +14,7 @@ a 'Name' or a 'Subject' field:
 
 import logging
 
-SPAM_KEYWORDS = ('lottery', 'promotion', 'loan')
+SPAM_KEYWORDS = ('lottery', 'promotion', 'loan', 'Mail Delivery Subsystem')
 
 
 def check_spam(name, subject):

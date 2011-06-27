@@ -196,9 +196,8 @@ def parse_and_save(mbox_files, mbox_hashes):
                 name = u" ".join([unicode(text, charset or 'ascii') 
                                         for text, charset in decoded_name])
             except UnicodeDecodeError as detail:
-                logging.error(detail)
-                conn.rollback()
-                continue
+                logging.warning('%s - %s' % (detail, name))
+                pass
 
             if name.endswith('alioth.debian.org'):
                 name = name.split()[0]
@@ -219,9 +218,8 @@ def parse_and_save(mbox_files, mbox_hashes):
                 subject = u" ".join([unicode(text, charset or 'ascii')
                                         for text, charset in decoded_subject])
             except (UnicodeDecodeError, LookupError) as detail:
-                logging.error(detail)
-                conn.rollback()
-                continue
+                logging.warning('%s - %s'% (detail, subject))
+                pass
 
             name, subject, reason, spam = spamfilter.check_spam(name, subject)
             # If there is spam, populate the listspam database instead.

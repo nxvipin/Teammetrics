@@ -70,6 +70,7 @@ NAMES = {
             'Mathieu Parent':           {'author': ('mparent-guest', 'Mathieu PARENT', 'sathieu')},
             'Michael Banck':            {'author': 'mbanck'},
             'Michael Hanke':            {'author': 'mhanke-guest'},
+            'Moriyoshi Koizumi':        {'author': 'moriyoshi-guest'},
             'Morten Kjeldgaard':        {'author': 'mok0-guest'},
             'Nelson A. de Oliveira':    {'author': 'naoliv'},
             'Nicholas Breen':           {'author': 'nbreen-guest'},
