@@ -23,9 +23,12 @@ def save_stats(author_stat):
 
     for name, commits in author_stat.iteritems(): 
         cur.execute("""
-            INSERT INTO gitstat(project, name, lines_inserted, lines_deleted) 
-                VALUES (%s, %s, %s, %s);""",
-            ('foo', name, author_stat[name]['insert'], author_stat[name]['delete'])
+    INSERT INTO gitstat(project, name, changes, lines_inserted, lines_deleted) 
+            VALUES (%s, %s, %s, %s, %s);""",
+           ('foo', name, 
+            author_stat[name]['change'], 
+            author_stat[name]['insert'], 
+            author_stat[name]['delete'])
                     )
         conn.commit()
 
@@ -58,12 +61,15 @@ def main():
                                         stdout=subprocess.PIPE).communicate()[0]
         author_info = [element.strip() for element in author_info.splitlines()
                                                                     if element]
+        changes = len(author_info)
         for change in author_info:
             changed, inserted, deleted = change.split(',')
             insertions.append(int(inserted[1]))
             deletions.append(int(deleted[1]))
 
-        author_stat[author] = {'insert': sum(insertions), 'delete': sum(deletions)}
+        author_stat[author] = {'change': changes, 
+                                'insert': sum(insertions), 
+                                'delete': sum(deletions)}
 
     save_stats(author_stat)
 
