@@ -87,6 +87,7 @@ NAMES = {
             'Steffen Möller':           {'author': ('smoe-guest', 'moeller', 'Steffen Moeller')},
             'Steve Langasek':           {'author': 'vorlon'},
             'Steven M. Robbins':        {'like': 'Steve%Robbins', 'or': 'smr'},
+            'Sukhbir Singh':            {'author': 'sukhbir'},
             'Sven LUTHER':              {'author': ('Sven Luther', 'sven')},
             'Sylvain Le Gall':          {'author': 'Sylvain LE GALL'},
             'Sylvestre Ledru':          {'author': ('sylvestre-guest', 'sylvestre', 'sylvestre.ledru')},
@@ -105,7 +106,8 @@ def update_names(cur, conn):
         # 'like' and 'or'
         if 'like' in NAMES[key] and 'or' in NAMES[key]:
             try:
-                cur.execute("""UPDATE listarchives
+                cur.execute(
+                            """UPDATE listarchives
                             SET name = %s 
                             WHERE name LIKE %s
                             OR name = %s;""", (key, 
@@ -123,7 +125,8 @@ def update_names(cur, conn):
         # 'like'
         if 'like' in NAMES[key]:
             try:
-                cur.execute("""UPDATE listarchives
+                cur.execute(
+                            """UPDATE listarchives
                             SET name = %s
                             WHERE name LIKE %s;""", (key, NAMES[key]['like'])
                             )
@@ -140,7 +143,8 @@ def update_names(cur, conn):
             author = NAMES[key]['author']
             if isinstance(author, basestring):
                 try:
-                    cur.execute("""UPDATE listarchives
+                    cur.execute(
+                                """UPDATE listarchives
                                 SET name = %s
                                 WHERE name = %s;""", (key, author)
                                 )

@@ -1,8 +1,8 @@
 #! /bin/sh
 
-createdb liststat
+createdb teammetrics
 
-psql liststat <<EOF
+psql teammetrics <<EOF
 
 BEGIN;
 
@@ -19,6 +19,12 @@ CREATE TABLE listarchives (
     msg_raw_len     int
 );
 
+CREATE TABLE gitstat (
+    project         text,
+    name            text,
+    lines_inserted  int,
+    lines_deleted   int
+);
 
 CREATE TABLE listspam (
     project         text,

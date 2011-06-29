@@ -58,7 +58,7 @@ LOG_SAVE_DIR = '/var/log'
 LOG_PATH = os.path.join(LOG_SAVE_DIR, PROJECT_DIR)
 LOG_FILE_PATH = os.path.join(LOG_PATH, LOG_FILE)
 
-DATABASE = {'name': 'liststat'}
+DATABASE = {'name': 'teammetrics'}
             
 
 def is_root():
@@ -225,12 +225,12 @@ def parse_and_save(mbox_files, mbox_hashes):
             # If there is spam, populate the listspam database instead.
             if spam:
                 try:
-                    name = cur.execute(
+                    cur.execute(
                             """INSERT INTO listspam
                             (project, name, email_addr, subject, reason)
                                 VALUES (%s, %s, %s, %s, %s);""",
                             (project, name, email_addr, subject, reason)
-                                      )
+                                )
                 except psycopg2.DataError as detail:
                     conn.rollback()
                     logging.error(detail)
