@@ -29,8 +29,8 @@ def save_stats(author_stat):
                     )
         conn.commit()
 
-    conn.close()
     cur.close()
+    conn.close()
 
     sys.exit('That\'s cool')
 
