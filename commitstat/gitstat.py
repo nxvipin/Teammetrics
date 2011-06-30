@@ -21,6 +21,10 @@ def save_stats(author_stat):
     conn = psycopg2.connect(database='teammetrics')
     cur = conn.cursor()
 
+    # Delete the table before proceeding.
+    cur.execute("""DELETE FROM gitstat;""");
+    conn.commit()
+
     for name, commits in author_stat.iteritems(): 
         cur.execute("""
     INSERT INTO gitstat(project, name, changes, lines_inserted, lines_deleted) 
