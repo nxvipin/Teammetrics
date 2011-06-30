@@ -18,7 +18,7 @@ import psycopg2
 
 def save_stats(author_stat):
     """Save the input mapping to a database."""
-    conn = psycopg2.connect(database='teammetrics', user='postgres')
+    conn = psycopg2.connect(database='teammetrics')
     cur = conn.cursor()
 
     for name, commits in author_stat.iteritems(): 
