@@ -253,6 +253,12 @@ def parse_and_save(mbox_files, mbox_hashes):
             # The number of characters in the message body.
             msg_raw_len = len(''.join(element for element in msg_blank))
 
+            # The lines in the message body till the signature (-- ).
+            try:
+                msg_sig_len = len(msg_blank[:msg_blank.index('-- ')])
+            except ValueError:
+                msg_sig_len = msg_blank_len
+
             # The netloc from the mailing list URL.
             netloc = urlparse.urlparse(url).netloc
 
@@ -260,11 +266,11 @@ def parse_and_save(mbox_files, mbox_hashes):
             try:
                 cur.execute(
                 """INSERT INTO listarchives
-                    (project, domain, name, email_addr, subject, archive_date, 
-                    today_date, msg_blank_len, msg_quotes_len, msg_raw_len)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
-                    (project, netloc, name, email_addr, subject, archive_date, 
-                    today_date, msg_blank_len, msg_quotes_len, msg_raw_len)
+                (project, domain, name, email_addr, subject, archive_date, 
+            today_date, msg_blank_len, msg_quotes_len, msg_raw_len, msg_sig_len)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
+                (project, netloc, name, email_addr, subject, archive_date, 
+            today_date, msg_blank_len, msg_quotes_len, msg_raw_len, msg_sig_len)
                             )
             except psycopg2.DataError as detail:
                 conn.rollback()

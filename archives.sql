@@ -16,7 +16,8 @@ CREATE TABLE listarchives (
     today_date      date,
     msg_blank_len   int,
     msg_quotes_len  int,
-    msg_raw_len     int
+    msg_raw_len     int,
+    msg_sig_len     int
 );
 
 CREATE TABLE gitstat (

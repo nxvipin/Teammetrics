@@ -26,8 +26,8 @@ def save_stats(author_stat):
     conn.commit()
 
     for name, commits in author_stat.iteritems(): 
-        cur.execute("""
-    INSERT INTO gitstat(project, name, changes, lines_inserted, lines_deleted) 
+        cur.execute(
+    """INSERT INTO gitstat(project, name, changes, lines_inserted, lines_deleted) 
             VALUES (%s, %s, %s, %s, %s);""",
            ('foo', name, 
             author_stat[name]['change'], 
