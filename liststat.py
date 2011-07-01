@@ -245,7 +245,8 @@ def parse_and_save(mbox_files, mbox_hashes):
             # Get the message body. 
             payload = message.get_payload()
             # The lines in the message body excluding blank lines. 
-            msg_blank = [line for line in payload.splitlines() if line]
+            msg_blank_raw = [line.strip() for line in payload.splitlines() if line]
+            msg_blank = [line for line in msg_blank_raw if line]
             msg_blank_len = len(msg_blank)
             # The lines in the message body excluding blank lines AND
             # quotes (starting with >).
@@ -258,7 +259,7 @@ def parse_and_save(mbox_files, mbox_hashes):
             # The lines in the message body excluding blank lines AND
             # quotes and till the signature (-- ).
             try:
-                msg_sig_len = len(msg_quotes[:msg_quotes.index('-- ')])
+                msg_sig_len = len(msg_quotes[:msg_quotes.index('--')])
             except ValueError:
                 msg_sig_len = msg_blank_len
 

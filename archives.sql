@@ -21,19 +21,19 @@ CREATE TABLE listarchives (
 );
 
 CREATE TABLE gitstat (
-    project         text,
-    name            text,
-    changes         int,
-    lines_inserted  int,
-    lines_deleted   int
+    project             text,
+    name                text,
+    changes             int,
+    lines_inserted      int,
+    lines_deleted       int
 );
 
 CREATE TABLE listspam (
-    project         text,
-    name            text,
-    email_addr      text,
-    subject         text,
-    reason          text
+    project             text,
+    name                text,
+    email_addr          text,
+    subject             text,
+    reason              text
 );
 
 COMMIT;
