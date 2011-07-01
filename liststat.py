@@ -270,10 +270,10 @@ def parse_and_save(mbox_files, mbox_hashes):
                 cur.execute(
                 """INSERT INTO listarchives
                 (project, domain, name, email_addr, subject, archive_date, 
-            today_date, msg_blank_len, msg_quotes_len, msg_raw_len, msg_sig_len)
+        today_date, msg_raw_len, msg_no_blank_len, msg_no_quotes_len, msg_no_sig_len)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
                 (project, netloc, name, email_addr, subject, archive_date, 
-            today_date, msg_blank_len, msg_quotes_len, msg_raw_len, msg_sig_len)
+            today_date, msg_raw_len, msg_blank_len, msg_quotes_len, msg_sig_len)
                             )
             except psycopg2.DataError as detail:
                 conn.rollback()
