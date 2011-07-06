@@ -1,0 +1,63 @@
+%% Macros for Debian talks by Andreas Tille <tille@debian.org>
+%% Some common used links
+
+\ifx\pdfoutput\undefined
+  % we do not use PDFLaTeX
+  \usepackage{url}
+\else
+  % we use PDFLaTeX
+  \PassOptionsToPackage{pdftex,colorlinks=true,urlcolor=blue,linkcolor=blue}{hyperref}
+  \pdfcompresslevel=9
+\fi
+\usepackage{hyperref}
+
+\newcommand{\link}[2]{\href{#1}{{\textit{\underline{#2}}}}}
+%% Coloring links does not seem to work this way
+%\newcommand{\link}[2]{\href{#1}{{\textit{\color{LinkColor}\underline{#2}}}}}
+
+\newcommand{\Debian}{\link{http://www.debian.org}{Debian}\xspace}
+\newcommand{\rki}{\link{http://www.rki.de}{Robert Koch-Institut}\xspace}
+\newcommand{\DebianGL}{{\link{http://www.debian.org}{Debian GNU/Linux}}\xspace}
+
+\newcommand{\DebianJr}{\link{http://www.debian.org/devel/debian-jr}{Debian Junior}\xspace}
+\newcommand{\DebianMed}{\link{http://www.debian.org/devel/debian-med}{Debian Med}\xspace}
+\newcommand{\DebianEdu}{\link{http://www.skolelinux.org}{Debian Edu (SkoleLinux)}\xspace}
+\newcommand{\DeMuDi}{\link{http://www.agnula.org/}{DeMuDi}\xspace}
+\newcommand{\DebianDesktop}{\link{http://www.debian.org/devel/debian-desktop}{Debian Desktop}\xspace}
+\newcommand{\DebianLex}{\link{http://www.debian.org/devel/debian-lex}{Debian Lex}\xspace}
+\newcommand{\DebianNP}{\link{http://www.debian.org/devel/debian-nonprofit}{Debian NP}\xspace}
+\newcommand{\DebianEP}{\link{http://debian-enterprise.org/}{Debian Enterprise}\xspace}
+\newcommand{\DebianAccess}{\link{http://www.debian.org/devel/debian-accessibility/}{Debian Accessibility}\xspace}
+\newcommand{\DebianEGov}{\link{http://wiki.debian.net/?DebianEGov}{Debian eGov}\xspace}
+\newcommand{\DebianGIS}{\link{http://wiki.debian.org/DebianGis}{Debian GIS}\xspace}
+\newcommand{\DebiChem}{\link{http://alioth.debian.org/projects/debichem/}{DebiChem}\xspace}
+
+\newcommand{\DebianVendors}[1]{\link{http://www.debian.de/CD/vendors}{#1}\xspace}
+\newcommand{\DebianNetinst}[1]{\link{http://www.debian.org/distrib/netinst}{#1}\xspace}
+\newcommand{\DFSG}{\link{http://www.debian.org/social_contract\#guidelines}{Debian Free Software Guidelines}\xspace}
+\newcommand{\WNPP}{\link{http://www.debian.org/devel/wnpp/}{Work-Needing and Prospective Packages}\xspace}
+
+%%\def\@makehashletter{\catcode`\#11\relax}
+%%\def\@makehashother{\catcode`\#=12}
+%%\def\@makehashnormal{\catcode`\#=6}
+\newcommand{\CDDAlioth}[1]{\link{http://alioth.debian.org/projects/cdd/}{#1}\xspace}
+\newcommand{\CDDList}[1]{\link{http://lists.debian.org/debian-custom/}{#1}\xspace}
+\newcommand{\CDDSubversion}{\link{http://svn.debian.org/wsvn/cdd}{Subversion Repository}\xspace}
+\newcommand{\CDDDoc}[1]{\link{http://people.debian.org/\~tille/cdd/ch-todo.en.html\#s-liveCD}{#1}\xspace}
+\newcommand{\CDDTalkLiveCD}[1]{\link{http://people.debian.org/\~tille/cdd/ch-todo.en.html\#s-liveCD}{#1}\xspace}
+\newcommand{\CDDTalkNewMetapackages}[1]{\link{http://people.debian.org/~tille/cdd/ch-technology.en.html\#s-metapackages}{#1}\xspace}
+\newcommand{\CDDTalkNewCDD}[1]{\link{http://people.debian.org/\~tille/cdd/ch-starting.en.html}{#1}\xspace}
+\newcommand{\CDDTalkNewWay}[1]{\link{http://people.debian.org/\~tille/cdd/ch-todo.en.html\#s-new\_ways\_of\_distribution}{#1}\xspace}
+
+%%\newcommand{\AndreasTille}{\href{http://fam-tille.de}{\textit{Andreas Tille}}\xspace}
+\newcommand{\AndreasTille}{\link{http://fam-tille.de}{Andreas Tille}\xspace}
+%% how to write ~ syntactically right?
+%\newcommand{\atTalks}{\link{http://people.debian.org/~tille/talks}{Andreas Tille}
+%\newcommand{\atTalks}{\href{http://people.debian.org/\%7Etille/talks}{\lightblue\textit{Andreas Tille}}
+
+\newcommand{\ibm}{\link{http://www.ibm.com/}{IBM}\xspace}
+\newcommand{\mandrake}{\link{http://www.mandrakelinux.com/}{Mandrake}\xspace}
+\newcommand{\novell}{\link{http://www.novell.com/linux}{Novell}\xspace}
+\newcommand{\redhat}{\link{http://www.redhat.com/}{RedHat}\xspace}
+\newcommand{\suse}{\link{http://www.suse.com/}{SuSE}\xspace}
+\newcommand{\ubuntu}{\link{http://www.ubuntu.com/}{Ubuntu}\xspace}

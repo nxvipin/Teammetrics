@@ -1,0 +1,70 @@
+#!/bin/sh
+if [ "$VIEWER" = "" ] ; then
+    VIEWER=/usr/bin/evince
+fi
+if [ ! -x $VIEWER ] ; then
+    VIEWER=/usr/bin/acroread
+fi
+if [ ! -x $VIEWER ] ; then
+    VIEWER=/usr/bin/xpdf
+fi
+
+if ls | grep -w "^_.*\.mgp$" ; then
+    # MagicPoint-Datei gefunden
+    NAME=`ls _*.mgp | sed "s/^_//"`
+    cat _${NAME} | \
+	sed "s/^%\(%pause\)/\1/" | \
+	sed "s/^%\(%[lr]cutin\)/\1/" | \
+    cat > ${NAME}
+
+    TIME=`grep "^%[^#]*TIME" _${NAME} | head -n 1 | sed "s/.*TIME[[:space:]]*=[[:space:]]*\([0-9]*\).*/\1/"`
+    if [ _"$TIME" == _"" ] ; then
+	echo "Keine Zeitvorgabe"
+    else
+	TIME="-t ${TIME}"
+    fi
+    # COMMAND="/usr/bin/X11/mgp -U -g 1024x768 -o ${TIME} -x vflib"
+    COMMAND="/usr/bin/X11/mgp -o ${TIME} -x vflib"
+else
+    NUMPDF=`ls *.pdf | grep -v handout | wc -l`
+    if [ $NUMPDF -eq 1 ] ; then
+        NAME=`ls *.pdf | grep -v handout`
+	COMMAND=${VIEWER}
+    else
+	if [ _"$1" != _"" -a -e $1 ] ; then
+	    NAME=$1    
+	    COMMAND=${VIEWER}
+	else
+	    echo "Keine Präsentationsdatei gefunden."
+	    exit
+	fi
+    fi
+fi
+
+XSS=xscreensaver
+SAVER=0
+if [ `ps ax | grep -v grep | grep -c "${XSS}"` -gt 0 ] ; then
+   sudo killall ${XSS}
+   SAVER=1
+fi
+
+# Bildschirmumstellung
+XRANDR=0
+if [ -x /usr/bin/xrandr ] ; then
+   xrandr -s 1024x768
+   XRANDR=1
+fi
+
+gromit &
+${COMMAND} ${NAME}
+killall gromit
+
+if [ $XRANDR -eq 1 ] ; then
+   xrandr -s 1280x800
+fi
+
+if [ $SAVER -eq 1 -a -x /usr/bin/${XSS} ] ; then
+      nohup /usr/bin/${XSS} -no-splash 2> /dev/null &
+      sleep 1
+      rm -f nohup.out
+fi

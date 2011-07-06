@@ -16,7 +16,7 @@ from lxml import etree
 
 
 def main():
-    cmd = "svn log --xml {0}"
+    cmd = "svn log --xml"
     svn_log = shlex.split(cmd)
 
     process = subprocess.Popen(svn_log, 

@@ -1,0 +1,41 @@
+#!/bin/sh
+if ls | grep -w "^_.*\.mgp$" ; then
+    # MagicPoint-Datei gefunden
+    NAME=`ls _*.mgp | sed "s/^_//"`
+    cat _${NAME} | \
+	sed "s/^%\(%pause\)/\1/" | \
+	sed "s/^%\(%[lr]cutin\)/\1/" | \
+    cat > ${NAME}
+
+    TIME=`grep "^%[^#]*TIME" _${NAME} | head -n 1 | sed "s/.*TIME[[:space:]]*=[[:space:]]*\([0-9]*\).*/\1/"`
+    if [ _"$TIME" == _"" ] ; then
+	echo "Keine Zeitvorgabe"
+    else
+	TIME="-t ${TIME}"
+    fi
+    # COMMAND="/usr/bin/X11/mgp -U -g 1024x768 -o ${TIME} -x vflib"
+    COMMAND="/usr/bin/X11/mgp -o ${TIME} -x vflib"
+else
+    NUMPDF=`ls *.pdf | wc -l`
+    if [ $NUMPDF -eq 1 ] ; then
+        NAME=`ls *.pdf`
+	COMMAND=acroread
+    else
+	echo "Keine Präsentationsdatei gefunden."
+	exit
+    fi
+fi
+
+XSS=xscreensaver
+SAVER=0
+if [ `ps ax | grep -v grep | grep -c "${XSS}"` -gt 0 ] ; then
+   sudo killall ${XSS}
+   SAVER=1
+fi
+${COMMAND} ${NAME}
+
+if [ $SAVER -eq 1 -a -x /usr/bin/${XSS} ] ; then
+      nohup /usr/bin/${XSS} 2> /dev/null &
+      sleep 1
+      rm -f nohup.out
+fi

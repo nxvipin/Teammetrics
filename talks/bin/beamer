@@ -1,0 +1,52 @@
+#!/bin/sh -e
+## http://www.nefkom.net/georg.drenkhahn/prosper/
+
+if [ "$VIEWER" = "" ] ; then
+    VIEWER=/usr/bin/evince
+fi
+if [ ! -x $VIEWER ] ; then
+    VIEWER=/usr/bin/acroread
+fi
+if [ ! -x $VIEWER ] ; then
+    VIEWER=/usr/bin/xpdf
+fi
+
+if [ _"$1" = _"" ] ; then
+    echo "What?"
+    exit -1
+fi
+
+file=`basename $1 .tex`
+
+if [ "$file" = "$1" ] ; then
+    echo "Ups $1 seems to be no LaTeX file."
+    exit -1
+fi
+
+if [ ! -e "$file".tex ] ; then
+    echo "File "$file".tex not found."
+    exit -1
+fi
+
+export TEXINPUTS=".:../inputs:../img:$TEXINPUTS"
+pdflatex --shell-escape ${file}.tex
+if ls ${file}.bib 2> /dev/null > /dev/null ; then
+    bibtex ${file}
+fi
+pdflatex --shell-escape ${file}.tex
+# dvips -o ${file}.ps ${file}.dvi
+# ps2pdf ${file}.ps 
+cleantex
+rm -f  ${file}.ps 
+
+$VIEWER ${file}.pdf
+## Acrobat 7.0 kennt kein -visual
+# acroread -visual best ${file}.pdf
+# xpdf  -fullscreen ${file}.pdf
+
+exit
+#or with the dvi2pdf script:
+
+  latex file
+  dvi2pdf file
+

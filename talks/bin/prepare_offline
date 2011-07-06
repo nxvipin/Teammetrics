@@ -1,0 +1,18 @@
+#!/bin/sh
+HTMLDIR=/var/lib/gforge/chroot/home/groups/debian-med/htdocs/tasks
+SHOTDIR=/var/lib/gforge/chroot/home/groups/screenshots
+
+for shot in `grep -h screenshots.debian.net ${HTMLDIR}/*.en.html | \
+   grep -v uploadfile | \
+   sed 's?.*="http://screenshots.debian.net/screenshots/\([a-z]/[^/]\+/[0-9]\+\)_[ls][am][ra][gl][el].png.*?\1?' | \
+   sort | uniq` ; do
+    echo "$shot (`dirname $shot`)"
+    mkdir -p "$SHOTDIR"/`dirname $shot`
+    wget -q -N http://screenshots.debian.net/screenshots/${shot}_small.png
+    mv `basename $shot`_small.png ${SHOTDIR}/`dirname $shot`
+    wget -q -N http://screenshots.debian.net/screenshots/${shot}_large.png
+    mv `basename $shot`_large.png ${SHOTDIR}/`dirname $shot`
+done
+
+
+# src="http://screenshots.debian.net/screenshots/k/kbibtex/1827_small.png"

@@ -1,0 +1,36 @@
+#!/bin/sh -e
+## http://www.nefkom.net/georg.drenkhahn/prosper/
+
+if [ _"$1" = _"" ] ; then
+    echo "What?"
+    exit
+fi
+
+file=`basename $1 .tex`
+
+if [ "$file" = "$1" ] ; then
+    echo "Ups $1 seems to be no LaTeX file."
+    exit
+fi
+
+article=${file}_handout
+# sed "s/\(\\mode<\)presentation/\1handout/" ${file}.tex > ${article}.tex
+# sed -e "s/\(\\documentclass.*{\)beamer}/\1article}\\
+# \\\\usepackage{beamerarticle}/" \
+#     ${file}.tex > ${article}.tex
+sed -e "s/\(\\usetheme{\).*}/\1Handout}/" \
+    -e "s/\(\\documentclass\).*\({beamer}\)/\1[handout]\2/" \
+    ${file}.tex > ${article}.tex
+
+#cp -a ${file}.tex ${article}.tex
+
+export TEXINPUTS=".:../inputs:../img:$TEXINPUTS"
+pdflatex --shell-escape ${article}.tex
+pdflatex --shell-escape ${article}.tex
+#latex ${article}.tex
+#latex ${article}.tex
+#dvips -P pdf ${article}.dvi
+cleantex
+#rm -f  ${file}.ps 
+
+rm -f ${article}.tex
