@@ -221,7 +221,11 @@ def parse_and_save(mbox_files, mbox_hashes):
             get_date = message['Date']
             parsed_date = email.utils.parsedate(get_date)
             format_date = datetime.datetime(*parsed_date[:4])
-            archive_date = format_date.strftime("%Y-%m-%d")
+            try:
+                archive_date = format_date.strftime("%Y-%m-%d") 
+            except ValueError:
+                logging.error(detail)
+                continue
             
             raw_subject = ' '.join(message['Subject'].split())
             decoded_subject = email.header.decode_header(raw_subject)

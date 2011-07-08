@@ -25,8 +25,10 @@ import liststat
 
 NNTP_CONF_FILE = 'nntplists.hash'
 NNTP_CONF_SAVE_PATH = os.path.join(liststat.ARCHIVES_SAVE_DIR, 
-                                      liststat.PROJECT_DIR,
-                                      NNTP_CONF_FILE)
+                                  liststat.PROJECT_DIR,
+                                  NNTP_CONF_FILE)
+
+ARCHIVES_FILE_PATH = liststat.ARCHIVES_FILE_PATH
 
 NNTP_SERVER = 'news.gmane.org'
 NNTP_LIST = 'http://list.gmane.org'
@@ -133,7 +135,7 @@ def format_mail_name(from_field):
     return email, name
 
 
-def nntp_to_mbox(lst_name, frm, date, sub, msg, body, last):
+def nntp_to_mbox(lst_name, lst_url, frm, date, sub, msg, body, first, last):
     """Convert the information fetched from the NNTP server to a mbox archive."""
 
     mbox_format = """From {0}
@@ -142,7 +144,10 @@ Date: {2}
 Subject: {3}
 Message-ID: {4}
 """
-    with open('mbox_file', 'w') as mbox_file:
+    mbox_file_name = '{0}-{1}-{2}.mbox'.format(lst_name, first, last)
+    mbox_file_path = os.path.join(ARCHIVES_FILE_PATH, mbox_file_name)
+
+    with open(mbox_file_path, 'w') as mbox_file:
         for f, d, s, m, b in zip(frm, date, sub, msg, body):
 
             email, name = format_mail_name(f)
@@ -153,10 +158,14 @@ Message-ID: {4}
             mbox_file.write(mbox_format.format(f_one, f_two, d, s, m)) 
             mbox_file.write(b)
 
-        save_parsed_lists(lst_name, last)
+    logging.info('mbox archive saved for %s' % lst_name)
+    save_parsed_lists(lst_name, last)
 
-    logging.info('Quit')
-    sys.exit()
+    # Now call liststat.parse_and_save which handles parsing of the mbox
+    # archives and implements the various metrics which measure performance.
+    # This takes a mapping of list-URL to local path, so we fake that.
+    mbox_parse = {lst_url:mbox_file_path}
+    liststat.parse_and_save(mbox_parse, mbox_hashes={})
 
 
 def main():
@@ -197,7 +206,7 @@ def main():
 
             try:
                 response, count, first, last, name = conn.group(group_name)
-            except nntplib.NNTPTemporaryError as detail:
+            except (nntplib.NNTPTemporaryError, EOFError) as detail:
                 logging.error(detail)
                 counter += 1
                 continue
@@ -217,10 +226,10 @@ def main():
                     counter += 1
                     continue
                 if last > last_run:
+                    logging.info('Last run ended at message %d', first)
                     first = last_run+1
 
-            logging.info('Downloading messages from %d - %d' % (first, last))
-            count = (last - first)+1
+            count = (last - first) + 1
             logging.info('Fetching message bodies for %d articles...' % count)
 
             msg_range = str(first) + '-' + str(last)
@@ -235,23 +244,25 @@ def main():
             resp, subject_lst = conn.xhdr('Subject', msg_range)
 
             body = []
+            msg_counter = 1
             for i in range(first, last+1):
                 try:
                     resp, article_id, msg_id, msg = conn.body(str(i))
                     msg_id_lst.append(msg_id)
                     body.append('\n'.join(msg))
+                    msg_counter += 1
                 except nntplib.NNTPTemporaryError as detail:
                     continue
 
-            logging.info('Fetched the message bodies')
+            logging.info('Fetched %d message bodies', msg_counter)
 
             from_lst = [frm for (article_id, frm) in from_lst]
             date_lst = [date for (article_id, date) in date_lst]
             subject_lst = [subject for (article_id, subject) in subject_lst]
 
-            nntp_to_mbox(lst_name, 
+            nntp_to_mbox(lst_name, lst,
                         from_lst, date_lst, subject_lst, msg_id_lst, 
-                        body, last)
+                        body, first, last)
 
             counter += 1
 

@@ -27,7 +27,7 @@ NAMES = {
             'Alessio Treglia':          {'author': ('quadrispro-guest', 'alessio')},
             'Alexandre Mestiashvili':   {'author': 'Alex Mestiashvili'},
             'Andreas Putzo':            {'author': 'nd-guest'},
-            'Andreas Tille':            {'author': ('tille', 'tillea', 'TilleA')},
+            'Andreas Tille':            {'author': ('tille', 'tillea', 'TilleA', '"Tille, Andreas"')},
             'Andres Mejia':             {'author': 'ceros-guest'},
             'Andrew Lee':               {'author': 'ajqlee'},
             'Benjamin Drung':           {'author': 'bdrung-guest'},
