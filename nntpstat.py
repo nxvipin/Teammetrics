@@ -151,7 +151,11 @@ Message-ID: {4}
         for f, d, s, m, b in zip(frm, date, sub, msg, body):
 
             email, name = format_mail_name(f)
-            updated_date = asctime_update(d)
+            try:
+                updated_date = asctime_update(d)
+            except TypeError as detail:
+                logging.error(detail)
+                continue
             f_one = '{0}  {1}'.format(email, updated_date)
             f_two = '{0} ({1})'.format(email, name)
           
@@ -229,8 +233,8 @@ def main():
                     logging.info('Last run ended at message %d', first)
                     first = last_run+1
 
-            count = (last - first) + 1
-            logging.info('Fetching message bodies for %d articles...' % count)
+            logging.info('Fetching message bodies for '
+                                            'articles %d - %d' % (first, last))
 
             msg_range = str(first) + '-' + str(last)
 

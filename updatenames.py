@@ -66,7 +66,7 @@ NAMES = {
             'Loïc Minier':              {'author': ('lool-guest', 'lool')},
             'M. Christophe Mutricy':    {'author': 'xtophe-guest'},
             'Martin-Éric Racine':       {'like': 'Martin-%ric% Racine'},
-            'Mathieu Malaterre':        {'author': 'malat-guest'},
+            'Mathieu Malaterre':        {'author': ('malat-guest', '"Mathieu Malaterre"')},
             'Mathieu Parent':           {'author': ('mparent-guest', 'Mathieu PARENT', 'sathieu')},
             'Michael Banck':            {'author': 'mbanck'},
             'Michael Hanke':            {'author': 'mhanke-guest'},
