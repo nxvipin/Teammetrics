@@ -49,6 +49,7 @@ NAMES = {
             'Filippo Rusconi':          {'author': ('Filippo Rusconi (Debian Maintainer)', 'rusconi')},
             'Francesco P. Lovergine':   {'like': 'Francesco%Lovergine', 'or': 'frankie'},
             'Frederic Lehobey':         {'author': ('fdl-guest', 'Frederic Daniel Luc Lehobey')},
+            'Georges Khaznadar':        {'author': 'georgesk'},
             'Giovanni Mascellani':      {'author': 'gmascellani-guest'},
             'Guido Günther':            {'author': ('Guido G&#252;nther', 'Guido Guenther')},
             'Hans-Christoph Steiner':   {'author': 'eighthave-guest'},
@@ -60,6 +61,7 @@ NAMES = {
             'Jonas Smedegaard':         {'author': 'js'},
             'Jordan Mantha':            {'author': 'laserjock-guest'},
             'Jérôme Warnier':           {'like': 'Jerome Warnier'},
+            'Karol Langner':            {'author': 'klm-guest'},
             'L. V. Gandhi':             {'author': ('L . V . Gandhi', 'L.V.Gandhi')},
             'LI Daobing':               {'author': 'lidaobing-guest'},
             'Linas Zvirblis':           {'like': 'Linas %virblis'},
@@ -99,42 +101,35 @@ NAMES = {
             'Yaroslav Halchenko':       {'author': ('yoh-guest', 'yoh')},
         }
 
+# new-name: old-name.
+PROJECTS = {
+            'blends': 'custom'
+           }
 
-def update_names(cur, conn):
+
+def update_names(cur, conn, table='listarchives'):
     """Update the names with the items in NAMES."""
     for key, item in NAMES.iteritems():
         # 'like' and 'or'
         if 'like' in NAMES[key] and 'or' in NAMES[key]:
-            try:
-                cur.execute(
-                            """UPDATE listarchives
-                            SET name = %s 
-                            WHERE name LIKE %s
-                            OR name = %s;""", (key, 
-                                        NAMES[key]['like'], 
-                                        NAMES[key]['or'])
-                            )
-            except psycopg2.DataError as detail:
-                conn.rollback()
-                logging.error(detail)
-                continue
-
+            cur.execute(
+                        """UPDATE %s
+                        SET name = %s 
+                        WHERE name LIKE %s
+                        OR name = %s;""", (table, key, 
+                                    NAMES[key]['like'], 
+                                    NAMES[key]['or'])
+                        )
             conn.commit()
             continue
 
         # 'like'
         if 'like' in NAMES[key]:
-            try:
-                cur.execute(
-                            """UPDATE listarchives
-                            SET name = %s
-                            WHERE name LIKE %s;""", (key, NAMES[key]['like'])
-                            )
-            except psycopg2.DataError as detail:
-                conn.rollback()
-                logging.error(detail)
-                continue
-
+            cur.execute(
+                        """UPDATE %s
+                        SET name = %s
+                        WHERE name LIKE %s;""", (table, key, NAMES[key]['like'])
+                        )
             conn.commit()
             continue
 
@@ -142,17 +137,11 @@ def update_names(cur, conn):
         if 'author' in NAMES[key]:
             author = NAMES[key]['author']
             if isinstance(author, basestring):
-                try:
-                    cur.execute(
-                                """UPDATE listarchives
-                                SET name = %s
-                                WHERE name = %s;""", (key, author)
-                                )
-                except psycopg2.DataError as detail:
-                    conn.rollback()
-                    logging.error(detail)
-                    continue
-
+                cur.execute(
+                            """UPDATE %s
+                            SET name = %s
+                            WHERE name = %s;""", (table, key, author)
+                            )
                 conn.commit()
                 continue
             else:
@@ -160,21 +149,26 @@ def update_names(cur, conn):
                 for names in author:
                     author_lst.append(names)
 
-                query = """UPDATE listarchives 
+                query = """UPDATE %s 
                         SET name = %s 
                         WHERE name = %s""" 
 
                 for i in range(len(author_lst)-1):
                     query += " OR name = %s"
-                author_lst.insert(0, key)
+                author_lst.insert(0, table)
+                author_lst.insert(1, key)
                 query += ';'
 
-                try:
-                    cur.execute(query, author_lst)
-                except psycopg2.DataError as detail:
-                    conn.rollback()
-                    logging.error(detail)
-                    continue
-
+                cur.execute(query, author_lst)
                 conn.commit()
                 continue
+    
+    # Update the project names in format of old-name: new-name.
+    for new_name, old_name in PROJECTS.iteritems():
+        cur.execute(
+                    """UPDATE %s
+                    SET project = %s
+                    WHERE project = %s;""", (table, new_name, old_name)
+                    )
+        conn.commit()
+        continue
