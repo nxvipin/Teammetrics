@@ -112,24 +112,20 @@ def update_names(cur, conn, table='listarchives'):
     for key, item in NAMES.iteritems():
         # 'like' and 'or'
         if 'like' in NAMES[key] and 'or' in NAMES[key]:
-            cur.execute(
-                        """UPDATE %s
-                        SET name = %s 
-                        WHERE name LIKE %s
-                        OR name = %s;""", (table, key, 
-                                    NAMES[key]['like'], 
-                                    NAMES[key]['or'])
-                        )
+            query = """UPDATE {0}
+                       SET name = %s 
+                       WHERE name LIKE %s
+                       OR name = %s;""".format(table) 
+            cur.execute(query, (key, NAMES[key]['like'], NAMES[key]['or']))
             conn.commit()
             continue
 
         # 'like'
         if 'like' in NAMES[key]:
-            cur.execute(
-                        """UPDATE %s
-                        SET name = %s
-                        WHERE name LIKE %s;""", (table, key, NAMES[key]['like'])
-                        )
+            query = """UPDATE {0}
+                       SET name = %s
+                       WHERE name LIKE %s;""".format(table)
+            cur.execute(query, (key, NAMES[key]['like']))
             conn.commit()
             continue
 
@@ -137,11 +133,10 @@ def update_names(cur, conn, table='listarchives'):
         if 'author' in NAMES[key]:
             author = NAMES[key]['author']
             if isinstance(author, basestring):
-                cur.execute(
-                            """UPDATE %s
-                            SET name = %s
-                            WHERE name = %s;""", (table, key, author)
-                            )
+                query = """UPDATE {0}
+                           SET name = %s
+                           WHERE name = %s;""".format(table)
+                cur.execute(query, (key, author))
                 conn.commit()
                 continue
             else:
@@ -149,14 +144,13 @@ def update_names(cur, conn, table='listarchives'):
                 for names in author:
                     author_lst.append(names)
 
-                query = """UPDATE %s 
+                query = """UPDATE {0}
                         SET name = %s 
-                        WHERE name = %s""" 
+                        WHERE name = %s""".format(table)
 
                 for i in range(len(author_lst)-1):
                     query += " OR name = %s"
-                author_lst.insert(0, table)
-                author_lst.insert(1, key)
+                author_lst.insert(0, key)
                 query += ';'
 
                 cur.execute(query, author_lst)
@@ -165,10 +159,9 @@ def update_names(cur, conn, table='listarchives'):
     
     # Update the project names in format of old-name: new-name.
     for new_name, old_name in PROJECTS.iteritems():
-        cur.execute(
-                    """UPDATE %s
-                    SET project = %s
-                    WHERE project = %s;""", (table, new_name, old_name)
-                    )
+        query = """UPDATE {0}
+                   SET project = %s
+                   WHERE project = %s;""".format(table)
+        cur.execute(query, (new_name, old_name))                    
         conn.commit()
         continue

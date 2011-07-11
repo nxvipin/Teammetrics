@@ -440,9 +440,6 @@ if __name__ == '__main__':
     # Initialize the logging.
     start_logging()
     logging.info('\t\tStarting ListStat')
-
-    # Get the configuration.
-    conf_info, total_lists = get_configuration()
     
     # Check whether the DATABASE dictionary is populated.
     if not DATABASE['name']:
@@ -468,4 +465,7 @@ if __name__ == '__main__':
     if not os.path.isfile(HASH_FILE_PATH):
         open(HASH_FILE_PATH, 'w').close()
 
+    # Get the configuration.
+    conf_info, total_lists = get_configuration()
+    
     main(conf_info, total_lists)
