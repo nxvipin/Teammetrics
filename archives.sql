@@ -22,6 +22,7 @@ CREATE TABLE listarchives (
 
 CREATE TABLE gitstat (
     project             text,
+    package             text,
     name                text,
     changes             int,
     lines_inserted      int,
