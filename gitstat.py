@@ -21,8 +21,8 @@ import psycopg2
 import updatenames
 
 SERVER = 'vasks.debian.org'
-PASSWORD = ''
 USER = ''
+PASSWORD = ''
 
 CONF_FILE = 'commitinfo.conf'
 CONF_FILE_PATH = os.path.join('/etc/teammetrics', CONF_FILE)
@@ -39,9 +39,10 @@ def get_configuration():
     # Create a mapping of the list name to the address(es).
     team_names = {}
     for section in sections:
+        teams = []
         # In case the url and lists options are not found, skip the section.
         try:
-            team = config.get(section, 'team')
+            team = config.get(section, 'team').splitlines()
         except ConfigParser.NoOptionError as detail:
             logging.error(detail)
             continue
@@ -50,8 +51,11 @@ def get_configuration():
             continue
 
         # Mapping of list-name to list URL (or a list of list-URLs).
-        team_names[section] = team
-
+        teams.append(team)
+        # Flatten the list. 
+        teams = sum(teams, [])
+        team_names[section] = teams
+    
     return team_names
 
 
@@ -61,7 +65,8 @@ def fetch_logs(ssh):
 
     team_conf = get_configuration()
     for name, team_name in team_conf.iteritems():
-        teams.append(team_name)
+        for each_team in team_name:
+            teams.append(each_team)
 
     # Connect to the database and clear the table.
     conn = psycopg2.connect(database='teammetrics')
