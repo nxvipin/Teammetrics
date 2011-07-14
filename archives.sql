@@ -20,9 +20,10 @@ CREATE TABLE listarchives (
     msg_no_sig_len      int
 );
 
-CREATE TABLE gitstat (
+CREATE TABLE commitstat (
     project             text,
     package             text,
+    vcs                 text,
     name                text,
     changes             int,
     lines_inserted      int,
