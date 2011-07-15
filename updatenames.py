@@ -107,7 +107,7 @@ PROJECTS = {
            }
 
 
-def update_names(cur, conn, table='listarchives'):
+def update_names(conn, cur, table='listarchives'):
     """Update the names with the items in NAMES."""
     for key, item in NAMES.iteritems():
         # 'like' and 'or'

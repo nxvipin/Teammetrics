@@ -18,9 +18,11 @@ import logging
 import subprocess
 import ConfigParser
 
+import psycopg2
 import paramiko
 
 from repository import gitstat
+from repository import svnstat
 
 LOG_FILE = 'commitstat.log'
 LOG_SAVE_DIR = '/var/log/teammetrics'
@@ -28,9 +30,6 @@ LOG_FILE_PATH = os.path.join(LOG_SAVE_DIR, LOG_FILE)
 
 CONF_FILE = 'commitinfo.conf'
 CONF_FILE_PATH = os.path.join('/etc/teammetrics', CONF_FILE)
-
-SVN_REPO = 'svn://anonscm.debian.org'
-GIT_REPO = 'git://anonscm.debian.org/git'
 
 SERVER = 'vasks.debian.org'
 USER = ''
@@ -161,11 +160,33 @@ def get_stats():
     """Generate statistics for Git and SVN repositories."""
     ssh, git, svn, svn_git = detect_vcs()
 
+    # Connect to the database and clear the existing records.
+    conn = psycopg2.connect(database='teammetrics')
+    cur = conn.cursor()
+    cur.execute("""DELETE FROM commitstat;""");
+    conn.commit()
+    
     # First call the Git repositories.
-    logging.info('There are %d Git repositories' % len(git))
-    gitstat.fetch_logs(ssh, git)
+    if git:
+        logging.info('There are %d Git repositories' % len(git))
+        gitstat.fetch_logs(ssh, conn, cur, git)
+    else:
+        logging.info('No Git repositories found')
 
+    # Now fetch the SVN repositories.
+    if svn:
+        logging.info('There are %d SVN repositories' % len(svn))
+        svnstat.fetch_logs(conn, cur, svn)
+    else:
+        logging.info('No SVN repositories found')
+
+    # Update the names.
+    updatenames.update_names(conn, cur, table='commitstat')
+
+    cur.close()
+    conn.close()
     ssh.close()
+
     sys.exit('done')
 
 

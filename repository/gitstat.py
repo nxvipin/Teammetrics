@@ -21,13 +21,8 @@ import psycopg2
 import updatenames
 
 
-def fetch_logs(ssh, teams):
-    # Connect to the database and clear the existing Git records.
-    conn = psycopg2.connect(database='teammetrics')
-    cur = conn.cursor()
-    cur.execute("""DELETE FROM commitstat WHERE vcs='git';""");
-    conn.commit()
-
+def fetch_logs(ssh, conn, cur, teams):
+    """Fetch and save the logs for Git repositories by SSHing into Alioth."""
     for team in teams:
         # Get the directory listing.
         cwd = '/git/{0}'.format(team)
@@ -84,8 +79,4 @@ def fetch_logs(ssh, teams):
                     print detail
                     continue
 
-    # Update the names.
-    updatenames.update_names(cur, conn, table='commitstat')
-
-    cur.close()
-    conn.close()
+    logging.info('Git logs saved...')
