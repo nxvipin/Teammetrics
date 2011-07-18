@@ -14,6 +14,7 @@ There is support for fetching statistics of multiple packages per team also.
 import os
 import sys
 import socket
+import logging
 import ConfigParser
 
 import psycopg2

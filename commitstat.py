@@ -21,6 +21,8 @@ import ConfigParser
 import psycopg2
 import paramiko
 
+import updatenames
+
 from repository import gitstat
 from repository import svnstat
 
@@ -123,7 +125,7 @@ def fetch_vcs(ssh):
         team_lst[each] = stdout.read().splitlines()
 
     # Get the users registered on Alioth. 
-    stdin, stdout, stderr = ssh.exec_command("getend passwd")
+    stdin, stdout, stderr = ssh.exec_command('getent passwd')
     output = stdout.read().splitlines()
     alioth_users = [element.split(':')[4] for element in output] 
 
