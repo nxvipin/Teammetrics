@@ -11,30 +11,20 @@ the metrics of:
 
 import os
 import sys
-import shlex
+import logging
 import subprocess
 import collections
 
 from lxml import etree
 
-SVN_REPO = 'svn://anonscm.debian.org'
 
-
-def fetch_logs(conn, cur, teams):
+def fetch_logs(ssh, conn, cur, teams):
     """Fetch and save the logs for SVN repositories."""
     for team in teams:
-        url = '{0}/{1}'.format(SVN_REPO, team)
-        cmd = 'svn log --xml {0}'.format(url)
-        log_cmd = shlex.split(cmd)
+        cmd = 'svn log --xml file:///svn/{0}/'.format(team)
 
-        output, error = subprocess.Popen(log_cmd, 
-                                         stdout=subprocess.PIPE,
-                                         stderr=subprocess.PIPE).communicate()
-        if error:
-            logging.error('An error has occurred %s' % error)
-            continue
-
-        output_xml = etree.fromstring(output)
+        stdin, stdout, stderr = ssh.exec_command(cmd)
+        output_xml = etree.fromstring(stdout.read())
 
         # Get the list of committers and their revisions from the repository.
         author_info = collections.defaultdict(list)
@@ -51,16 +41,10 @@ def fetch_logs(conn, cur, teams):
 
             # Fetch the diff for each revision of an author.
             for change in revision:
-                cmd = 'svn diff -c {0} {1}'.format(change, url) 
-                rev_cmd = shlex.split(cmd)
+                cmd = 'svn diff -c {0} file:///svn/{1}/'.format(change, team) 
+                stdin, stdout, stderr = ssh.exec_command(cmd)
 
-                output, error = subprocess.Popen(rev_cmd, 
-                                            stdout=subprocess.PIPE,
-                                            stderr=subprocess.PIPE).communicate()
-                
-                if error:
-                    logging.error('Error fetching diff for revision %d' % change)
-                
+                output = stdout.read()
                 lines = [line for line in output.splitlines() 
                                                         if line.startswith('+') 
                                                         or line.startswith('-')]
