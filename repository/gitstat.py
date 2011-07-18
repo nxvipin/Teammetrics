@@ -21,7 +21,7 @@ import psycopg2
 import updatenames
 
 
-def fetch_logs(ssh, conn, cur, teams):
+def fetch_logs(ssh, conn, cur, teams, users):
     """Fetch and save the logs for Git repositories by SSHing into Alioth."""
     for team in teams:
         # Get the directory listing.
@@ -44,6 +44,11 @@ def fetch_logs(ssh, conn, cur, teams):
 
             # Fetch the commit details for each author.
             for author in authors:
+                # For upstream contributors, filter them from the team.
+                if not author in users:
+                    logging.info('Upstream author %s' % author)
+                    continue
+
                 insertions = []
                 deletions = []
                 stat_cmd = ("git --git-dir={0} log --author='^{1}' "

@@ -122,10 +122,15 @@ def fetch_vcs(ssh):
         stdin, stdout, stderr = ssh.exec_command("ls {0}".format(cwd))
         team_lst[each] = stdout.read().splitlines()
 
+    # Get the users registered on Alioth. 
+    stdin, stdout, stderr = ssh.exec_command("getend passwd")
+    output = stdout.read().splitlines()
+    alioth_users = [element.split(':')[4] for element in output] 
+
     git = team_lst['git']
     svn = team_lst['svn']
 
-    return git, svn
+    return git, svn, alioth_users
 
 
 def detect_vcs():
@@ -144,21 +149,30 @@ def detect_vcs():
     ssh = ssh_initialize()
 
     # Get the VCS used by all the teams.
-    git, svn = fetch_vcs(ssh)
+    git, svn, users = fetch_vcs(ssh)
     # Teams that use both SVN and Git.
     svn_and_git = list(set(svn) & set(git))
 
     # Parse the teams corresponding to their VCS.
     git_lst = list(set(git) & set(teams))
     svn_lst = list(set(svn) & set(teams))
+    # Teams using both repositories.
     svn_git_lst = list(set(svn_and_git) & set(teams))
 
-    return ssh, git_lst, svn_lst, svn_and_git
+    # Teams which don't use either Git or SVN and will be investigated later.
+    all_teams = list(set(git_lst) | set(svn_lst))
+    missing_teams = list(set(teams)- set(all_teams))
+    if not missing_teams:
+        logging.warning('Teams not using Git or SVN or are missing: ')
+        for each in missing_teams:
+            loggging.warning('%s' % each)
+
+    return ssh, git_lst, svn_lst, svn_and_git, users
 
 
 def get_stats():
     """Generate statistics for Git and SVN repositories."""
-    ssh, git, svn, svn_git = detect_vcs()
+    ssh, git, svn, svn_git, users = detect_vcs()
 
     # Connect to the database and clear the existing records.
     conn = psycopg2.connect(database='teammetrics')
@@ -169,14 +183,14 @@ def get_stats():
     # First call the Git repositories.
     if git:
         logging.info('There are %d Git repositories' % len(git))
-        gitstat.fetch_logs(ssh, conn, cur, git)
+        gitstat.fetch_logs(ssh, conn, cur, git, users)
     else:
         logging.info('No Git repositories found')
 
     # Now fetch the SVN repositories.
     if svn:
         logging.info('There are %d SVN repositories' % len(svn))
-        svnstat.fetch_logs(conn, cur, svn)
+        svnstat.fetch_logs(ssh, conn, cur, svn)
     else:
         logging.info('No SVN repositories found')
 
