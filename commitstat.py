@@ -164,7 +164,7 @@ def detect_vcs():
     # Teams which don't use either Git or SVN and will be investigated later.
     all_teams = list(set(git_lst) | set(svn_lst))
     missing_teams = list(set(teams)- set(all_teams))
-    if not missing_teams:
+    if missing_teams:
         logging.warning('Teams not using Git or SVN or are missing: ')
         for each in missing_teams:
             loggging.warning('%s' % each)

@@ -17,9 +17,42 @@ import collections
 
 from lxml import etree
 
+REVISION_FILE = 'revisions.hash'
+REVISION_FILE_PATH = os.path.join('/var/cache/teammetrics', REVISION_FILE)
+
+
+def get_revisions():
+    """Fetch the revisions that have already been saved."""
+    revisions = {}
+    try:
+        with open(REVISION_FILE_PATH) as f:
+            reader.csv.reader(f, delimiter=':')
+            try:
+                for row in reader:
+                    change = row[1].split(',')
+                    revisions[row[0]] = change
+            except (csv.Error, IndexError) as detail:
+                logging.error(detail)
+                sys.exit()
+    except IOError: 
+        revisions = {}
+
+    return revisions
+
+
+def save_revisions(revisions):
+    """Save the revisions to REVISION_FILE."""
+    with open(REVISION_FILE_PATH, 'a') as f:
+        writer = csv.writer(f, delimiter=':')
+        writer.write(revisions.iteritems())
+
+    logging.info('Done writing revisions')
+
 
 def fetch_logs(ssh, conn, cur, teams):
     """Fetch and save the logs for SVN repositories."""
+    revisions = {}
+    done_revisions = get_revisions()
     for team in teams:
         cmd = 'svn log --xml file:///svn/{0}/'.format(team)
 
@@ -39,8 +72,14 @@ def fetch_logs(ssh, conn, cur, teams):
             author = committer
             changes = len(author_info[committer])
 
-            # Fetch the diff for each revision of an author.
+            # Fetch the diff for each revision of an author. If the revision
+            # has already been downloaded, it won't be downloaded again.
             for change in revision:
+                if team in done_revisions:
+                    if change in done_revisions[team]:
+                        logging.info('Skipping already done archive')
+                        continue
+
                 cmd = 'svn diff -c {0} file:///svn/{1}/'.format(change, team) 
                 stdin, stdout, stderr = ssh.exec_command(cmd)
 
@@ -70,7 +109,12 @@ def fetch_logs(ssh, conn, cur, teams):
                     conn.commit()
                 except psycopg2.DataError as detail:
                     conn.rollback()
-                    print detail
+                    logging.error(detail)
                     continue
+
+        revisions[team] = author_info.values()
+
+    # Update the revisions.
+    save_revisions(revisions)
 
     logging.info('SVN logs saved...')
