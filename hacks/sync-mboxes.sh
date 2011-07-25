@@ -6,6 +6,7 @@ mkdir -p $CACHEDIR
 
 LISTS="debian-accessibility \
        debian-amd64 \
+       debian-announce \
        debian-arm \
        debian-blends debian-custom \
        debian-boot \
@@ -13,18 +14,36 @@ LISTS="debian-accessibility \
        debian-curiosa \
        debian-derivatives \
        debian-devel \
-       debian-announce \
-       debian-games \
        debian-edu \
        debian-embedded \
        debian-enterprise \
        debian-firewall \
        debian-gis \
        debian-i18n \
-       debiab-isp \
+       debian-isp \
+       debian-jr \
+       debian-kde \
+       debian-kernel \
+       debian-l10n-german \
+       debian-laptop \
+       debian-legal \
+       debian-lex \
+       debian-live \
        debian-med \
+       debian-mentors \
+       debian-mips \
+       debian-multimedia \
+       debian-newmaint \
+       debian-ocaml-maint \
+       debian-openoffice \
+       debian-perl \
+       debian-policy \
+       debian-project \
+       debian-python \
+       debian-qa \
        debian-science"
 
+# set -x
 for list in $LISTS ; do
 	rsync -a master.debian.org:/home/debian/lists/$list $CACHEDIR
 done
