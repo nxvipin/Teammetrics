@@ -6,6 +6,7 @@ mkdir -p $CACHEDIR
 
 LISTS="debian-accessibility \
        debian-amd64 \
+       debian-announce \
        debian-arm \
        debian-blends debian-custom \
        debian-boot \
@@ -13,8 +14,6 @@ LISTS="debian-accessibility \
        debian-curiosa \
        debian-derivatives \
        debian-devel \
-       debian-announce \
-       debian-games \
        debian-edu \
        debian-embedded \
        debian-enterprise \
