@@ -59,7 +59,6 @@
   \end{itemize}
 \end{frame}
 
-
 \section{GSoC Project}
 
 \begin{frame}
@@ -91,15 +90,20 @@
 
  \begin{itemize}
     \item Frequency of posting 
+    \pause
     \item Message body metrics 
     \begin{itemize}
         \item the raw length of the message body
-        \item the length of the body excluding 
+        \pause
+        \item the length of the body \textit{excluding}
 
         \begin{itemize}
             \item blank lines
+            \pause
             \item blank lines and quotes
+            \pause
             \item blank lines, quotes and signatures
+            \pause
         \end{itemize}
 
     \end{itemize}
@@ -108,6 +112,38 @@
     \item Anything more that we can add? 
 
  \end{itemize}
+\end{frame}
+
+\begin{frame}
+ \frametitle{Sample result from a mailing list}
+ \begin{itemize}
+   \item How about teammetrics or soc-coordination?
+ \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Metrics for VCS}
+    \begin{itemize}
+        \item Frequency of commits for Git and SVN repositories
+        \pause
+        \item But again, quantity != quality
+        \pause
+        \item So we also measure the number of lines:
+        \begin{itemize}
+            \item (+) added
+            \item (-) deleted
+        \end{itemize}
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Nooooooo!}
+    \begin{itemize}
+        \item Complain that the number of lines is a poor metric but then we don't have anything other than this
+    \end{itemize}
+    % Insert Darth Vader image of NOOOOOOOOOOOOOO here.
 \end{frame}
 
 \end{document}
