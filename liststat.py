@@ -300,7 +300,7 @@ def parse_and_save(mbox_files, mbox_hashes):
         logging.info('%s parsed' % mailing_list)
 
     logging.info('Updating names')
-    updatenames.update_names(cur, conn)
+    updatenames.update_names(conn, cur)
     logging.info('Names updated')
 
     cur.close()
