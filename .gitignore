@@ -1,0 +1,5 @@
+# PDF files.
+*.pdf
+
+# Python byte code.
+*.pyc
