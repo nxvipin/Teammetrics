@@ -21,10 +21,30 @@ LISTS="debian-accessibility \
        debian-firewall \
        debian-gis \
        debian-i18n \
-       debiab-isp \
+       debian-isp \
+       debian-jr \
+       debian-kde \
+       debian-kernel \
+       debian-l10n-german \
+       debian-laptop \
+       debian-legal \
+       debian-lex \
+       debian-live \
        debian-med \
+       debian-mentors \
+       debian-mips \
+       debian-multimedia \
+       debian-newmaint \
+       debian-ocaml-maint \
+       debian-openoffice \
+       debian-perl \
+       debian-policy \
+       debian-project \
+       debian-python \
+       debian-qa \
        debian-science"
 
+# set -x
 for list in $LISTS ; do
 	rsync -a master.debian.org:/home/debian/lists/$list $CACHEDIR
 done
