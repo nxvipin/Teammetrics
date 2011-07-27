@@ -32,7 +32,6 @@
 
 \begin{frame}
   \frametitle{Motivation}
-
   \begin{itemize}
      \item Who is inside the team?
      \item Who left the team?
@@ -46,7 +45,6 @@
       \begin{center}
         \includegraphics[width=0.9\textwidth]{authorstat_med}
       \end{center}
-
 \end{frame}
 
 \begin{frame}
@@ -75,19 +73,16 @@
 
 \begin{frame}
   \frametitle{Measure of Communication Activity}
-
   \begin{itemize}
      \item Every project has a mailing list
      \item We measure who are the most active contributors
      \item Quantity is not the only metric because quality matters 
      \item We handle spam by filtering it
   \end{itemize}
-
 \end{frame}
 
 \begin{frame}
  \frametitle{Metrics for Measuring Communication Activity}
-
  \begin{itemize}
     \item Frequency of posting 
     \pause
@@ -96,7 +91,6 @@
         \item the raw length of the message body
         \pause
         \item the length of the body \textit{excluding}
-
         \begin{itemize}
             \item blank lines
             \pause
@@ -105,21 +99,10 @@
             \item blank lines, quotes and signatures
             \pause
         \end{itemize}
-
     \end{itemize}
-
     \pause
     \item Anything more that we can add? 
-
  \end{itemize}
-\end{frame}
-
-\begin{frame}
- \frametitle{Sample result from a mailing list}
- \begin{itemize}
-   \item How about teammetrics or soc-coordination?
- \end{itemize}
-
 \end{frame}
 
 \begin{frame}
@@ -135,11 +118,10 @@
             \item (-) deleted
         \end{itemize}
     \end{itemize}
-
 \end{frame}
 
 \begin{frame}
-    \frametitle{Nooooooo!}
+    \frametitle{Noooooo!}
         \begin{center}
             \includegraphics[height=2.0in]{vaderno.jpg}
         \end{center}
@@ -150,5 +132,28 @@
         \end{itemize}
 \end{frame}
 
+\begin{frame}
+    \frametitle{Mailing list analysis: \textit{soc-coordination}}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Challenges}
+    \begin{itemize}
+    \item We don't have the mbox archives for lists.debian.org
+        \begin{itemize}
+        \pause
+        \item So we fetch the archives through Gmane via NNTP, create mbox archives and then parse them
+        \end{itemize}
+    \pause
+    \item How do we separate upstream commits for Git repositories on Alioth?
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Questions? Suggestions?}
+    \begin{center}
+    The more we discuss, the better we can get! 
+    \end{center}
+\end{frame}
 
 \end{document}
