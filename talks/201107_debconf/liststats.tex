@@ -72,6 +72,16 @@
 \end{frame}
 
 \begin{frame}
+    \frametitle{Implementation}
+    \begin{itemize}
+        \item We reinvented the wheel and wrote everything from scratch 
+        \item ... which makes it easy for us to add new metrics or change existing ones
+        \item The process is optimized because we perform remote operations for fetching repositories by SSHing into Alioth and performing them locally
+        \item The code is pure Python (Python 2.6) and it's good and clean ;)
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
   \frametitle{Measure of Communication Activity}
   \begin{itemize}
      \item Every project has a mailing list
@@ -155,8 +165,8 @@
     \begin{itemize}
         \item Complete
         \begin{itemize}
-            \item Mailing list 
-            \item Repository
+            \item Mailing list (Alioth, lists.debian.org)
+            \item Repository (Git, SVN)
         \end{itemize}
     \end{itemize}
 
