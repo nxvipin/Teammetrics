@@ -1,8 +1,11 @@
 #! /bin/sh
 
-createdb teammetrics
+DB=teammetrics
 
-psql teammetrics <<EOF
+createdb $DB
+psql $DB < /usr/share/postgresql/9.0/contrib/tablefunc.sql
+
+psql $DB <<EOF
 
 BEGIN;
 
