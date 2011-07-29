@@ -1,0 +1,41 @@
+#!/bin/sh -e
+# This script draws a plot to compare mailing list activities
+
+# set -x
+if [ "$1" = "" ] ; then
+    echo "Usage: `basename $0` <listname> [numauthors] [outputformat] [textcolor]"
+    exit 1
+fi
+
+NUM=10
+if [ $# -gt 1 ] ; then
+    if [ "$2" -lt $NUM -o "$2" -gt $NUM ] ; then
+	NUM=$2
+    fi
+fi
+
+NAME=authorstat_"$1"
+DATFILE="${NAME}_year.txt"
+#QUERYFILE=`mktemp`
+# psql -t listarchives -c "SELECT BuildQueryAuthorsYear('$1', $NUM) ;" | sed '1s/\( CAST(SUM([^)]\+) AS int) AS "[^"]\+[ _]\w\)[^ ^_]\+"/\1."/g' > $QUERYFILE
+#cat $QUERYFILE | \
+#   psql listarchives \
+#   >"$DATFILE"
+#rm $QUERYFILE
+#
+#sed -i -e '/^[-+]\+$/d' -e '/^([0-9]\+ [A-Za-z]\+)$/d' \
+#       -e 's/[[:space:]]*|[[:space:]]*/\t/g'           \
+#       "$DATFILE"
+
+./author_stats_helper.py $1 $NUM > $DATFILE
+
+##       -e 's/&#xAE;//g'  -e 's/&#xE9;/e/' \
+##       -e 's/&#xE1;/á/g' -e 's/&#xF1;/ñ/' \
+##       -e 's/&#xE8;/è/g' -e 's/&#xF6;/ö/g' \
+
+if [ "$3" = "pdf" ] ; then
+    # PDFs are usually used in slides where we add the headline in LaTeX
+    ./author_stats_create_graph $DATFILE $NUM "" "$3" "$4"
+else
+    ./author_stats_create_graph $DATFILE $NUM "List activities for $1 list" "$3" "$4"
+fi

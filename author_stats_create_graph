@@ -1,0 +1,64 @@
+#!/bin/sh -e
+# This script draws a bar plot from a given text file
+# parameters: <datafile> <number_of_value_columns> <headline>
+
+if [ $# -lt 3 ] ; then
+    echo "Usage: `basename $0` <datafile> <number_of_value_columns> <headline> [outputformat] [textcolor]"
+    exit
+fi
+
+DATFILE=$1
+
+if [ ! -e $DATFILE ] ; then
+    echo "File not found: $DATFILE"
+    exit
+fi
+
+NAME=`basename $DATFILE .txt`
+# strip '_year' in the end of NAME if exists
+NAME=`basename $NAME _year`
+
+NUM=$2
+ENDCOL=$((NUM+1))
+
+OUTPUTFORMAT=png
+if [ "$4" = "pdf" ] ; then
+    OUTPUTFORMAT=pdf
+fi
+
+TEXTCOLOR=black
+if [ "$5" != "" ] ; then
+    TEXTCOLOR=$5
+fi
+
+R --no-save >/dev/null <<EOT
+library(plotrix)
+dmstats <- read.table(file='$DATFILE', sep = '\t', fill=TRUE, header=TRUE )
+textcolor="$TEXTCOLOR"
+if ( "$OUTPUTFORMAT" == "pdf" ) pdf("${NAME}.pdf", fg=textcolor, width=9, height=7) else png("${NAME}.png", width = 800, height = 600)
+
+par(col.axis=textcolor,col.main=textcolor)
+dmstats.mat <- as.matrix(dmstats)[,2:$ENDCOL]
+rownames(dmstats.mat) <- dmstats[['year']]
+dmstats.mat <- t(dmstats.mat)
+
+mycolors=c("red", "blue", "darkorange", "darkgreen", "darkorchid", 
+           "brown", "cornflowerblue", "brown2", "chartreuse3", "aquamarine4")
+
+plotcolors <- mycolors[1:$NUM]
+if ( $NUM > length(mycolors) )
+    plotcolors <- rainbow($NUM)
+
+barplot(dmstats.mat,beside=TRUE,col=plotcolors,
+        main = "$3")
+tmpfx <- format(colnames(dmstats[,2:$ENDCOL]))
+legendnames <- paste(gsub('_', ' ', tmpfx), format(colSums(dmstats[2:$ENDCOL]),justify="right"),sep='\t')
+legend(x="topleft", legendnames,fill=plotcolors, inset=0.05,
+       text.col=textcolor
+      )
+
+dev.off()
+
+EOT
+
+# rm $DATFILE
