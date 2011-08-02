@@ -101,6 +101,14 @@ NAMES = {
             'Yaroslav Halchenko':       {'author': ('yoh-guest', 'yoh')},
         }
 
+BOTS = (
+            'Archive Administrator',
+            'Debian testing watch',
+            'Debian Bug Tracking System',
+            'Debian FTP Masters',
+            'Debian Installer'
+       )
+
 # new-name: old-name.
 PROJECTS = {
             'blends': 'custom'
@@ -165,3 +173,11 @@ def update_names(conn, cur, table='listarchives'):
         cur.execute(query, (new_name, old_name))                    
         conn.commit()
         continue
+
+    # Remove the bots from the list.
+    logging.info('Removing bots...')
+    for name in BOTS:
+        query = """DELETE FROM {0}
+                WHERE name = %s;""".format(table)
+        cur.execute(query, (name, ))
+        conn.commit()
