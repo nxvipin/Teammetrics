@@ -58,9 +58,10 @@ LOG_SAVE_DIR = '/var/log'
 LOG_PATH = os.path.join(LOG_SAVE_DIR, PROJECT_DIR)
 LOG_FILE_PATH = os.path.join(LOG_PATH, LOG_FILE)
 
-DATABASE = {'name': 'teammetrics',
+DATABASE = {
+            'name': 'teammetrics',
             'port': 5432,
-            # 'port': 5441, # ... use this on blends.debian.net / udd.debian.net
+            # 'port': 5441 ... use this on blends.debian.net / udd.debian.net
            }
             
 
@@ -223,7 +224,13 @@ def parse_and_save(mbox_files, mbox_hashes):
             # The date the message was sent.
             get_date = message['Date']
             parsed_date = email.utils.parsedate(get_date)
-            format_date = datetime.datetime(*parsed_date[:4])
+
+            try:
+                format_date = datetime.datetime(*parsed_date[:4])   
+            except ValueError as detail:
+                logging.error(detail)
+                continue
+
             try:
                 archive_date = format_date.strftime("%Y-%m-%d") 
             except ValueError:
