@@ -209,7 +209,7 @@ def parse_and_save(mbox_files, mbox_hashes):
             try:
                 name = u" ".join([unicode(text, charset or 'ascii') 
                                         for text, charset in decoded_name])
-            except UnicodeDecodeError as detail:
+            except (LookupError, UnicodeDecodeError) as detail:
                 logging.warning('%s - %s' % (detail, name))
                 pass
 
