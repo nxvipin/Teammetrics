@@ -30,6 +30,8 @@ NNTP_CONF_SAVE_PATH = os.path.join(liststat.ARCHIVES_SAVE_DIR,
 
 ARCHIVES_FILE_PATH = liststat.ARCHIVES_FILE_PATH
 
+MBOX_FILES = {}
+
 NNTP_SERVER = 'news.gmane.org'
 NNTP_LIST = 'http://list.gmane.org'
 
@@ -165,11 +167,9 @@ Message-ID: {4}
     logging.info('mbox archive saved for %s' % lst_name)
     save_parsed_lists(lst_name, last)
 
-    # Now call liststat.parse_and_save which handles parsing of the mbox
-    # archives and implements the various metrics which measure performance.
-    # This takes a mapping of list-URL to local path, so we fake that.
-    mbox_parse = {lst_url:mbox_file_path}
-    liststat.parse_and_save(mbox_parse, mbox_hashes={})
+    # A mapping of project-name to the mbox-file path.
+    mbox = {lst_url:mbox_file_path}
+    MBOX_FILES.update(mbox)
 
 
 def main():
@@ -230,7 +230,7 @@ def main():
                     counter += 1
                     continue
                 if last > last_run:
-                    logging.info('Last run ended at message %d', first)
+                    logging.info('Last run ended at message %d', last_run)
                     first = last_run+1
 
             logging.info('Fetching message bodies for '
@@ -247,18 +247,28 @@ def main():
             resp, date_lst = conn.xhdr('Date', msg_range)
             resp, subject_lst = conn.xhdr('Subject', msg_range)
 
+            # A list of numbers with breaks at 100 that will be used for
+            # logging. This is helpful in cases where lots of messages
+            # are to be downloaded so as to make the user aware of the
+            # status of the download.
+            logging_counter = [i for i in range(last) if not i % 100]
+
             body = []
             msg_counter = 1
+            logging.info('Updating message count...')
             for i in range(first, last+1):
                 try:
                     resp, article_id, msg_id, msg = conn.body(str(i))
                     msg_id_lst.append(msg_id)
                     body.append('\n'.join(msg))
+                    # Log the count.
+                    if i in logging_counter:
+                        logging.info('#%d' % i)
                     msg_counter += 1
                 except nntplib.NNTPTemporaryError as detail:
                     continue
 
-            logging.info('Fetched %d message bodies', msg_counter)
+            logging.info('Fetched %d message bodies', msg_counter-1)
 
             from_lst = [frm for (article_id, frm) in from_lst]
             date_lst = [date for (article_id, date) in date_lst]
@@ -269,6 +279,8 @@ def main():
                         body, first, last)
 
             counter += 1
+
+    liststat.parse_and_save(MBOX_FILES, mbox_hashes={})
 
 
 if __name__ == '__main__':
