@@ -58,7 +58,10 @@ LOG_SAVE_DIR = '/var/log'
 LOG_PATH = os.path.join(LOG_SAVE_DIR, PROJECT_DIR)
 LOG_FILE_PATH = os.path.join(LOG_PATH, LOG_FILE)
 
-DATABASE = {'name': 'teammetrics'}
+DATABASE = {'name': 'teammetrics',
+            'port': 5432,
+            # 'port': 5441, # ... use this on blends.debian.net / udd.debian.net
+           }
             
 
 def write_checksum(hashes):
@@ -181,7 +184,7 @@ def parse_and_save(mbox_files, mbox_hashes):
     """
 
     # Connect to the database.
-    conn = psycopg2.connect(database=DATABASE['name'])
+    conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
     cur = conn.cursor()
 
     for url, files in mbox_files.iteritems():
@@ -447,7 +450,7 @@ if __name__ == '__main__':
         sys.exit(1)
     # Simulate a connection just to check whether everything is OK.
     try:
-        psycopg2.connect(database=DATABASE['name'])
+        psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
     except psycopg2.Error as detail:
         logging.error(detail)
         sys.exit(1)
