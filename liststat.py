@@ -61,7 +61,7 @@ LOG_FILE_PATH = os.path.join(LOG_PATH, LOG_FILE)
 DATABASE = {
             'name': 'teammetrics',
             'port': 5432,
-            # 'port': 5441 ... use this on blends.debian.net / udd.debian.net
+            # 'port': 5441, # ... use this on blends.debian.net / udd.debian.net
            }
             
 
