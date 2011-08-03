@@ -42,32 +42,32 @@ CREATE TABLE listspam (
 );
 
 -- top N authors of mailing list
-CREATE OR REPLACE FUNCTION author_names_of_list(text,int) RETURNS SETOF RECORD AS $$
+CREATE OR REPLACE FUNCTION author_names_of_list(text,int) RETURNS SETOF RECORD AS '
   SELECT name FROM (
     SELECT name, COUNT(*)::int
       FROM listarchives
-      WHERE project = $1
+      WHERE project = \$1
       GROUP BY name
       ORDER BY count DESC
-      LIMIT $2
+      LIMIT \$2
   ) tmp
-$$ LANGUAGE 'SQL';
+' LANGUAGE 'SQL';
 
 /*
 SELECT * FROM author_names_of_list('soc-coordination', 12) AS (category text) ;
 SELECT * FROM author_names_of_list('debian-med-packaging', 12) AS (category text) ;
  */
 
-CREATE OR REPLACE FUNCTION author_per_year_of_list(text,int) RETURNS SETOF RECORD AS $$
+CREATE OR REPLACE FUNCTION author_per_year_of_list(text,int) RETURNS SETOF RECORD AS '
   SELECT name, year, COUNT(*)::int FROM (
     SELECT name,  EXTRACT(year FROM archive_date)::int AS year
       FROM listarchives
-     WHERE name IN (SELECT * FROM author_names_of_list($1, $2) AS (author text))
-       AND project = $1
+     WHERE name IN (SELECT * FROM author_names_of_list(\$1, \$2) AS (author text))
+       AND project = \$1
   ) tmp
   GROUP BY name, year
   ORDER BY year, count DESC, name
-$$ LANGUAGE 'SQL';
+' LANGUAGE 'SQL';
 
 /*
 SELECT * FROM author_per_year_of_list('soc-coordination', 12) AS (author text, year int, value int) ;
