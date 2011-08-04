@@ -167,7 +167,7 @@ def detect_vcs():
     if missing_teams:
         logging.warning('Teams not using Git or SVN or are missing: ')
         for each in missing_teams:
-            loggging.warning('%s' % each)
+            logging.warning('%s' % each)
 
     return ssh, git_lst, svn_lst, svn_and_git, users
 
