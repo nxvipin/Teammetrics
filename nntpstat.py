@@ -91,7 +91,7 @@ def today_date():
     return date_now.strftime('%d-%b-%Y')
 
 
-def asctime_update(mail_asctime):
+def asctime_update(mail_asctime, msg_id):
     """Returns a timestamp formatted to asctime and with the timezone adjusted.
     
     example:
@@ -104,9 +104,16 @@ def asctime_update(mail_asctime):
     # Parse date according to RFC 2822 but with the timezone info. 
     parse_date = email.utils.parsedate_tz(mail_asctime)
     # Get the timezone offset in seconds and create a timezone delta.
+    # If the timezone is MET, then we explicitly add +0100 hours to it. 
+    # This is not exact but good enough for our purpose.
     tz_offset = parse_date[-1]
+    if tz_offset is None:
+        if tz_offset == 'MET':
+            logging.error('Invalid time zone for Message-ID: %s' % msg_id)
+            logging.info('Converting time zone MET to +0100')
+            tz_offset = 3600
+
     tz = datetime.timedelta(seconds=tz_offset)
-     
     asctime = datetime.datetime(*parse_date[:7], tzinfo=None)
     # The adjusted timezone according to the offset.
     asctime_updated = asctime - tz
@@ -153,11 +160,8 @@ Message-ID: {4}
         for f, d, s, m, b in zip(frm, date, sub, msg, body):
 
             email, name = format_mail_name(f)
-            try:
-                updated_date = asctime_update(d)
-            except TypeError as detail:
-                logging.error(detail)
-                continue
+            updated_date = asctime_update(d, m)
+
             f_one = '{0}  {1}'.format(email, updated_date)
             f_two = '{0} ({1})'.format(email, name)
           

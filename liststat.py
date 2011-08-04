@@ -194,6 +194,9 @@ def parse_and_save(mbox_files, mbox_hashes):
             # Name of the mailing list.
             mailing_list = os.path.basename(files).split('.')[0]
             project = mailing_list.rsplit('-', 2)[0]
+     
+            # The Message-ID that can be used to check for errors.
+            msg_id = message['Message-ID'].strip('<>')
 
             # The 'From' field value returns a string of the format:
             #   email-address (Name)
@@ -273,6 +276,7 @@ def parse_and_save(mbox_files, mbox_hashes):
             # string. This is very rare and it is safer to ignore these messages
             # than have a special case for them. 
             if isinstance(payload, list):
+                logging.error(msg_id)
                 logging.error('Skipping message due to invalid payload')
                 continue
 
@@ -302,10 +306,10 @@ def parse_and_save(mbox_files, mbox_hashes):
             try:
                 cur.execute(
                 """INSERT INTO listarchives
-                (project, domain, name, email_addr, subject, archive_date, 
+                (project, domain, name, email_addr, subject, message_id, archive_date, 
         today_date, msg_raw_len, msg_no_blank_len, msg_no_quotes_len, msg_no_sig_len)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
-                (project, netloc, name, email_addr, subject, archive_date, 
+                (project, netloc, name, email_addr, subject, msg_id, archive_date, 
             today_date, msg_raw_len, msg_blank_len, msg_quotes_len, msg_sig_len)
                             )
             except psycopg2.DataError as detail:
