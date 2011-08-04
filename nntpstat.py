@@ -255,7 +255,7 @@ def main():
 
             body = []
             msg_counter = 1
-            logging.info('Updating message count...')
+            logging.info('Updating message count:')
             for i in range(first, last+1):
                 try:
                     resp, article_id, msg_id, msg = conn.body(str(i))
@@ -279,6 +279,10 @@ def main():
                         body, first, last)
 
             counter += 1
+
+    if not MBOX_FILES:
+        logging.info('Nothing to process')
+        sys.exit()
 
     liststat.parse_and_save(MBOX_FILES, mbox_hashes={})
 

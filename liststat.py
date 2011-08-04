@@ -269,6 +269,13 @@ def parse_and_save(mbox_files, mbox_hashes):
 
             # Get the message body. 
             payload = message.get_payload()
+            # Some message payloads return a list of messages rather than a
+            # string. This is very rare and it is safer to ignore these messages
+            # than have a special case for them. 
+            if isinstance(payload, list):
+                logging.error('Skipping message due to invalid payload')
+                continue
+
             # The lines in the message body excluding blank lines. 
             msg_blank_raw = [line.strip() for line in payload.splitlines() if line]
             msg_blank = [line for line in msg_blank_raw if line]
