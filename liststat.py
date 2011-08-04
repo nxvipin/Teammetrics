@@ -277,7 +277,7 @@ def parse_and_save(mbox_files, mbox_hashes):
             # than have a special case for them. 
             if isinstance(payload, list):
                 logging.error(msg_id)
-                logging.error('Skipping message due to invalid payload')
+                logging.info('Previous Message-ID skipped due to invalid payload')
                 continue
 
             # The lines in the message body excluding blank lines. 

@@ -108,10 +108,9 @@ def asctime_update(mail_asctime, msg_id):
     # This is not exact but good enough for our purpose.
     tz_offset = parse_date[-1]
     if tz_offset is None:
-        if tz_offset == 'MET':
-            logging.error('Invalid time zone for Message-ID: %s' % msg_id)
-            logging.info('Converting time zone MET to +0100')
-            tz_offset = 3600
+        logging.error('Invalid time zone for Message-ID: %s' % msg_id)
+        logging.info('Converting time zone to +0100')
+        tz_offset = 3600
 
     tz = datetime.timedelta(seconds=tz_offset)
     asctime = datetime.datetime(*parse_date[:7], tzinfo=None)
@@ -208,8 +207,11 @@ def main():
 
             try:
                 conn = nntplib.NNTP(NNTP_SERVER)
-            except socket.error:
-                logging.error('Unable to connect to the NNTP server')
+            except socket.error as detail:
+                logging.error(detail)
+                continue
+            except nntplib.NNTPTemporaryError as detail:
+                logging.error(detail)
                 continue
 
             try:
