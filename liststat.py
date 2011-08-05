@@ -194,7 +194,7 @@ def parse_and_save(mbox_files, mbox_hashes):
         # Name of the mailing list.
         mailing_list = os.path.basename(files).split('.')[0]
         project = mailing_list.rsplit('-', 2)[0]
-        logging.info('Parsing %s' % mailing_list)
+        logging.info('[S]tart parsing: %s' % mailing_list)
 
         for message in mbox_file:
             # The Message-ID that can be used to check for errors.
@@ -242,9 +242,8 @@ def parse_and_save(mbox_files, mbox_hashes):
             try:
                 format_date = datetime.datetime(*parsed_date[:4])   
             except ValueError as detail:
-                logging.warning(detail)
+                logging.error(detail)
                 continue
-
             try:
                 archive_date = format_date.strftime("%Y-%m-%d") 
             except ValueError:
@@ -329,7 +328,7 @@ def parse_and_save(mbox_files, mbox_hashes):
                 continue
 
             conn.commit()
-        logging.info('%s parsed' % mailing_list)
+        logging.info('[E]nd parsing: %s' % mailing_list)
 
     logging.info('Updating names')
     updatenames.update_names(conn, cur)
