@@ -11,7 +11,9 @@ the metrics of:
 
 import os
 import sys
+import csv
 import logging
+import itertools
 import subprocess
 import collections
 
@@ -26,7 +28,7 @@ def get_revisions():
     revisions = {}
     try:
         with open(REVISION_FILE_PATH) as f:
-            reader.csv.reader(f, delimiter=':')
+            reader = csv.reader(f, delimiter=':')
             try:
                 for row in reader:
                     change = row[1].split(',')
@@ -44,7 +46,7 @@ def save_revisions(revisions):
     """Save the revisions to REVISION_FILE."""
     with open(REVISION_FILE_PATH, 'a') as f:
         writer = csv.writer(f, delimiter=':')
-        writer.write(revisions.iteritems())
+        writer.writerows(revisions.iteritems())
 
     logging.info('Done writing revisions')
 
@@ -76,8 +78,8 @@ def fetch_logs(ssh, conn, cur, teams):
             # has already been downloaded, it won't be downloaded again.
             for change in revision:
                 if team in done_revisions:
-                    if change in done_revisions[team]:
-                        logging.info('Skipping already done archive')
+                    if str(change) in done_revisions[team]:
+                        logging.info('Skipping already done archive: %d' % change)
                         continue
 
                 cmd = 'svn diff -c {0} file:///svn/{1}/'.format(change, team) 
@@ -112,7 +114,9 @@ def fetch_logs(ssh, conn, cur, teams):
                     logging.error(detail)
                     continue
 
-        revisions[team] = author_info.values()
+        # Flatten all the revisions.
+        all_revisions = list(itertools.chain(*author_info.values())) 
+        revisions[team] = ','.join(str(item) for item in all_revisions)
 
     # Update the revisions.
     save_revisions(revisions)

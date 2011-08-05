@@ -53,7 +53,7 @@ def fetch_logs(ssh, conn, cur, teams, users):
             for author in authors:
                 # For upstream contributors, filter them from the team.
                 if not author in users:
-                    logging.info('Upstream author %s' % author)
+                    logging.info('Upstream author: %s' % author)
                     continue
 
                 insertions = []
