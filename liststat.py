@@ -190,11 +190,13 @@ def parse_and_save(mbox_files, mbox_hashes):
 
     for url, files in mbox_files.iteritems():
         mbox_file = mailbox.mbox(files)
+        
+        # Name of the mailing list.
+        mailing_list = os.path.basename(files).split('.')[0]
+        project = mailing_list.rsplit('-', 2)[0]
+        logging.info('Parsing %s' % mailing_list)
+
         for message in mbox_file:
-            # Name of the mailing list.
-            mailing_list = os.path.basename(files).split('.')[0]
-            project = mailing_list.rsplit('-', 2)[0]
-     
             # The Message-ID that can be used to check for errors.
             msg_id_raw = message['Message-ID']
             if msg_id_raw is None:
@@ -205,7 +207,9 @@ def parse_and_save(mbox_files, mbox_hashes):
 
             # The 'From' field value returns a string of the format:
             #   email-address (Name)
-            # from which the sender's name and email address is extracted.
+            # from which the sender's name and email address is extracted. Note
+            # that this is not considered as SPAM because if the 'From' header
+            # is missing, it doesn't make sense to process other headers.
             from_field = message['From']
             if from_field is None:
                 continue
@@ -213,7 +217,8 @@ def parse_and_save(mbox_files, mbox_hashes):
             name_start_pos = from_field.find("(")
             name_end_pos = from_field.find(")")
             raw_name = from_field[name_start_pos+1:name_end_pos]
-            # Resolve the encodings.
+            # Resolve the encodings but don't skip the message yet; let it
+            # go through the SPAM checker.
             decoded_name = email.header.decode_header(raw_name)
             try:
                 name = u" ".join([unicode(text, charset or 'ascii') 
@@ -233,10 +238,11 @@ def parse_and_save(mbox_files, mbox_hashes):
             get_date = message['Date']
             parsed_date = email.utils.parsedate(get_date)
 
+            # Some messages have faulty Date headers. It's better to skip them.
             try:
                 format_date = datetime.datetime(*parsed_date[:4])   
             except ValueError as detail:
-                logging.error(detail)
+                logging.warning(detail)
                 continue
 
             try:

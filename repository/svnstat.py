@@ -100,19 +100,19 @@ def fetch_logs(ssh, conn, cur, teams):
                         else:
                             deleted += 1
 
-                # Save the information gathered to the database.
-                try:
-                    cur.execute(
-                    """INSERT INTO commitstat(project, package, vcs, name, 
-                        changes, lines_inserted, lines_deleted) 
-                            VALUES (%s, %s, %s, %s, %s, %s, %s);""",
-                      (project, package, 'svn', author, changes, inserted, deleted)
-                                )
-                    conn.commit()
-                except psycopg2.DataError as detail:
-                    conn.rollback()
-                    logging.error(detail)
-                    continue
+            # Save the information gathered to the database.
+            try:
+                cur.execute(
+                """INSERT INTO commitstat(project, package, vcs, name, 
+                    changes, lines_inserted, lines_deleted) 
+                        VALUES (%s, %s, %s, %s, %s, %s, %s);""",
+                  (project, package, 'svn', author, changes, inserted, deleted)
+                            )
+                conn.commit()
+            except psycopg2.DataError as detail:
+                conn.rollback()
+                logging.error(detail)
+                continue
 
         # Flatten all the revisions.
         all_revisions = list(itertools.chain(*author_info.values())) 
