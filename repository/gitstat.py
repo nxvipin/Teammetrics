@@ -24,6 +24,12 @@ import updatenames
 
 def fetch_logs(ssh, conn, cur, teams, users):
     """Fetch and save the logs for Git repositories by SSHing into Alioth."""
+
+    # Connect to the database and clear the existing Git records because we
+    # don't maintain a redundancy checker as fetching logs is fast.
+    cur.execute("""DELETE FROM commitstat WHERE vcs='git';""");
+    conn.commit()
+
     for team in teams:
         # Get the directory listing.
         cwd = '/git/{0}'.format(team)

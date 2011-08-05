@@ -176,12 +176,13 @@ def get_stats():
     """Generate statistics for Git and SVN repositories."""
     ssh, git, svn, svn_git, users = detect_vcs()
 
-    # Connect to the database and clear the existing records.
-    conn = psycopg2.connect(database='teammetrics')
-    cur = conn.cursor()
-    cur.execute("""DELETE FROM commitstat;""");
-    conn.commit()
-    
+    try:
+        conn = psycopg2.connect(database='teammetrics')
+        cur = conn.cursor()
+    except psycopg2.Error as detail:
+        logging.error(detail)
+        sys.exit(1)
+
     # First call the Git repositories.
     if git:
         logging.info('There are %d Git repositories' % len(git))
@@ -203,7 +204,8 @@ def get_stats():
     conn.close()
     ssh.close()
 
-    sys.exit('done')
+    logging.info('Quit')
+    sys.exit()
 
 
 def start_logging():

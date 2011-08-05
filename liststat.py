@@ -196,7 +196,12 @@ def parse_and_save(mbox_files, mbox_hashes):
             project = mailing_list.rsplit('-', 2)[0]
      
             # The Message-ID that can be used to check for errors.
-            msg_id = message['Message-ID'].strip('<>')
+            msg_id_raw = message['Message-ID']
+            if msg_id_raw is None:
+                logging.error('No Message-ID found')
+                msg_id = ''
+            else:
+                msg_id = msg_id_raw.strip('<>')
 
             # The 'From' field value returns a string of the format:
             #   email-address (Name)
