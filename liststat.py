@@ -194,7 +194,7 @@ def parse_and_save(mbox_files, mbox_hashes):
         # Name of the mailing list.
         mailing_list = os.path.basename(files).split('.')[0]
         project = mailing_list.rsplit('-', 2)[0]
-        logging.info('[S]tart parsing: %s' % mailing_list)
+        logging.info('Parsing: %s' % mailing_list)
 
         for message in mbox_file:
             # The Message-ID that can be used to check for errors.
@@ -328,7 +328,7 @@ def parse_and_save(mbox_files, mbox_hashes):
                 continue
 
             conn.commit()
-        logging.info('[E]nd parsing: %s' % mailing_list)
+        logging.info('Parsed: %s' % mailing_list)
 
     logging.info('Updating names')
     updatenames.update_names(conn, cur)
@@ -396,7 +396,7 @@ def main(conf_info, total_lists):
                 continue
 
             # Download the mbox archives and save them to DIRECTORY_PATH.
-            logging.info("Downloading %d mbox archives" % len(archive_dates))
+            logging.info("Downloading %d mbox archives..." % len(archive_dates))
             for date in archive_dates:
                 mbox_url = '{0}/{1}'.format(lst, date)
                 mbox_name = '{0}-{1}'.format(lst.split('/')[-1], date)
@@ -436,7 +436,7 @@ def main(conf_info, total_lists):
                     mbox_files[mbox_url] = mbox_path
                     # Update the hash for the archive downloaded.
                     mbox_hashes.update(mbox_hash)
-                    logging.info('%s downloaded ' % mbox_name)
+                    logging.info('\t%s' % mbox_name)
             count += 1
 
     # We don't need the mbox archives, so delete them.
