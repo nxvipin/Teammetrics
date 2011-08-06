@@ -251,7 +251,12 @@ def parse_and_save(mbox_files, mbox_hashes):
                 continue
             
             raw_subject = ' '.join(message['Subject'].split())
-            decoded_subject = email.header.decode_header(raw_subject)
+            try:
+                decoded_subject = email.header.decode_header(raw_subject)
+            except ValueError:
+                logging.warning('Invalid Subject encoding')
+                pass
+
             try:
                 subject = u" ".join([unicode(text, charset or 'ascii')
                                         for text, charset in decoded_subject])

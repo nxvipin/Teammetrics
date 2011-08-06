@@ -175,7 +175,7 @@ def update_names(conn, cur, table='listarchives'):
         continue
 
     # Remove the bots from the list.
-    logging.info('Removing bots...')
+    logging.info('Removing bots')
     for name in BOTS:
         query = """DELETE FROM {0}
                 WHERE name = %s;""".format(table)

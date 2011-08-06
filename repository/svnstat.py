@@ -53,7 +53,7 @@ def save_revisions(revisions):
 
 def fetch_logs(ssh, conn, cur, teams):
     """Fetch and save the logs for SVN repositories."""
-    revisions = {}
+    revisions = collections.defaultdict(list)
     done_revisions = get_revisions()
     for team in teams:
         cmd = 'svn log --xml file:///svn/{0}/'.format(team)
@@ -114,11 +114,8 @@ def fetch_logs(ssh, conn, cur, teams):
                 logging.error(detail)
                 continue
 
-        # Flatten all the revisions.
-        all_revisions = list(itertools.chain(*author_info.values())) 
-        revisions[team] = ','.join(str(item) for item in all_revisions)
+    :# FIXME: Don't use this as of now.
+    revisions[team] = ','.join(list(itertools.chain(*author_
 
-    # Update the revisions.
     save_revisions(revisions)
-
     logging.info('SVN logs saved...')
