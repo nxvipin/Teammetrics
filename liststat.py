@@ -219,7 +219,11 @@ def parse_and_save(mbox_files, mbox_hashes):
             raw_name = from_field[name_start_pos+1:name_end_pos]
             # Resolve the encodings but don't skip the message yet; let it
             # go through the SPAM checker.
-            decoded_name = email.header.decode_header(raw_name)
+            try:
+                decoded_name = email.header.decode_header(raw_name)
+            except ValueError:
+                logging.warning("Invalid 'Name' encoding")
+
             try:
                 name = u" ".join([unicode(text, charset or 'ascii') 
                                         for text, charset in decoded_name])
@@ -254,7 +258,7 @@ def parse_and_save(mbox_files, mbox_hashes):
             try:
                 decoded_subject = email.header.decode_header(raw_subject)
             except ValueError:
-                logging.warning('Invalid Subject encoding')
+                logging.warning("Invalid 'Subject' encoding")
                 pass
 
             try:
