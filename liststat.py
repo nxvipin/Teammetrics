@@ -394,7 +394,7 @@ def main(conf_info, total_lists):
                 mbox_url = '{0}/{1}'.format(lst, date)
                 mbox_name = '{0}-{1}'.format(lst.split('/')[-1], date)
 
-                # Get the SHA-1 hash of the mbox name.
+                # Create a mapping of the name of the mbox to its SHA-1.
                 mbox_hash = {mbox_name: hashlib.sha1(mbox_name).hexdigest()}
                 # If the SHA-1 from the already parsed mbox archives is 
                 # equal to the SHA-1 of the current mbox, skip.
@@ -405,6 +405,7 @@ def main(conf_info, total_lists):
                                            "and parsed mbox %s" % mbox_name)
                         continue
 
+                path_to_archive = os.path.join(ARCHIVES_FILE_PATH, mbox_name)
                 # Open the mbox archive and save it to the local disk.
                 try:
                     mbox = urllib2.urlopen(mbox_url)
@@ -416,7 +417,6 @@ def main(conf_info, total_lists):
                     mbox_archives.append(path_to_archive)
                     f.write(mbox.read())
             
-                path_to_archive = os.path.join(ARCHIVES_FILE_PATH, mbox_name)
                 # Extract the mbox file (plain text) from the gzip archive. 
                 mbox_plain_text = '{0}'.format(mbox_name.rsplit('.', 1)[0])
                 mbox_path = os.path.join(ARCHIVES_FILE_PATH, mbox_plain_text)
