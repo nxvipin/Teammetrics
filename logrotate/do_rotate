@@ -1,0 +1,1 @@
+/usr/sbin/logrotate --force --state `pwd`/rotate_state teammetrics_lo_rotate.conf
