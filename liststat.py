@@ -88,23 +88,6 @@ def get_checksum():
     return hashes
 
 
-def generate_checksum(path, name):
-    """Return a mapping of a mbox archive to its SHA-1 checksum.
-
-    This function returns SHA-1 checksum of a mbox archive thus maintaining
-    consistency and reducing redundancy as the checksum is compared before
-    downloading or parsing the archive.
-    """
-
-    mbox_hash = {}
-    with open(path) as f:
-        hash_object = hashlib.sha1()
-        hash_object.update(f.read())
-        mbox_hash[name] = hash_object.hexdigest()
-        
-    return mbox_hash
-
-
 def get_current_month():
     """Return the current month and year."""
     today = datetime.date.today()
@@ -407,6 +390,19 @@ def main(conf_info, total_lists):
             # Download the mbox archives and save them to DIRECTORY_PATH.
             logging.info("Downloading %d mbox archives..." % len(archive_dates))
             for date in archive_dates:
+                # Get the SHA-1 hash of the mbox name.
+                mbox_hash = {mbox_name: hashlib.sha1(mbox_name).hexdigest()}
+                # If the SHA-1 from the already parsed mbox archives is 
+                # equal to the SHA-1 of the current mbox, don't parse the
+                # archive and remove it from mbox_archives.
+                mbox_hash_file = list(set(parsed_hash) & set(mbox_hash))
+                if mbox_hash_file:
+                    if parsed_hash[mbox_name] == mbox_hash[mbox_name]:
+                        logging.warning("Skipping already downloaded "
+                                           "and parsed mbox %s" % mbox_name)
+                        mbox_archives.remove(path_to_archive)
+                        continue
+
                 mbox_url = '{0}/{1}'.format(lst, date)
                 mbox_name = '{0}-{1}'.format(lst.split('/')[-1], date)
                 path_to_archive = os.path.join(ARCHIVES_FILE_PATH, mbox_name)
@@ -421,20 +417,6 @@ def main(conf_info, total_lists):
                     mbox_archives.append(path_to_archive)
                     f.write(mbox.read())
             
-                # Get the SHA-1 hash of the current mbox. 
-                mbox_hash = generate_checksum(path_to_archive, mbox_name)
-                # If the SHA-1 from the already parsed mbox archives is 
-                # equal to the SHA-1 of the current mbox, don't parse the
-                # archive and remove it from mbox_archives.
-                mbox_hash_file = list(set(parsed_hash) & set(mbox_hash))
-                if mbox_hash_file:
-                    if parsed_hash[mbox_name] == mbox_hash[mbox_name]:
-                        logging.warning("Skipping already downloaded "
-                                           "and parsed mbox %s" % mbox_name)
-                        mbox_archives.remove(path_to_archive)
-                        os.remove(path_to_archive)
-                        continue
-
                 # Extract the mbox file (plain text) from the gzip archive. 
                 mbox_plain_text = '{0}'.format(mbox_name.rsplit('.', 1)[0])
                 mbox_path = os.path.join(ARCHIVES_FILE_PATH, mbox_plain_text)
