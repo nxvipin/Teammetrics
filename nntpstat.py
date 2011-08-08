@@ -106,7 +106,13 @@ def asctime_update(mail_asctime, msg_id):
     # Get the timezone offset in seconds and create a timezone delta.
     # If the timezone is MET, then we explicitly add +0100 hours to it. 
     # This is not exact but good enough for our purpose.
-    tz_offset = parse_date[-1]
+    try:
+        tz_offset = parse_date[-1]
+    except TypeError:
+        logging.error('Invalid timezone for Message-ID: %s' % msg_id)
+        logging.info('Setting timezone to UTC')
+        tz_offset = 0
+
     if tz_offset is None:
         logging.error('Invalid time zone for Message-ID: %s' % msg_id)
         logging.info('Converting time zone to +0100')
