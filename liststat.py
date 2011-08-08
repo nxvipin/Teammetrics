@@ -388,24 +388,23 @@ def main(conf_info, total_lists):
                 continue
 
             # Download the mbox archives and save them to DIRECTORY_PATH.
-            logging.info("Downloading %d mbox archives..." % len(archive_dates))
+            logging.info("Fetching %d mbox archives..." % len(archive_dates))
             for date in archive_dates:
+                # Get the mbox URL and the name. 
+                mbox_url = '{0}/{1}'.format(lst, date)
+                mbox_name = '{0}-{1}'.format(lst.split('/')[-1], date)
+
                 # Get the SHA-1 hash of the mbox name.
                 mbox_hash = {mbox_name: hashlib.sha1(mbox_name).hexdigest()}
                 # If the SHA-1 from the already parsed mbox archives is 
-                # equal to the SHA-1 of the current mbox, don't parse the
-                # archive and remove it from mbox_archives.
+                # equal to the SHA-1 of the current mbox, skip.
                 mbox_hash_file = list(set(parsed_hash) & set(mbox_hash))
                 if mbox_hash_file:
                     if parsed_hash[mbox_name] == mbox_hash[mbox_name]:
                         logging.warning("Skipping already downloaded "
                                            "and parsed mbox %s" % mbox_name)
-                        mbox_archives.remove(path_to_archive)
                         continue
 
-                mbox_url = '{0}/{1}'.format(lst, date)
-                mbox_name = '{0}-{1}'.format(lst.split('/')[-1], date)
-                path_to_archive = os.path.join(ARCHIVES_FILE_PATH, mbox_name)
                 # Open the mbox archive and save it to the local disk.
                 try:
                     mbox = urllib2.urlopen(mbox_url)
@@ -417,6 +416,7 @@ def main(conf_info, total_lists):
                     mbox_archives.append(path_to_archive)
                     f.write(mbox.read())
             
+                path_to_archive = os.path.join(ARCHIVES_FILE_PATH, mbox_name)
                 # Extract the mbox file (plain text) from the gzip archive. 
                 mbox_plain_text = '{0}'.format(mbox_name.rsplit('.', 1)[0])
                 mbox_path = os.path.join(ARCHIVES_FILE_PATH, mbox_plain_text)
@@ -428,6 +428,7 @@ def main(conf_info, total_lists):
                     # Update the hash for the archive downloaded.
                     mbox_hashes.update(mbox_hash)
                     logging.info('\t%s' % mbox_name)
+
             count += 1
 
     # We don't need the mbox archives, so delete them.
