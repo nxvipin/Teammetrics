@@ -22,12 +22,10 @@ which you can query to get the specific statistics you desire.
 import os
 import re
 import sys
-import csv
 import gzip
 import email
 import logging
 import mailbox
-import hashlib
 import urllib2
 import urlparse
 import datetime
@@ -65,27 +63,24 @@ DATABASE = {
            }
             
 
-def write_checksum(hashes):
-    """Write the hashes generated from the downloaded mbox archives."""
+def write_parsed_lists(lists):
+    """Write the lists parsed from the downloaded mbox archives."""
     with open(HASH_FILE_PATH, 'a') as f:
-        writer = csv.writer(f, delimiter=':')
-        writer.writerows(hashes.iteritems())
+        for lst in lists:
+            f.write(lst)
+            f.write('\n')
+
     logging.info('Done writing checksums')
 
 
-def get_checksum():
-    """Read the hashes for the mbox file from HASH_FILE."""
-    hashes = {}
+def get_parsed_lists():
+    """Read the already parsed lists from HASH_FILE."""
+    parsed_lists = []
     with open(HASH_FILE_PATH) as f:
-        reader = csv.reader(f, delimiter=':')
-        try:
-            for row in reader:
-                hashes[row[0]] = row[1]
-        except (csv.Error, IndexError) as detail:
-            logging.error(detail)
-            sys.exit()
+        for line in f:
+            parsed_lists = [line.strip() for line in f.readlines()]
 
-    return hashes
+    return parsed_lists
 
 
 def get_current_month():
@@ -160,7 +155,7 @@ def get_configuration(config_file_path=CONF_FILE_PATH, pipermail=True):
     return mailing_list_parse, total_lists
 
 
-def parse_and_save(mbox_files, mbox_hashes):
+def parse_and_save(mbox_files):
     """Parse the mbox archives to extract the required information.
 
     Opens each local mbox specified by mbox_files and extracts the required
@@ -171,10 +166,13 @@ def parse_and_save(mbox_files, mbox_hashes):
     conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
     cur = conn.cursor()
 
+    current_lists = []
+
     for url, files in mbox_files.iteritems():
         mbox_file = mailbox.mbox(files)
         
-        # Name of the mailing list.
+        # Name of the mailing list and project.
+        mbox_name = os.path.basename(files)
         mailing_list = os.path.basename(files).split('.')[0]
         project = mailing_list.rsplit('-', 2)[0]
         logging.info('Parsing: %s' % mailing_list)
@@ -320,6 +318,7 @@ def parse_and_save(mbox_files, mbox_hashes):
                 continue
 
             conn.commit()
+        current_lists.append(mbox_name)
         logging.info('Parsed: %s' % mailing_list)
 
     logging.info('Updating names')
@@ -330,8 +329,8 @@ def parse_and_save(mbox_files, mbox_hashes):
     conn.close()
 
     # Write the checksums of the download mbox archives.
-    if mbox_hashes:
-        write_checksum(mbox_hashes)
+    if current_lists:
+        write_parsed_lists(current_lists)
 
     logging.info('Quit')
     sys.exit()
@@ -349,8 +348,7 @@ def main(conf_info, total_lists):
     count = 0
     mbox_files = {}
     mbox_archives = []
-    mbox_hashes = {}
-    parsed_hash = get_checksum()
+    parsed_lists = get_parsed_lists()
     current_month = get_current_month()
 
     # The conf_info has a mapping of {list-name : [list-url]}. So we go through
@@ -394,16 +392,11 @@ def main(conf_info, total_lists):
                 mbox_url = '{0}/{1}'.format(lst, date)
                 mbox_name = '{0}-{1}'.format(lst.split('/')[-1], date)
 
-                # Create a mapping of the name of the mbox to its SHA-1.
-                mbox_hash = {mbox_name: hashlib.sha1(mbox_name).hexdigest()}
-                # If the SHA-1 from the already parsed mbox archives is 
-                # equal to the SHA-1 of the current mbox, skip.
-                mbox_hash_file = list(set(parsed_hash) & set(mbox_hash))
-                if mbox_hash_file:
-                    if parsed_hash[mbox_name] == mbox_hash[mbox_name]:
-                        logging.warning("Skipping already downloaded "
-                                           "and parsed mbox %s" % mbox_name)
-                        continue
+                # If the mbox has already been parsed and is present, then skip.
+                if mbox_name in parsed_lists:
+                    logging.warning("Skipping already downloaded "
+                                       "and parsed mbox %s" % mbox_name)
+                    continue
 
                 path_to_archive = os.path.join(ARCHIVES_FILE_PATH, mbox_name)
                 # Open the mbox archive and save it to the local disk.
@@ -421,17 +414,15 @@ def main(conf_info, total_lists):
                 mbox_plain_text = '{0}'.format(mbox_name.rsplit('.', 1)[0])
                 mbox_path = os.path.join(ARCHIVES_FILE_PATH, mbox_plain_text)
                 with open(mbox_path, 'w') as gzip_file:
-                    temp_file = gzip.open(path_to_archive, 'rb')
-                    archive_contents = temp_file.read()
+                    archive_contents = gzip.open(path_to_archive, 'rb').read()
                     gzip_file.write(archive_contents)
+                    # Update the path to the local mbox file.
                     mbox_files[mbox_url] = mbox_path
-                    # Update the hash for the archive downloaded.
-                    mbox_hashes.update(mbox_hash)
                     logging.info('\t%s' % mbox_name)
 
             count += 1
 
-    # We don't need the mbox archives, so delete them.
+    # We don't need the mbox archives (gzipped), so delete them.
     if mbox_archives:
         logging.info('Cleaning up downloaded mbox archives...')
         for archives in mbox_archives:
@@ -443,7 +434,7 @@ def main(conf_info, total_lists):
         sys.exit()
 
     # Open each local mbox archive and then parse it.
-    parse_and_save(mbox_files, mbox_hashes)
+    parse_and_save(mbox_files)
 
 
 def start_logging():

@@ -162,7 +162,7 @@ def format_mail_name(from_field):
         return email, name
 
     # For the second case.
-    if from_field.endswith(')'):
+    elif from_field.endswith(')'):
         # Get the position of ( and ) to parse the name.
         name_start_pos = from_field.find("(")
         name_end_pos = from_field.find(")")
@@ -171,6 +171,10 @@ def format_mail_name(from_field):
 
         email = from_field[:name_start_pos-1]
         return email, name
+
+    # This is for badly formatted From headers.
+    else:
+        return '', ''
 
 
 def nntp_to_mbox(lst_name, lst_url, frm, date, sub, msg, body, first, last):
@@ -189,6 +193,10 @@ Message-ID: {4}
         for f, d, s, m, b in zip(frm, date, sub, msg, body):
 
             email, name = format_mail_name(f)
+            if not email or not name:
+                logging.error('Invalid name/ email for Message-ID: %s' % m)
+                continue 
+
             updated_date = asctime_update(d, m)
             if updated_date is None:
                 logging.error('Invalid Date header for Message-ID: %s' % m)
@@ -324,7 +332,7 @@ def main():
         logging.info('Nothing to process')
         sys.exit()
 
-    liststat.parse_and_save(MBOX_FILES, mbox_hashes={})
+    liststat.parse_and_save(MBOX_FILES)
 
 
 if __name__ == '__main__':
