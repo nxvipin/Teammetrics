@@ -77,8 +77,7 @@ def get_parsed_lists():
     """Read the already parsed lists from HASH_FILE."""
     parsed_lists = []
     with open(HASH_FILE_PATH) as f:
-        for line in f:
-            parsed_lists = [line.strip() for line in f.readlines()]
+        parsed_lists = [line.strip() for line in f.readlines()]
 
     return parsed_lists
 
@@ -393,7 +392,9 @@ def main(conf_info, total_lists):
                 mbox_name = '{0}-{1}'.format(lst.split('/')[-1], date)
 
                 # If the mbox has already been parsed and is present, then skip.
-                if mbox_name in parsed_lists:
+                # Strip the .gz from the name to match parsed_lists.
+                mbox_name_raw = mbox_name.strip('gz'): 
+                if mbox_name_raw in parsed_lists:
                     logging.warning("Skipping already downloaded "
                                        "and parsed mbox %s" % mbox_name)
                     continue
