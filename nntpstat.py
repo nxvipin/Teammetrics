@@ -104,8 +104,10 @@ def asctime_update(mail_asctime, msg_id):
     # Parse date according to RFC 2822 but with the timezone info. 
     parse_date = email.utils.parsedate_tz(mail_asctime)
     # Get the timezone offset in seconds and create a timezone delta.
-    # If the timezone is MET, then we explicitly add +0100 hours to it. 
-    # This is not exact but good enough for our purpose.
+    # For some messages, there is invalid time zone data, so we set the
+    # time zone to UTC. This is not precise but it suits our purpose
+    # well because we are not bothered about the exact time (though we
+    # do save it) but the month and the year. 
     try:
         tz_offset = parse_date[-1]
     except TypeError:
@@ -115,11 +117,18 @@ def asctime_update(mail_asctime, msg_id):
 
     if tz_offset is None:
         logging.error('Invalid time zone for Message-ID: %s' % msg_id)
-        logging.info('Converting time zone to +0100')
-        tz_offset = 3600
+        logging.info('Setting timezone to UTC')
+        tz_offset = 0
 
     tz = datetime.timedelta(seconds=tz_offset)
-    asctime = datetime.datetime(*parse_date[:7], tzinfo=None)
+
+    # For messages that have a badly formatted Date header,
+    # return None and skip the message.
+    try:
+        asctime = datetime.datetime(*parse_date[:7], tzinfo=None)
+    except TypeError:
+        return None
+
     # The adjusted timezone according to the offset.
     asctime_updated = asctime - tz
 
@@ -166,6 +175,9 @@ Message-ID: {4}
 
             email, name = format_mail_name(f)
             updated_date = asctime_update(d, m)
+            if updated_date is None:
+                logging.error('Invalid Date header for Message-ID: %s' % m)
+                continue
 
             f_one = '{0}  {1}'.format(email, updated_date)
             f_two = '{0} ({1})'.format(email, name)
@@ -267,7 +279,8 @@ def main():
 
             body = []
             msg_counter = 1
-            logging.info('Updating message count:')
+            logging.info('Updating message count...')
+            logging.info('At message: ')
             for i in range(first, last+1):
                 try:
                     resp, article_id, msg_id, msg = conn.body(str(i))
@@ -275,7 +288,7 @@ def main():
                     body.append('\n'.join(msg))
                     # Log the count.
                     if i in logging_counter:
-                        logging.info('#%d' % i)
+                        logging.info('\t#%d' % i)
                     msg_counter += 1
                 except nntplib.NNTPTemporaryError as detail:
                     continue
