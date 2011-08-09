@@ -331,6 +331,11 @@ def parse_and_save(mbox_files):
     if current_lists:
         write_parsed_lists(current_lists)
 
+    # Remove the extracted mbox archives (in plain text).
+    logging.info('Cleaning up extracted mbox archives')
+    for each_mbox in mbox_files.itervalues():
+        os.remove(each_mbox)
+
     logging.info('Quit')
     sys.exit()
 
@@ -450,7 +455,7 @@ def day_of_month_check():
     first_day = datetime.date(today_date.year, today_date.month, 1)
     if today_date == first_day:
         logging.error('Today is the first day of the month')
-        logging.error('Please run the script again tomorrow')
+        logging.error('Please run the script tomorrow')
         sys.exit(1)
     else:
         return 
@@ -469,7 +474,6 @@ if __name__ == '__main__':
         os.mkdir(LOG_PATH)
     if not os.path.isfile(LOG_FILE_PATH):
         open(LOG_FILE_PATH, 'w').close()
-
 
     # Initialize the logging.
     start_logging()
