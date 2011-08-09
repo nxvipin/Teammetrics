@@ -70,7 +70,7 @@ def write_parsed_lists(lists):
             f.write(lst)
             f.write('\n')
 
-    logging.info('Done writing checksums')
+    logging.info('Done writing current lists')
 
 
 def get_parsed_lists():
@@ -393,7 +393,7 @@ def main(conf_info, total_lists):
 
                 # If the mbox has already been parsed and is present, then skip.
                 # Strip the .gz from the name to match parsed_lists.
-                mbox_name_raw = mbox_name.strip('gz'): 
+                mbox_name_raw = mbox_name.strip('.gz')
                 if mbox_name_raw in parsed_lists:
                     logging.warning("Skipping already downloaded "
                                        "and parsed mbox %s" % mbox_name)
@@ -438,6 +438,24 @@ def main(conf_info, total_lists):
     parse_and_save(mbox_files)
 
 
+def day_of_month_check():
+    """Checks for the day of the month.
+
+    Quit if it is the first day of the month else continue for any other day.
+    This is to handle the definition of first day safely according to different
+    time zones because we do not download mbox archives for the current month.
+    """
+
+    today_date = datetime.date.today()
+    first_day = datetime.date(today_date.year, today_date.month, 1)
+    if today_date == first_day:
+        logging.error('Today is the first day of the month')
+        logging.error('Please run the script again tomorrow')
+        sys.exit(1)
+    else:
+        return 
+
+
 def start_logging():
     """Initialize the logging."""
     logging.basicConfig(filename=LOG_FILE_PATH,
@@ -452,10 +470,14 @@ if __name__ == '__main__':
     if not os.path.isfile(LOG_FILE_PATH):
         open(LOG_FILE_PATH, 'w').close()
 
+
     # Initialize the logging.
     start_logging()
     logging.info('\t\tStarting ListStat')
     
+    # Check which day of the month it is.
+    day_of_month_check()
+
     # Check whether the DATABASE dictionary is populated.
     if not DATABASE['name']:
         logging.error("Please set a value for 'name' key of DATABASE")
