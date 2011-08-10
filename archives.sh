@@ -24,7 +24,10 @@ CREATE TABLE listarchives (
     msg_no_sig_len      int
 );
 
+ALTER TABLE listarchives ADD CONSTRAINT PK_project_messageid PRIMARY KEY(project,message_id) ;
+
 CREATE TABLE commitstat (
+    commit_id		text,
     project             text,
     package             text,
     vcs                 text,
@@ -34,13 +37,18 @@ CREATE TABLE commitstat (
     lines_deleted       int
 );
 
+ALTER TABLE commitstat ADD CONSTRAINT PK_commit_id PRIMARY KEY(commit_id) ;
+
 CREATE TABLE listspam (
+    message_id          text,
     project             text,
     name                text,
     email_addr          text,
     subject             text,
     reason              text
 );
+
+ALTER TABLE listspam ADD CONSTRAINT PK_spam_messageid PRIMARY KEY(message_id) ;
 
 -- top N authors of mailing list
 CREATE OR REPLACE FUNCTION author_names_of_list(text,int) RETURNS SETOF RECORD AS '
