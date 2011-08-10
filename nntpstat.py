@@ -95,7 +95,7 @@ def asctime_update(mail_asctime, msg_id):
     """Returns a timestamp formatted to asctime and with the timezone adjusted.
     
     example:
-        asctime_tz('Sat 4, Jun 2011 17:36:40 +0530')
+        Sat 4, Jun 2011 17:36:40 +0530
 
     will return:
         Sat Jun  4 12:06:40 2011
@@ -111,13 +111,13 @@ def asctime_update(mail_asctime, msg_id):
     try:
         tz_offset = parse_date[-1]
     except TypeError:
-        logging.error('Invalid timezone for Message-ID: %s' % msg_id)
-        logging.info('Setting timezone to UTC')
+        logging.error('Invalid time zone for Message-ID: %s' % msg_id)
+        logging.info('Setting time zone to UTC')
         tz_offset = 0
 
     if tz_offset is None:
         logging.error('Invalid time zone for Message-ID: %s' % msg_id)
-        logging.info('Setting timezone to UTC')
+        logging.info('Setting time zone to UTC')
         tz_offset = 0
 
     tz = datetime.timedelta(seconds=tz_offset)
@@ -139,23 +139,42 @@ def asctime_update(mail_asctime, msg_id):
 def format_mail_name(from_field):
     """Returns a formatted version of the 'From' field.
 
-    example:
-        format_email_name('John Doe <john@doe.com>')
-    
+        John Doe <john@doe.com>
     will return:
         john at doe.com (John Doe)
+
+    In some cases, the 'From' field can also be formatted as:
+        john@doe.com (John Doe)
+
+    We handle both the cases but the returned string is the same.  
     """
 
-    # Get the email address.
-    email_start_pos = from_field.find("<")
-    email_end_pos = from_field.find(">")
-    email_raw = from_field[email_start_pos+1:email_end_pos]
-    email = email_raw.replace('@', ' at ')
+    # No regex!
+    if from_field.endswith('>'):
+        # Get the position of < and > to parse the email.
+        email_start_pos = from_field.find("<")
+        email_end_pos = from_field.find(">")
+        email_raw = from_field[email_start_pos+1:email_end_pos]
+        email = email_raw.replace('@', ' at ')
+        
+        name_raw = from_field[:email_start_pos-1].strip()
+        name = name_raw.strip('"')
+        return email, name
 
-    # Get the name. 
-    name = from_field[:email_start_pos-1].strip()
+    # For the second case.
+    elif from_field.endswith(')'):
+        # Get the position of ( and ) to parse the name.
+        name_start_pos = from_field.find("(")
+        name_end_pos = from_field.find(")")
+        name_raw = from_field[name_start_pos+1: name_end_pos]
+        name = name_raw.strip('"')
 
-    return email, name
+        email = from_field[:name_start_pos-1]
+        return email, name
+
+    # This is for badly formatted From headers.
+    else:
+        return '', ''
 
 
 def nntp_to_mbox(lst_name, lst_url, frm, date, sub, msg, body, first, last):
@@ -174,6 +193,10 @@ Message-ID: {4}
         for f, d, s, m, b in zip(frm, date, sub, msg, body):
 
             email, name = format_mail_name(f)
+            if not email or not name:
+                logging.error('Invalid name/ email for Message-ID: %s' % m)
+                continue 
+
             updated_date = asctime_update(d, m)
             if updated_date is None:
                 logging.error('Invalid Date header for Message-ID: %s' % m)
@@ -309,7 +332,7 @@ def main():
         logging.info('Nothing to process')
         sys.exit()
 
-    liststat.parse_and_save(MBOX_FILES, mbox_hashes={})
+    liststat.parse_and_save(MBOX_FILES)
 
 
 if __name__ == '__main__':
