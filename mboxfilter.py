@@ -43,8 +43,8 @@ def main(mbox_file):
             mbox_f.write(mbox_format % (h)) 
             try:
                 mbox_f.writelines(c)
-            except TypeError:
-                pass
+            except TypeError, err:
+                print str(h['Message-ID']) + "\n" + str(err) + "\n" + str(c)
 
             mbox_f.write('\n')
 
