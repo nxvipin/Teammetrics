@@ -55,5 +55,7 @@ Message-ID: {4}"""
 
 
 if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        sys.exit('Usage: %s <mbox>' % (sys.argv[0]))
     mbox_file = sys.argv[1]
     main(mbox_file)
