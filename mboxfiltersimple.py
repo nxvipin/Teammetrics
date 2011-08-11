@@ -3,7 +3,7 @@
 import sys
 import mailbox
 
-HEADERS = ['From', 'Date', 'Subject', 'Message-ID', 'In-reply-to', 'References']
+HEADERS = ['From', 'Date', 'Subject', 'Message-ID', 'In-Reply-To', 'References']
 
 
 def main(mbox_file):
