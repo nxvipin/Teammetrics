@@ -33,7 +33,8 @@ def main(mbox_file):
 From: {1}
 Date: {2}
 Subject: {3}
-Message-ID: {4}"""
+Message-ID: {4}
+"""
 
     with open(mbox_file, 'w') as mbox_f:
         for f, d, s, m, c in zip(from_field, date, subject, msg_id, content):
