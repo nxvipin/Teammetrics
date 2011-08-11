@@ -254,9 +254,9 @@ def parse_and_save(mbox_files):
                 try:
                     cur.execute(
                             """INSERT INTO listspam
-                            (project, name, email_addr, subject, reason)
-                                VALUES (%s, %s, %s, %s, %s);""",
-                            (project, name, email_addr, subject, reason)
+                        (message_id, project, name, email_addr, subject, reason)
+                                VALUES (%s, %s, %s, %s, %s, %s);""",
+                            (msg_id, project, name, email_addr, subject, reason)
                                 )
                 except psycopg2.DataError as detail:
                     conn.rollback()
@@ -430,7 +430,7 @@ def main(conf_info, total_lists):
 
     # We don't need the mbox archives (gzipped), so delete them.
     if mbox_archives:
-        logging.info('Cleaning up downloaded mbox archives...')
+        logging.info('Cleaning up downloaded mbox archives')
         for archives in mbox_archives:
             os.remove(archives)
 

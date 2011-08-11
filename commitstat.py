@@ -44,9 +44,10 @@ def ssh_initialize():
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     private_key_file = os.path.expanduser('~/.ssh/id_rsa')
-    detail='Did you provided your alioth login name as USER?'                                             
+
     if not os.path.isfile(private_key_file):
-        logging.error(detail)
+        logging.error('Private key file not found OR '
+                        'did you provide your Alioth username?')
         sys.exit(1)
     
     try:
