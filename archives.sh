@@ -37,7 +37,7 @@ CREATE TABLE commitstat (
     lines_deleted       int
 );
 
-ALTER TABLE commitstat ADD CONSTRAINT PK_commit_id PRIMARY KEY(commit_id) ;
+ALTER TABLE commitstat ADD CONSTRAINT PK_commit_id PRIMARY KEY(commit_id, project) ;
 
 CREATE TABLE listspam (
     message_id          text,
