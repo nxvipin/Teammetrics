@@ -34,6 +34,7 @@ From: {1}
 Date: {2}
 Subject: {3}
 Message-ID: {4}
+
 """
 
     with open(mbox_file, 'w') as mbox_f:
