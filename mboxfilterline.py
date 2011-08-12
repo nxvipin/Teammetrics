@@ -12,9 +12,14 @@ def main(mbox_file):
     mbox = open(out_mbox, 'w')
 
     stop = False
+    first_run = True
+    first_add = True
     with open(mbox_file) as f:
         for line in f:
             if stop:
+                if first_add:
+                    print >>mbox
+                    first_add = False
                 line_strip = line.strip()
                 print >>mbox, line_strip
             if not line.strip():
@@ -22,8 +27,10 @@ def main(mbox_file):
                 continue
             if line.startswith(HEADERS):
                 stop = False
+                first_add = True
+                if not first_run:
+                    print >>mbox, '\n\n'
                 print >>mbox, line.strip()
-
 
 
 if __name__ == '__main__':
