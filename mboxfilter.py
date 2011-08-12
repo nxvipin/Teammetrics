@@ -3,7 +3,19 @@
 import sys
 import mailbox
 
-HEADERS = ('From', 'Date', 'Subject', 'Message-ID', 'In-Reply-To', 'References')
+HEADERS = ('From',
+           'Date',
+           'Subject',
+           'Message-ID',
+           'In-Reply-To',
+           'References',
+           'Content-Type',
+           'MIME-Version',
+           'Content-Transfer-Encoding',
+           'X-Spam-Status',
+           'X-Debian-PR-Package',
+           'X-Debian-PR-Keywords',
+          )
 
 
 def main(mbox_file):
