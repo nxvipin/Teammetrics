@@ -11,11 +11,16 @@ def main(mbox_file):
     out_mbox = mbox_file + '.converted'
     mbox = open(out_mbox, 'w')
 
-    stop = False
-    first_run = True
-    first_add = True
     with open(mbox_file) as f:
+        stop = False
+        first_add = True
         for line in f:
+
+            if line.startswith(HEADERS):
+                stop = False
+                first_add = True
+
+                print >>mbox, line,
 
             if stop:
                 if first_add:
@@ -23,19 +28,10 @@ def main(mbox_file):
                     first_add = False
 
                 print >>mbox, line,
-                continue
             
             if line == '\n':
-                first_run = False
                 stop = True
-                continue
             
-            if line.startswith(HEADERS):
-                stop = False
-                first_add = True
-
-                print >>mbox, line,
-                continue
 
 
 if __name__ == '__main__':
