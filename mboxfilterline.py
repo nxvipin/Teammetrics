@@ -13,7 +13,6 @@ def main(mbox_file):
 
     stop = False
     with open(mbox_file) as f:
-        content = []
         for line in f:
             if stop:
                 line_strip = line.strip()
@@ -23,7 +22,6 @@ def main(mbox_file):
                 continue
             if line.startswith(HEADERS):
                 stop = False
-                del content[:]
                 print >>mbox, line.strip()
 
 
