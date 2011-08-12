@@ -14,7 +14,6 @@ def main(mbox_file):
     stop = False
     first_run = True
     first_add = True
-    first_from = True
     with open(mbox_file) as f:
         for line in f:
 
@@ -34,13 +33,6 @@ def main(mbox_file):
             if line.startswith(HEADERS):
                 stop = False
                 first_add = True
-                if not first_run:
-                    first_from = True
-        
-                if line.split()[0] == 'From':
-                    if first_from:
-                        if not first_run:
-                            continue
 
                 print >>mbox, line,
                 continue
