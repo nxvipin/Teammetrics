@@ -14,22 +14,36 @@ def main(mbox_file):
     stop = False
     first_run = True
     first_add = True
+    first_from = True
     with open(mbox_file) as f:
         for line in f:
+
             if stop:
                 if first_add:
                     print >>mbox
                     first_add = False
-                print >>mbox, line ,
-            if not line.strip():
+
+                print >>mbox, line,
+                continue
+            
+            if line == '\n':
+                first_run = False
                 stop = True
                 continue
+            
             if line.startswith(HEADERS):
                 stop = False
                 first_add = True
                 if not first_run:
-                    print >>mbox, '\n\n'
-                print >>mbox, line.strip()
+                    first_from = True
+        
+                if line.split()[0] == 'From':
+                    if first_from:
+                        if not first_run:
+                            continue
+
+                print >>mbox, line,
+                continue
 
 
 if __name__ == '__main__':
