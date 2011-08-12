@@ -20,8 +20,7 @@ def main(mbox_file):
                 if first_add:
                     print >>mbox
                     first_add = False
-                line_strip = line.strip()
-                print >>mbox, line_strip
+                print >>mbox, line ,
             if not line.strip():
                 stop = True
                 continue
