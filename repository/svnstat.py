@@ -116,10 +116,10 @@ def fetch_logs(ssh, conn, cur, teams):
             # Save the information gathered to the database.
             try:
                 cur.execute(
-                """INSERT INTO commitstat(project, package, vcs, name, 
+                """INSERT INTO commitstat(commit_id, project, package, vcs, name, 
                     changes, lines_inserted, lines_deleted) 
-                        VALUES (%s, %s, %s, %s, %s, %s, %s);""",
-                  (project, package, 'svn', author, changes, inserted, deleted)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s);""",
+                  (revision, project, package, 'svn', author, changes, inserted, deleted)
                             )
                 conn.commit()
             except psycopg2.DataError as detail:
