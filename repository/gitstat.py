@@ -59,16 +59,18 @@ def fetch_logs(ssh, conn, cur, teams, users):
                 insertions = []
                 deletions = []
                 stat_cmd = ("git --git-dir={0} log --author='^{1}' "
-                           "--pretty=format: --shortstat".format(cwd_process, author))
+                           "--pretty=oneline --shortstat | sed -e 's/^\([^ ]\+\).*/\1,/' -e '/^[^ ]/{;N;s/\n//;}'".format(cwd_process, author))
                 
+                # print stat_cmd
                 stdin, stdout, stderr = ssh.exec_command(stat_cmd)
                 author_info = stdout.read()
+                # print author_info
 
                 author_info = [element.strip() for element in author_info.splitlines()
                                                                             if element]
                 changes = len(author_info)
                 for change in author_info:
-                    changed, inserted, deleted = change.split(',')
+                    commit_id, changed, inserted, deleted = change.split(',')
                     insertions.append(int(inserted[1]))
                     deletions.append(int(deleted[1]))
 
@@ -80,10 +82,10 @@ def fetch_logs(ssh, conn, cur, teams, users):
 
                 try:
                     cur.execute(
-                    """INSERT INTO commitstat(project, package, vcs, name, 
+                    """INSERT INTO commitstat(commit_id, project, package, vcs, name, 
                         changes, lines_inserted, lines_deleted) 
                             VALUES (%s, %s, %s, %s, %s, %s, %s);""",
-                      (team, each_dir, 'git', author, changes, insert, delete)
+                      (commit_id, team, each_dir, 'git', author, changes, insert, delete)
                                 )
                     conn.commit()
                 except psycopg2.DataError as detail:
