@@ -27,12 +27,13 @@ CREATE TABLE listarchives (
 ALTER TABLE listarchives ADD CONSTRAINT PK_project_messageid PRIMARY KEY(project,message_id) ;
 
 CREATE TABLE commitstat (
-    commit_id		    text,
     project             text,
     package             text,
     vcs                 text,
     name                text,
-    changes             int,
+    commit_id		text,
+    commit_date		date,
+    today_date		date,
     lines_inserted      int,
     lines_deleted       int
 );
