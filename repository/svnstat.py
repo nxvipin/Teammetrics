@@ -13,6 +13,7 @@ import os
 import sys
 import csv
 import logging
+import datetime
 import itertools
 import subprocess
 import collections
@@ -56,6 +57,8 @@ def fetch_logs(ssh, conn, cur, teams):
     """Fetch and save the logs for SVN repositories."""
     revisions = collections.defaultdict(list)
     done_revisions = get_revisions()
+    today_date = datetime.date.today()
+
     for team in teams:
         logging.info('Fetching team: %s' % team)
         cmd = 'svn log --xml file:///svn/{0}/'.format(team)
@@ -66,10 +69,13 @@ def fetch_logs(ssh, conn, cur, teams):
         # Get the list of committers and their revisions from the repository.
         new_changes = []
         author_info = collections.defaultdict(list)
+        revision_date = {}
         for info in output_xml.iter('logentry'):
             author = [author.text for author in info.iterchildren(tag='author')]
             revision = info.get('revision')
             author_info[''.join(author)].append(int(revision))
+            revision_date[int(revision)] = ''.join([date.text.split('T')[0]
+                                        for date in info.iterchildren(tag='date')])
 
         total_authors = len(author_info)
         logging.info('There are %d authors' % total_authors)
@@ -77,18 +83,18 @@ def fetch_logs(ssh, conn, cur, teams):
             project = team
             package = team
             author = committer
-            changes = len(author_info[committer])
 
             # Fetch the diff for each revision of an author. If the revision
             # has already been downloaded, it won't be downloaded again.
-            inserted = 0
-            deleted = 0
             old_changes = []
 
             if team in done_revisions:
                 old_changes = done_revisions[team]
 
             for change in revision:
+                inserted = 0
+                deleted = 0
+
                 if str(change) in old_changes:
                     logging.info('Skipping already done archive: %d' % change)
                     continue
@@ -110,22 +116,23 @@ def fetch_logs(ssh, conn, cur, teams):
                         else:
                             deleted += 1
 
+                # Save the information gathered to the database.
+                try:
+                    cur.execute(
+                """INSERT INTO commitstat(commit_id, project, package, vcs, name, 
+                    commit_date, today_date, lines_inserted, lines_deleted) 
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);""",
+                            (change, project, package, 'svn', author, 
+                    revision_date[change], today_date, inserted, deleted)
+                                )
+                    conn.commit()
+                except psycopg2.DataError as detail:
+                    conn.rollback()
+                    logging.error(detail)
+                    continue
+
                 logging.info('Parsed %d' % change)
                 new_changes.append(change)
-
-            # Save the information gathered to the database.
-            try:
-                cur.execute(
-                """INSERT INTO commitstat(commit_id, project, package, vcs, name, 
-                    changes, lines_inserted, lines_deleted) 
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s);""",
-                  (revision, project, package, 'svn', author, changes, inserted, deleted)
-                            )
-                conn.commit()
-            except psycopg2.DataError as detail:
-                conn.rollback()
-                logging.error(detail)
-                continue
 
         # Club all the revisions.
         all_revisions = list(itertools.chain(*author_info.values()))
