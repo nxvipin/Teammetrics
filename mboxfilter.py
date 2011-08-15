@@ -17,7 +17,7 @@ HEADERS = ('From',
            'X-Debian-PR-Package',
            'X-Debian-PR-Keywords',)
 
-MULTI_HEADERS = ('Content-Type')
+MULTI_HEADERS = ('Content-Type', 'References')
 
 
 def main(mbox_file):
