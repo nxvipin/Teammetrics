@@ -11,14 +11,13 @@ HEADERS = ('From',
            'In-Reply-To',
            'References',
            'Content-Type',
-                'boundary',
-                'protocol',
-                'micalg',
            'MIME-Version',
            'Content-Transfer-Encoding',
            'X-Spam-Status',
            'X-Debian-PR-Package',
            'X-Debian-PR-Keywords',)
+
+MULTI_HEADERS = ('Content-Type')
 
 
 def main(mbox_file):
@@ -28,13 +27,24 @@ def main(mbox_file):
 
     with open(mbox_file) as f:
         stop = False
+        start_h = False
         first_add = True
         header = True
 
         for line in f:
 
-            if line.lstrip().startswith(HEADERS):
+            if start_h:
                 if header:
+                    if line.startswith((' ', '\t')):
+                        print >>mbox, line, 
+
+            if line.startswith(HEADERS):
+                if header:
+                    start_h = False
+
+                    if line.startswith(MULTI_HEADERS):
+                        start_h = True
+
                     stop = False
                     first_add = True
 
@@ -51,6 +61,7 @@ def main(mbox_file):
             if line == '\n':
                 stop = True
                 header = True
+                start_h = False
             
     print 'Headers stripped from mbox'
 
