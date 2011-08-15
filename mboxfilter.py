@@ -11,6 +11,9 @@ HEADERS = ('From',
            'In-Reply-To',
            'References',
            'Content-Type',
+                'boundary',
+                'protocol',
+                'micalg',
            'MIME-Version',
            'Content-Transfer-Encoding',
            'X-Spam-Status',
@@ -26,15 +29,19 @@ def main(mbox_file):
     with open(mbox_file) as f:
         stop = False
         first_add = True
+        header = True
+
         for line in f:
 
-            if line.startswith(HEADERS):
-                stop = False
-                first_add = True
+            if line.lstrip().startswith(HEADERS):
+                if header:
+                    stop = False
+                    first_add = True
 
-                print >>mbox, line,
+                    print >>mbox, line,
 
             if stop:
+                header = False
                 if first_add:
                     print >>mbox
                     first_add = False
@@ -43,6 +50,7 @@ def main(mbox_file):
             
             if line == '\n':
                 stop = True
+                header = True
             
     print 'Headers stripped from mbox'
 
