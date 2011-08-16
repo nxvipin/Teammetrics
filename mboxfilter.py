@@ -14,6 +14,7 @@ HEADERS = ('From',
            'MIME-Version',
            'Content-Transfer-Encoding',
            'X-Spam-Status',
+           'X-Debian-PR-Message',
            'X-Debian-PR-Package',
            'X-Debian-PR-Keywords',)
 
