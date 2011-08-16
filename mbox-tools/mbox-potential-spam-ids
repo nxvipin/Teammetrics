@@ -1,6 +1,11 @@
 #!/bin/sh
 # quick search for potential SPAM messages to have some reasonal
 # input for a list of to be deleted messages for testing purpose
+#
+# This method is not really safe to extract SPAM messages because
+# sometimes the Message-ID is mentioned *before* X-Spam and so we
+# are fetching a HAM Message-ID ... but it works for testing
+# purposes
 
 MIDFILE=messageid
 
