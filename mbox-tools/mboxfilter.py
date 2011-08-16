@@ -1,6 +1,14 @@
 #! /usr/bin/env python
 
-"""Removes specified headers from mailbox archives."""
+"""
+  Conversion of mboxes of lists.debian.org
+  ----------------------------------------
+  
+  Purpose:
+   1. Removes specified headers from mailbox archives
+      not provide extra information to outsiders
+   2. Remove certain messages specified my Message-IDs
+"""
 
 import sys
 import mailbox
