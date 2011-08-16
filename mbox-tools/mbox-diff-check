@@ -15,4 +15,17 @@ if [ ! -f "$1.converted" ] ; then
 	echo "mbox $1 was not converted into $1.converted"
 	exit 1
 fi
-diff -u $1 $1.converted | grep -v -e '^-[^:]\+:' -e '^-[[:space:]]\{1,10\}[^ ]'
+
+# check for additions included in the converted mbox
+# the putput should be empty
+wdiff $1 $1.converted | grep '^\[+'
+
+# check for things missing in converted mbox which should not be missing
+# when piping through less and seeking for ^- only the deleted messages should
+# show up
+diff -u $1 $1.converted | grep -v -e '^-[^:]\+:' -e '^-[[:space:]]\{1,13\}[^ ]'
+# diff --unified=10 $1 $1.converted | grep -v -e '^-[^:]\+:' -e '^-[[:space:]]\{1,13\}[^ ]'
+# Remark: In
+#    Message-ID: <yunvcvrhwl6.fsf@aiko.keithp.com>
+# this leads to a strange artefact in diff, but a visual check of the converted
+# mbox looks OK.
