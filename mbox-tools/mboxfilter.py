@@ -61,7 +61,7 @@ def main(mbox_file):
 
             # If a line starts with one of the headers specified.
             if line.startswith(HEADERS):
-                if header:    
+                if header:
                     start_h = True
                     stop = False
                     first_add = True
