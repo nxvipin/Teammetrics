@@ -1,0 +1,10 @@
+#!/bin/sh
+# quick search for potential SPAM messages to have some reasonal
+# input for a list of to be deleted messages for testing purpose
+
+MIDFILE=messageid
+
+if [ -f $MIDFILE ] ; then
+    mv $MIDFILE ${MIDFILE}~
+fi
+cat $@ | egrep "^Message-ID:|^X-Spam" | grep -A1 score=[3-9] | grep ^Mess | sed 's/^Message-ID: //' > $MIDFILE
