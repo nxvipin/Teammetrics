@@ -17,8 +17,6 @@ HEADERS = ('From',
            'X-Debian-PR-Package',
            'X-Debian-PR-Keywords',)
 
-MULTI_HEADERS = ('Content-Type', 'References')
-
 
 def main(mbox_file):
 
@@ -33,18 +31,16 @@ def main(mbox_file):
 
         for line in f:
 
-            if start_h:
-                if header:
-                    if line.startswith((' ', '\t')):
+            if line.startswith((' ', '\t')):
+                if start_h:
+                    if header:
                         print >>mbox, line, 
+            else:
+                start_h = False
 
             if line.startswith(HEADERS):
                 if header:
-                    start_h = False
-
-                    if line.startswith(MULTI_HEADERS):
-                        start_h = True
-
+                    start_h = True
                     stop = False
                     first_add = True
 
