@@ -20,11 +20,16 @@ HEADERS = ('From',
           )
 
 # It might make sense to keep these headers as well
-possible_HEADERS = ('List-Id',
+possible_HEADERS = ('CC',
+                    'DKIM-Signature',
+                    'DomainKey-Signature',
+                    'List-Id',
                     'List-Post',
                     'List-Help',
                     'List-Subscribe',
                     'List-Unsubscribe',
+                    'Mail-Followup-To',
+                    'To',
                    )
 
 def main(mbox_file):
