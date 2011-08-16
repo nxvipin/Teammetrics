@@ -16,8 +16,16 @@ HEADERS = ('From',
            'X-Spam-Status',
            'X-Debian-PR-Message',
            'X-Debian-PR-Package',
-           'X-Debian-PR-Keywords',)
+           'X-Debian-PR-Keywords',
+          )
 
+# It might make sense to keep these headers as well
+possible_HEADERS = ('List-Id',
+                    'List-Post',
+                    'List-Help',
+                    'List-Subscribe',
+                    'List-Unsubscribe',
+                   )
 
 def main(mbox_file):
 
