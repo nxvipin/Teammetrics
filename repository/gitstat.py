@@ -15,6 +15,7 @@ import os
 import sys
 import socket
 import logging
+import datetime
 import ConfigParser
 
 import psycopg2
@@ -30,6 +31,7 @@ def fetch_logs(ssh, conn, cur, teams, users):
     cur.execute("""DELETE FROM commitstat WHERE vcs='git';""");
     conn.commit()
 
+    today_date = datetime.date.today()
     for team in teams:
         # Get the directory listing.
         cwd = '/git/{0}'.format(team)
@@ -56,41 +58,46 @@ def fetch_logs(ssh, conn, cur, teams, users):
                     logging.info('Upstream author: %s' % author)
                     continue
 
-                insertions = []
-                deletions = []
                 stat_cmd = ("git --git-dir={0} log --author='^{1}' "
-                           "--pretty=oneline --shortstat | sed -e 's/^\([^ ]\+\).*/\1,/' -e '/^[^ ]/{;N;s/\n//;}'".format(cwd_process, author))
-                
-                # print stat_cmd
+                           "--pretty=format:'%H,%ai' --shortstat".format(cwd_process, author))
+
                 stdin, stdout, stderr = ssh.exec_command(stat_cmd)
                 author_info = stdout.read()
-                # print author_info
 
-                author_info = [element.strip() for element in author_info.splitlines()
+                author_raw = [element.strip() for element in author_info.splitlines()
                                                                             if element]
-                changes = len(author_info)
+
+                author_info = []
+                for a, b in zip(author_raw[::2], author_raw[1::2]):
+                    author_info.append(a+','+b)
+
                 for change in author_info:
-                    commit_id, changed, inserted, deleted = change.split(',')
-                    insertions.append(int(inserted[1]))
-                    deletions.append(int(deleted[1]))
+                    try:
+                        commit_hash, date_raw, changed, added, deleted = change.split(',')
+                    except ValueError:
+                        continue
+        
+                    if len(commit_hash) != 40:
+                        continue
 
-                insert = sum(insertions)
-                delete = sum(deletions)
+                    date = date_raw.split()[0]
+                    added = added.strip().split()[0]
+                    deleted = deleted.strip().split()[0]
 
-                if each_dir.endswith('.git'):
-                    each_dir = each_dir[:-4]
+                    if each_dir.endswith('.git'):
+                        each_dir = each_dir[:-4]
 
-                try:
-                    cur.execute(
-                    """INSERT INTO commitstat(commit_id, project, package, vcs, name, 
-                        changes, lines_inserted, lines_deleted) 
-                            VALUES (%s, %s, %s, %s, %s, %s, %s);""",
-                      (commit_id, team, each_dir, 'git', author, changes, insert, delete)
-                                )
-                    conn.commit()
-                except psycopg2.DataError as detail:
-                    conn.rollback()
-                    print detail
-                    continue
+                    try:
+                        cur.execute(
+                        """INSERT INTO commitstat(commit_id, project, package, vcs, name, 
+                            commit_date, today_date, lines_inserted, lines_deleted) 
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);""",
+                  (commit_hash, team, each_dir, 'git', author, date, today_date, added, deleted)
+                                    )
+                        conn.commit()
+                    except psycopg2.DataError as detail:
+                        conn.rollback()
+                        print detail
+                        continue
 
     logging.info('Git logs saved...')
