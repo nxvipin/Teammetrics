@@ -1,0 +1,18 @@
+#!/bin/sh
+# This small scrip helps evaluating the success of an mbox transcription
+# Just watch out lines of output starting with '^-'
+# These should match the content of the removed messages
+
+if [ $# != 1 ] ; then
+	echo "Usage: $0 <mbox>"
+	exit 1
+fi
+if [ ! -f $1 ] ; then
+	echo "mbox $1 missing"
+	exit 1
+fi
+if [ ! -f "$1.converted" ] ; then
+	echo "mbox $1 was not converted into $1.converted"
+	exit 1
+fi
+diff -u $1 $1.converted | grep -v -e '^-[^:]\+:' -e '^-[[:space:]]\{1,10\}[^ ]'
