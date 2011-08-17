@@ -58,7 +58,7 @@ def fetch_logs(ssh, conn, cur, teams, users):
                     logging.info('Upstream author: %s' % author)
                     continue
 
-                stat_cmd = ("git --git-dir={0} log --author='^{1}' "
+                stat_cmd = ("git --git-dir={0} log --no-merges --author='^{1}' "
                            "--pretty=format:'%H,%ai' --shortstat".format(cwd_process, author))
 
                 stdin, stdout, stderr = ssh.exec_command(stat_cmd)
