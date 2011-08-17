@@ -84,6 +84,8 @@ SELECT * FROM author_per_year_of_list('soc-coordination', 12) AS (author text, y
 SELECT * FROM author_per_year_of_list('debian-med-packaging', 12) AS (author text, year int, value int) ;
  */
 
+GRANT EXECUTE ON FUNCTION author_names_of_list(text,integer) TO guest ;
+GRANT SELECT ON listarchives To guest ;
 
 COMMIT;
 EOF
