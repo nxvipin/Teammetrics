@@ -28,7 +28,7 @@ except psycopg2.OperationalError:
     try:
         conn = psycopg2.connect(host="localhost",port=DEFAULTPORT,user="guest",database=DB)
     except psycopg2.OperationalError:
-	conn = psycopg2.connect(host="127.0.0.1",port=DEFAULTPORT,user="guest",database=DB)
+	conn = psycopg2.connect(host="127.0.0.1",port=PORT,user="guest",database=DB)
 
 curs = conn.cursor()
 
