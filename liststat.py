@@ -278,6 +278,10 @@ def parse_and_save(mbox_files):
                     conn.rollback()
                     logging.error(detail)
                     continue
+                except psycopg2.IntegrityError as detail:
+                    conn.rollback()
+                    logging.error('Message-ID %s just stored (%s)' % (msg_id, detail))
+                    continue
 
                 conn.commit()
                 continue
