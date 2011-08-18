@@ -57,11 +57,10 @@ LOG_PATH = os.path.join(LOG_SAVE_DIR, PROJECT_DIR)
 LOG_FILE_PATH = os.path.join(LOG_PATH, LOG_FILE)
 
 DATABASE = {
-            'name': 'teammetrics',
-            'port': 5432,
-            # 'port': 5441, # ... use this on blends.debian.net / udd.debian.net
+            'name':        'teammetrics',
+            'defaultport': 5432,
+            'port':        5441, # ... use this on blends.debian.net / udd.debian.net
            }
-            
 
 def write_parsed_lists(lists):
     """Write the lists parsed from the downloaded mbox archives."""
@@ -162,7 +161,10 @@ def parse_and_save(mbox_files):
     """
 
     # Connect to the database.
-    conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
+    try:
+	conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['defaultport'])
+    except psycopg2.OperationalError:
+	conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
     cur = conn.cursor()
 
     current_lists = []
@@ -488,10 +490,13 @@ if __name__ == '__main__':
         sys.exit(1)
     # Simulate a connection just to check whether everything is OK.
     try:
-        psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
-    except psycopg2.Error as detail:
-        logging.error(detail)
-        sys.exit(1)
+	conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['defaultport'])
+    except psycopg2.OperationalError:
+	try:
+    	    psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
+	except psycopg2.Error as detail:
+    	    logging.error(detail)
+    	    sys.exit(1)
     logging.info('Connection to database successful')
 
     if not os.path.isdir(ARCHIVES_FILE_PATH):
