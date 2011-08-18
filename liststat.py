@@ -25,6 +25,7 @@ import sys
 import gzip
 import email
 import logging
+import hashlib
 import mailbox
 import urllib2
 import urlparse
@@ -169,6 +170,7 @@ def parse_and_save(mbox_files):
     cur = conn.cursor()
 
     current_lists = []
+    is_spam = False
 
     for url, files in mbox_files.iteritems():
         mbox_file = mailbox.mbox(files)
@@ -180,14 +182,6 @@ def parse_and_save(mbox_files):
         logging.info('Parsing: %s' % mailing_list)
 
         for message in mbox_file:
-            # The Message-ID that can be used to check for errors.
-            msg_id_raw = message['Message-ID']
-            if msg_id_raw is None:
-                logging.error('No Message-ID found')
-                msg_id = ''
-            else:
-                msg_id = msg_id_raw.strip('<>')
-
             # The 'From' field value returns a string of the format:
             #   email-address (Name)
             # from which the sender's name and email address is extracted. Note
@@ -251,8 +245,27 @@ def parse_and_save(mbox_files):
                 logging.warning('%s - %s'% (detail, subject))
                 pass
 
+            # The Message-ID that can be used to check for errors.
+            msg_id_raw = message['Message-ID']
+
+            if msg_id_raw is None:
+                logging.warning('No Message-ID found, setting default ID')
+                # Create a Message-ID:
+                #   sha1(date + subject) @ teammetrics-spam.debian.org.
+                domain_str = '@teammetrics-spam.debian.org'
+                hash_obj = hashlib.sha1()
+                hash_string = str(archive_date) + subject
+                hash_obj.update(hash_string)
+                msg_id = hash_obj.hexdigest() + '@teammetrics-spam.debian.org'
+                is_spam = True
+            else:
+                is_spam = False
+                msg_id = msg_id_raw.strip('<>')
+            
             name, subject, reason, spam = spamfilter.check_spam(name, subject)
             # If there is spam, populate the listspam database instead.
+            if is_spam:
+                reason = 'No Message ID'
             if spam:
                 try:
                     cur.execute(
@@ -319,11 +332,11 @@ def parse_and_save(mbox_files):
                 logging.error(detail)
                 continue
             except psycopg2.IntegrityError as detail:
-		# it happens that the very same message hits a mailing list twice
+                # It happens that the very same message hits a mailing list twice
                 # for instance because concerning two different bugs and BTS is
-                # sending a copy for each bug separately
+                # sending a copy for each bug separately.
                 conn.rollback()
-                logging.error('Message-ID %s just stored (%s)' % (msg_id, str(detail)))
+                logging.error('Message-ID %s just stored (%s)' % (msg_id, detail))
                 continue
 
             conn.commit()
