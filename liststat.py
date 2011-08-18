@@ -61,6 +61,7 @@ DATABASE = {
             'defaultport': 5432,
             'port':        5441, # ... use this on blends.debian.net / udd.debian.net
            }
+            
 
 def write_parsed_lists(lists):
     """Write the lists parsed from the downloaded mbox archives."""
@@ -316,6 +317,13 @@ def parse_and_save(mbox_files):
             except psycopg2.DataError as detail:
                 conn.rollback()
                 logging.error(detail)
+                continue
+            except psycopg2.IntegrityError as detail:
+		# it happens that the very same message hits a mailing list twice
+                # for instance because concerning two different bugs and BTS is
+                # sending a copy for each bug separately
+                conn.rollback()
+                logging.error('Message-ID %s just stored (%s)' % (msg_id, str(detail)))
                 continue
 
             conn.commit()
