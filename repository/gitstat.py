@@ -44,7 +44,7 @@ def fetch_logs(ssh, conn, cur, teams, users):
         for each_dir in git_dir:
             cwd_process = cwd + '/{0}'.format(each_dir)
             
-            author_cmd = "git --git-dir={0} log --pretty=format:'%an'".format(cwd_process)
+            author_cmd = "git --git-dir={0} log --pretty=format:'%an' -- debian".format(cwd_process)
             stdin, stdout, stderr = ssh.exec_command(author_cmd)
             authors_lst = stdout.read().splitlines()
 
@@ -53,13 +53,8 @@ def fetch_logs(ssh, conn, cur, teams, users):
 
             # Fetch the commit details for each author.
             for author in authors:
-                # For upstream contributors, filter them from the team.
-                if not author in users:
-                    logging.info('Upstream author: %s' % author)
-                    continue
-
                 stat_cmd = ("git --git-dir={0} log --no-merges --author='^{1}' "
-                           "--pretty=format:'%H,%ai' --shortstat".format(cwd_process, author))
+                           "--pretty=format:'%H,%ai' --shortstat -- debian".format(cwd_process, author))
 
                 stdin, stdout, stderr = ssh.exec_command(stat_cmd)
                 author_info = stdout.read()
@@ -72,13 +67,7 @@ def fetch_logs(ssh, conn, cur, teams, users):
                     author_info.append(a+','+b)
 
                 for change in author_info:
-                    try:
-                        commit_hash, date_raw, changed, added, deleted = change.split(',')
-                    except ValueError:
-                        continue
-        
-                    if len(commit_hash) != 40:
-                        continue
+                    commit_hash, date_raw, changed, added, deleted = change.split(',')
 
                     date = date_raw.split()[0]
                     added = added.strip().split()[0]
@@ -97,7 +86,7 @@ def fetch_logs(ssh, conn, cur, teams, users):
                         conn.commit()
                     except psycopg2.DataError as detail:
                         conn.rollback()
-                        print detail
+                        logging.error(detail)
                         continue
 
     logging.info('Git logs saved...')
