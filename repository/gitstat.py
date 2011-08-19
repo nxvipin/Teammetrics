@@ -32,8 +32,10 @@ def fetch_logs(ssh, conn, cur, teams, users):
     conn.commit()
 
     today_date = datetime.date.today()
+    no_debian = False
     for team in teams:
         # Get the directory listing.
+        logging.info('Parsing repository: %s' % team)
         cwd = '/git/{0}'.format(team)
 
         stdin, stdout, stderr = ssh.exec_command("ls {0}".format(cwd))
@@ -44,6 +46,9 @@ def fetch_logs(ssh, conn, cur, teams, users):
         for each_dir in git_dir:
             cwd_process = cwd + '/{0}'.format(each_dir)
             
+            # First fetch the authors who have committed to the Debian branch.
+            # This is used to filter upstream contributors who are contributing
+            # but are not part of the team and hence not part of the metrics.
             author_cmd = "git --git-dir={0} log --pretty=format:'%an' -- debian".format(cwd_process)
             stdin, stdout, stderr = ssh.exec_command(author_cmd)
             authors_lst = stdout.read().splitlines()
@@ -51,10 +56,27 @@ def fetch_logs(ssh, conn, cur, teams, users):
             # Uniquify the authors.
             authors = set(authors_lst)
 
+            # But for teams who are not contributing to Debian development,
+            # there is no Debian branch. So fetch all the statistics for them.
+            if not authors:
+                logging.warning('No Debian branch found')
+                author_cmd = "git --git-dir={0} log --pretty=format:'%an'".format(cwd_process)
+                stdin, stdout, stderr = ssh.exec_command(author_cmd)
+                authors_lst = stdout.read().splitlines()
+                authors = set(authors_lst)
+                no_debian = True
+                # If there are still no authors, go on to the next team. 
+                if not authors:
+                    continue
+
             # Fetch the commit details for each author.
             for author in authors:
-                stat_cmd = ("git --git-dir={0} log --no-merges --author='^{1}' "
-                           "--pretty=format:'%H,%ai' --shortstat -- debian".format(cwd_process, author))
+                if no_debian:
+                    stat_cmd = ("git --git-dir={0} log --no-merges --author='^{1}' "
+                   "--pretty=format:'%H,%ai' --shortstat".format(cwd_process, author))
+                else:
+                    stat_cmd = ("git --git-dir={0} log --no-merges --author='^{1}' "
+                   "--pretty=format:'%H,%ai' --shortstat -- debian".format(cwd_process, author))
 
                 stdin, stdout, stderr = ssh.exec_command(stat_cmd)
                 author_info = stdout.read()
