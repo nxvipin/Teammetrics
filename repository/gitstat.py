@@ -32,7 +32,6 @@ def fetch_logs(ssh, conn, cur, teams, users):
     conn.commit()
 
     today_date = datetime.date.today()
-    no_debian = False
     for team in teams:
         # Get the directory listing.
         logging.info('Parsing repository: %s' % team)
@@ -44,6 +43,7 @@ def fetch_logs(ssh, conn, cur, teams, users):
         git_dir = [dir for dir in output.splitlines() if dir.endswith('.git')]
 
         for each_dir in git_dir:
+            no_debian = False
             cwd_process = cwd + '/{0}'.format(each_dir)
             
             # First fetch the authors who have committed to the Debian branch.
