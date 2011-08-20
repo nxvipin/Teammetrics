@@ -27,16 +27,19 @@ import updatenames
 def fetch_logs(ssh, conn, cur, teams, users):
     """Fetch and save the logs for Git repositories by SSHing into Alioth."""
 
-    # Connect to the database and clear the existing Git records because we
-    # don't maintain a redundancy checker as fetching logs is fast.
-    cur.execute("""DELETE FROM commitstat WHERE vcs='git';""");
-    conn.commit()
-
     today_date = datetime.date.today()
     # A regex pattern to match SHA-1 hashes.
     pattern = re.compile("[a-f0-9]{40}")
 
     for team in teams:
+        # Connect to the database and clear the existing Git records because we
+        # don't maintain a redundancy checker as fetching logs is fast; clear the
+        # records only for the teams in the configuration file.
+        logging.info('Clearing existing records of %s from database' % team)
+        cur.execute("""DELETE FROM commitstat WHERE vcs='git' 
+                                            AND project=%s;""", (team, ))
+        conn.commit()
+
         # Get the directory listing.
         logging.info('Parsing repository: %s' % team)
         cwd = '/git/{0}'.format(team)
@@ -116,6 +119,7 @@ def fetch_logs(ssh, conn, cur, teams, users):
                     try:
                         date = date_raw.split()[0]
                     except IndexError as detail:
+                        logging.warning('Invalid date')
                         logging.error(detail)
                         continue
                     added = added.strip().split()[0]
