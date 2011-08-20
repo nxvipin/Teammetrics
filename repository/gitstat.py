@@ -119,7 +119,7 @@ def fetch_logs(ssh, conn, cur, teams, users):
                     try:
                         date = date_raw.split()[0]
                     except IndexError as detail:
-                        logging.warning('Invalid date')
+                        logging.warning('Invalid date: %s' % date)
                         logging.error(detail)
                         continue
                     added = added.strip().split()[0]
