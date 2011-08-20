@@ -12,6 +12,7 @@ There is support for fetching statistics of multiple packages per team also.
 """
 
 import os
+import re
 import sys
 import socket
 import logging
@@ -32,6 +33,9 @@ def fetch_logs(ssh, conn, cur, teams, users):
     conn.commit()
 
     today_date = datetime.date.today()
+    # A regex pattern to match SHA-1 hashes.
+    pattern = re.compile("[a-f0-9]{40}")
+
     for team in teams:
         # Get the directory listing.
         logging.info('Parsing repository: %s' % team)
@@ -44,6 +48,7 @@ def fetch_logs(ssh, conn, cur, teams, users):
 
         for each_dir in git_dir:
             no_debian = False
+            logging.info('\tPackage: %s' % each_dir)
             cwd_process = cwd + '/{0}'.format(each_dir)
             
             # First fetch the authors who have committed to the Debian branch.
@@ -72,26 +77,47 @@ def fetch_logs(ssh, conn, cur, teams, users):
             # Fetch the commit details for each author.
             for author in authors:
                 if no_debian:
-                    stat_cmd = ("git --git-dir={0} log --no-merges --author='^{1}' "
+                    stat_cmd = ("git --git-dir={0} log --no-merges --author='{1} <' "
                    "--pretty=format:'%H,%ai' --shortstat".format(cwd_process, author))
                 else:
-                    stat_cmd = ("git --git-dir={0} log --no-merges --author='^{1}' "
+                    stat_cmd = ("git --git-dir={0} log --no-merges --author='{1} <' "
                    "--pretty=format:'%H,%ai' --shortstat -- debian".format(cwd_process, author))
 
                 stdin, stdout, stderr = ssh.exec_command(stat_cmd)
-                author_info = stdout.read()
+                author_read = stdout.read().splitlines()
 
-                author_raw = [element.strip() for element in author_info.splitlines()
-                                                                            if element]
+                # There are some log entries that don't have any lines changed
+                # but are a commit of a merge or a tag. We filter entries.
+                found = True
+                for element in author_read[:]:
+                    if pattern.match(element):
+                        if not found:
+                            element_index = author_read.index(element)
+                            author_info.pop(element_index-1)
+                        found = False
+                    else:
+                        found = True
+
+                author_raw = [element.strip() for element in author_read 
+                                                                    if element]
 
                 author_info = []
                 for a, b in zip(author_raw[::2], author_raw[1::2]):
                     author_info.append(a+','+b)
 
                 for change in author_info:
-                    commit_hash, date_raw, changed, added, deleted = change.split(',')
+                    try:
+                        commit_hash, date_raw, changed, added, deleted = change.split(',')
+                    except ValueError as detail:
+                        logging.error(detail)
+                        continue
 
-                    date = date_raw.split()[0]
+                    # There are some invalid dates, just skip those commits.
+                    try:
+                        date = date_raw.split()[0]
+                    except IndexError as detail:
+                        logging.error(detail)
+                        continue
                     added = added.strip().split()[0]
                     deleted = deleted.strip().split()[0]
 
