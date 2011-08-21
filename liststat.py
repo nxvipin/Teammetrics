@@ -254,7 +254,7 @@ def parse_and_save(mbox_files, nntp=False):
                 #   sha1(date + subject) @ teammetrics-spam.debian.org.
                 domain_str = '@teammetrics-spam.debian.org'
                 hash_obj = hashlib.sha1()
-                hash_string = str(archive_date) + subject
+                hash_string = str(archive_date) + project
                 hash_obj.update(hash_string)
                 msg_id = hash_obj.hexdigest() + '@teammetrics-spam.debian.org'
                 is_spam = True
