@@ -3,3 +3,12 @@
 
 # Python byte code.
 *.pyc
+
+zzz_*
+*.converted
+rotate_state
+*.png
+*year.txt
+*.[12][0-9][0-9][0-9][0-9][0-9]
+*.tgz
+
