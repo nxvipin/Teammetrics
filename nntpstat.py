@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-"""Generates mailing list statistics for measuring team performance (NNTP).
+"""Fetch messages from Gmane over NNTP and create mbox archives.
 
 This script uses NNTP to fetch and parse the mailing lists on lists.debian.org via
 the Gmane NNTP server (news.gmane.org). The metrics used for measuring team 
@@ -22,6 +22,7 @@ import ConfigParser
 import BeautifulSoup
 
 import liststat
+import updatenames
 
 NNTP_CONF_FILE = 'nntplists.hash'
 NNTP_CONF_SAVE_PATH = os.path.join(liststat.ARCHIVES_SAVE_DIR, 
@@ -29,8 +30,6 @@ NNTP_CONF_SAVE_PATH = os.path.join(liststat.ARCHIVES_SAVE_DIR,
                                   NNTP_CONF_FILE)
 
 ARCHIVES_FILE_PATH = liststat.ARCHIVES_FILE_PATH
-
-MBOX_FILES = {}
 
 NNTP_SERVER = 'news.gmane.org'
 NNTP_LIST = 'http://list.gmane.org'
@@ -180,11 +179,13 @@ def format_mail_name(from_field):
 def nntp_to_mbox(lst_name, lst_url, frm, date, sub, msg, body, first, last):
     """Convert the information fetched from the NNTP server to a mbox archive."""
 
+    logging.info('Parsing and creating mbox archive for %s' % lst_name)
     mbox_format = """From {0}
 From: {1}
 Date: {2}
 Subject: {3}
 Message-ID: {4}
+
 """
     mbox_file_name = '{0}-{1}-{2}.mbox'.format(lst_name, first, last)
     mbox_file_path = os.path.join(ARCHIVES_FILE_PATH, mbox_file_name)
@@ -207,13 +208,13 @@ Message-ID: {4}
           
             mbox_file.write(mbox_format.format(f_one, f_two, d, s, m)) 
             mbox_file.write(b)
+            mbox_file.write('\n')
 
     logging.info('mbox archive saved for %s' % lst_name)
     save_parsed_lists(lst_name, last)
 
-    # A mapping of project-name to the mbox-file path.
-    mbox = {lst_url:mbox_file_path}
-    MBOX_FILES.update(mbox)
+    # Call liststat that will parse the mbox created.
+    liststat.parse_and_save({lst_url: mbox_file_path}, nntp=True)
 
 
 def main():
@@ -311,7 +312,7 @@ def main():
                     body.append('\n'.join(msg))
                     # Log the count.
                     if i in logging_counter:
-                        logging.info('\t#%d' % i)
+                        logging.info('\t%d' % i)
                     msg_counter += 1
                 except nntplib.NNTPTemporaryError as detail:
                     continue
@@ -328,12 +329,9 @@ def main():
 
             counter += 1
 
-    if not MBOX_FILES:
-        logging.info('Nothing to process')
-        sys.exit()
-
-    liststat.parse_and_save(MBOX_FILES)
-
+    logging.info('Quit')
+    sys.exit()
+ 
 
 if __name__ == '__main__':
     liststat.start_logging()

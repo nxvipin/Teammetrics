@@ -140,5 +140,9 @@ def fetch_logs(ssh, conn, cur, teams, users):
                         conn.rollback()
                         logging.error(detail)
                         continue
+                    except psycopg2.IntegrityError as detail:
+                        conn.rollback()
+                        logging.warning('Hash %s in %s package duplicated' % (commit_hash, each_dir))
+                        continue
 
     logging.info('Git logs saved...')

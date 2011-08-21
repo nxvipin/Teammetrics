@@ -155,7 +155,7 @@ def get_configuration(config_file_path=CONF_FILE_PATH, pipermail=True):
     return mailing_list_parse, total_lists
 
 
-def parse_and_save(mbox_files):
+def parse_and_save(mbox_files, nntp=False):
     """Parse the mbox archives to extract the required information.
 
     Opens each local mbox specified by mbox_files and extracts the required
@@ -164,9 +164,9 @@ def parse_and_save(mbox_files):
 
     # Connect to the database.
     try:
-	conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['defaultport'])
+        conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['defaultport'])
     except psycopg2.OperationalError:
-	conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
+        conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
     cur = conn.cursor()
 
     current_lists = []
@@ -280,7 +280,7 @@ def parse_and_save(mbox_files):
                     continue
                 except psycopg2.IntegrityError as detail:
                     conn.rollback()
-                    logging.error('Message-ID %s just stored (%s)' % (msg_id, detail))
+                    logging.error('Message-ID %s already stored (%s)' % (msg_id, detail))
                     continue
 
                 conn.commit()
@@ -354,17 +354,19 @@ def parse_and_save(mbox_files):
     cur.close()
     conn.close()
 
-    # Write the checksums of the download mbox archives.
-    if current_lists:
-        write_parsed_lists(current_lists)
+    # nntp is True when parse_and_save is saved is being called by nntpstat.
+    if not nntp:
+        # Write the checksums of the download mbox archives.
+        if current_lists:
+            write_parsed_lists(current_lists)
 
-    # Remove the extracted mbox archives (in plain text).
-    logging.info('Cleaning up extracted mbox archives')
-    for each_mbox in mbox_files.itervalues():
-        os.remove(each_mbox)
+        # Remove the extracted mbox archives (in plain text).
+        logging.info('Cleaning up extracted mbox archives')
+        for each_mbox in mbox_files.itervalues():
+            os.remove(each_mbox)
 
-    logging.info('Quit')
-    sys.exit()
+        logging.info('Quit')
+        sys.exit()
 
 
 def main(conf_info, total_lists): 
@@ -513,15 +515,17 @@ if __name__ == '__main__':
     if not DATABASE['name']:
         logging.error("Please set a value for 'name' key of DATABASE")
         sys.exit(1)
+
     # Simulate a connection just to check whether everything is OK.
     try:
-	conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['defaultport'])
+        conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['defaultport'])
     except psycopg2.OperationalError:
-	try:
-    	    psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
-	except psycopg2.Error as detail:
-    	    logging.error(detail)
-    	    sys.exit(1)
+        try:
+            psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
+        except psycopg2.Error as detail:
+            logging.error(detail)
+            sys.exit(1)
+
     logging.info('Connection to database successful')
 
     if not os.path.isdir(ARCHIVES_FILE_PATH):
