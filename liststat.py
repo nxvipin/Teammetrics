@@ -227,8 +227,8 @@ def parse_and_save(mbox_files, nntp=False):
                 continue
             try:
                 archive_date = format_date.strftime("%Y-%m-%d") 
-            except ValueError:
-                logging.error(detail)
+            except ValueError, detail:
+                logging.error("%s: %s" % (mbox_name, detail))
                 continue
             
             raw_subject = ' '.join(message['Subject'].split())
