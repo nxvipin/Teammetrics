@@ -5,9 +5,8 @@
   ----------------------------------------
   
   Purpose:
-   1. Removes specified headers from mailbox archives
-      not provide extra information to outsiders
-   2. Remove certain messages specified my Message-IDs
+   1. Removes specified headers from mailbox archives and not provide extra information to outsiders.
+   2. Remove certain messages specified my Message-IDs.
 """
 
 import sys
