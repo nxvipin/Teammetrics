@@ -15,10 +15,12 @@ a 'Name' or a 'Subject' field:
 import logging
 
 SPAM_KEYWORDS = (
-                'lottery', 
-                'promotion', 
                 'loan', 
-                'Mail Delivery Subsystem'
+                'lottery', 
+                'Mail Delivery Subsystem',
+                'Pls check this new site',
+                'promotion', 
+                'Tim.com.br',
                 )
 
 
