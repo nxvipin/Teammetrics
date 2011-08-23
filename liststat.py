@@ -240,7 +240,10 @@ def parse_and_save(mbox_files, nntp=False):
             try:
                 decoded_subject = email.header.decode_header(raw_subject)
             except ValueError:
-                logging.warning("Invalid 'Subject' encoding")
+                logging.warning("Invalid 'Subject' encoding in mbox %s" % mbox_name)
+                pass
+            except email.errors.HeaderParseError, detail:
+                logging.warning("Problem parsing 'Subject' in mbox %s" % mbox_name)
                 pass
 
             try:
