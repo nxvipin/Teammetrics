@@ -231,7 +231,12 @@ def parse_and_save(mbox_files, nntp=False):
                 logging.error("%s: %s" % (mbox_name, detail))
                 continue
             
-            raw_subject = ' '.join(message['Subject'].split())
+            try:
+        	raw_subject = ' '.join(message['Subject'].split())
+            except AttributeError, detail:
+                logging.error("%s: %s" % (mbox_name, detail))
+                raw_subject = ''
+
             try:
                 decoded_subject = email.header.decode_header(raw_subject)
             except ValueError:
