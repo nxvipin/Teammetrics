@@ -103,6 +103,12 @@ NAMES = {
 
 BOTS = (
             'Archive Administrator',
+            'Cron Daemon',
+            'BugScan reporter',
+            'bts-link-upstream',
+            'Debian Archive Maintenance',
+            'Debian BTS',
+            'Debian External Health System',
             'Debian testing watch',
             'Debian Bug Tracking System',
             'Debian FTP Masters',
