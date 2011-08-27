@@ -1,21 +1,21 @@
 #! /usr/bin/env python
 
-"""Generates mailing list statistics for measuring team performance.
+"""Generates mailing list statistics for GNU Mailman lists.
 
 This script downloads mbox archives for the mailing list(s) specified, parses
 them and generates statistical data about the most active contributors, which
-is calculated using various metrics such as:
+is calculated using the metrics:
 
-    - frequency of the 'From' header,
+    - frequency of the From header,
     - the raw length of the message body,
-    - the length of the message body excluding quoted lines (>)
-    and blank lines (individually).
+    - the length of the message body excluding quoted lines (>), blank lines
+    and signatures (individually).
 
-This script works for any mailing list that runs on GNU Mailman and where 
-Pipermail is used as the mail archiver but it will parse a local mailbox also
-provided the right function is called. You just need to specify the list URL
-and the script will automatically download all the mbox archives, parse them
-and generate the data required. The data gathered is then stored in a database
+This script works for any mailing list that runs on GNU Mailman and where
+Pipermail is used as the mail archiver but the parse_and_save function can be
+used to parse any mailbox. You just need to specify the list URL and the script
+will automatically download all the mbox archives, parse them and generate the
+information required. The information gathered is then stored in a database
 which you can query to get the specific statistics you desire.
 """
 
@@ -181,7 +181,7 @@ def parse_and_save(mbox_files, nntp=False):
         project = mailing_list.rsplit('-', 2)[0]
         logging.info('Parsing: %s' % mailing_list)
 
-        for message in mbox_file:
+        for key, message in mbox_file.iteritems():
             # The 'From' field value returns a string of the format:
             #   email-address (Name)
             # from which the sender's name and email address is extracted. Note
@@ -206,7 +206,7 @@ def parse_and_save(mbox_files, nntp=False):
                                         for text, charset in decoded_name])
             except (LookupError, UnicodeDecodeError) as detail:
                 logging.warning('%s - %s' % (detail, name))
-                pass
+                logging.warning('Message #: %d' % key)
 
             if name.endswith('alioth.debian.org'):
                 name = name.split()[0]
@@ -224,40 +224,44 @@ def parse_and_save(mbox_files, nntp=False):
                 format_date = datetime.datetime(*parsed_date[:4])   
             except ValueError as detail:
                 logging.error(detail)
+                logging.error('Message #: %d' % key)
                 continue
             try:
                 archive_date = format_date.strftime("%Y-%m-%d") 
-            except ValueError, detail:
+            except ValueError as detail:
                 logging.error("%s: %s" % (mbox_name, detail))
+                logging.error('Message #: %d' % key)
                 continue
             
             try:
         	raw_subject = ' '.join(message['Subject'].split())
-            except AttributeError, detail:
+            except AttributeError as detail:
                 logging.error("%s: %s" % (mbox_name, detail))
+                logging.error('Message #: %d' % key)
                 raw_subject = ''
 
             try:
                 decoded_subject = email.header.decode_header(raw_subject)
             except ValueError:
                 logging.warning("Invalid 'Subject' encoding in mbox %s" % mbox_name)
-                pass
-            except email.errors.HeaderParseError, detail:
+                logging.warning('Message #: %d' % key)
+            except email.errors.HeaderParseError as detail:
                 logging.warning("Problem parsing 'Subject' in mbox %s" % mbox_name)
-                pass
+                logging.warning('Message #: %d' % key)
 
             try:
                 subject = u" ".join([unicode(text, charset or 'ascii')
                                         for text, charset in decoded_subject])
             except (UnicodeDecodeError, LookupError) as detail:
                 logging.warning('%s - %s'% (detail, subject))
-                pass
+                logging.warning('Message #: %d' % key)
 
             # The Message-ID that can be used to check for errors.
             msg_id_raw = message['Message-ID']
 
             if msg_id_raw is None:
                 logging.warning('No Message-ID found, setting default ID')
+                logging.warning('Message #: %d' % key)
                 # Create a Message-ID:
                 #   sha1(date + subject) @ teammetrics-spam.debian.org.
                 domain_str = '@teammetrics-spam.debian.org'

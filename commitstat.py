@@ -8,6 +8,8 @@ the metrics of:
     - frequency of committer,
     - number of lines added,
     - number of lines deleted.
+
+The required data is fetched by SSHing into Alioth.
 """
 
 import os

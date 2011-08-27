@@ -7,6 +7,8 @@ the metrics of:
 
     - frequency of commits,
     - lines of code committed by a particular author.
+
+All commands are executed locally on Alioth.
 """
 
 import os
