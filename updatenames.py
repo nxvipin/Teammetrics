@@ -112,7 +112,8 @@ BOTS = (
             'Debian testing watch',
             'Debian Bug Tracking System',
             'Debian FTP Masters',
-            'Debian Installer'
+            'Debian Installer',
+            'Debian Boot CVS Master'
        )
 
 # new-name: old-name.

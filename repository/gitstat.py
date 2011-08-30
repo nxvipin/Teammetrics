@@ -96,7 +96,7 @@ def fetch_logs(ssh, conn, cur, teams, users):
                     if pattern.match(element):
                         if not found:
                             element_index = author_read.index(element)
-                            author_info.pop(element_index-1)
+                            author_read.pop(element_index-1)
                         found = False
                     else:
                         found = True
