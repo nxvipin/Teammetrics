@@ -1,8 +1,14 @@
 #!/bin/sh
 #set -x
 if [ $# != 1 ] ; then
-	echo "Usage: $0 <list|url>"
+	echo "Usage: $0 <list|url|all>"
 	exit 1
+fi
+
+if [ "$1" = "all" ] ; then
+    psql teammetrics --tuples-only --command "TRUNCATE listarchives; TRUNCATE commitstat; TRUNCATE listspam;" ;
+    rm -f /var/cache/teammetrics/nntplists.hash /var/cache/teammetrics/lists.hash
+    exit 0
 fi
 
 PRJCOUNT=`psql teammetrics --tuples-only --command "SELECT COUNT(*) FROM listarchives WHERE project='$1' ;"`
