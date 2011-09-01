@@ -35,7 +35,7 @@ def fetch_logs(ssh, conn, cur, teams, users):
         # Connect to the database and clear the existing Git records because we
         # don't maintain a redundancy checker as fetching logs is fast; clear the
         # records only for the teams in the configuration file.
-        logging.info('Clearing existing records of %s from database' % team)
+        logging.info("Clearing existing records of '%s' from database" % team)
         cur.execute("""DELETE FROM commitstat WHERE vcs='git' 
                                             AND project=%s;""", (team, ))
         conn.commit()
@@ -142,7 +142,7 @@ def fetch_logs(ssh, conn, cur, teams, users):
                         continue
                     except psycopg2.IntegrityError as detail:
                         conn.rollback()
-                        logging.warning('Hash %s in %s package duplicated' % (commit_hash, each_dir))
+                        logging.warning("Hash '%s' in '%s' package duplicated" % (commit_hash, each_dir))
                         continue
 
     logging.info('Git logs saved...')
