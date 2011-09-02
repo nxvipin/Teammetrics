@@ -38,6 +38,11 @@ CONF_FILE_PATH = os.path.join('/etc/teammetrics', CONF_FILE)
 SERVER = 'vasks.debian.org'
 USER = ''
 
+DATABASE = {
+            'name':        'teammetrics',
+            'defaultport': 5432,
+            'port':        5441, # ... use this on blends.debian.net / udd.debian.net
+           }
 
 def ssh_initialize():
     """Connect to Alioth and return a SSHClient instance."""
@@ -165,8 +170,14 @@ def get_stats():
     ssh, git, svn, svn_git, users = detect_vcs()
 
     try:
-        conn = psycopg2.connect(database='teammetrics')
+        conn = psycopg2.connect(database=DATABASE['name'])
         cur = conn.cursor()
+    except psycopg2.OperationalError:
+	try: 
+    	    conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
+	except psycopg2.Error as detail:
+    	    logging.error(detail)
+    	    sys.exit(1)
     except psycopg2.Error as detail:
         logging.error(detail)
         sys.exit(1)
