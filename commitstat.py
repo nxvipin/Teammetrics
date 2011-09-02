@@ -47,6 +47,7 @@ DATABASE = {
             'port':        5441, # ... use this on blends.debian.net / udd.debian.net
            }
 
+
 def read_ssh_config():
     """Read the configuration settings from the SSH configuration file."""
     if os.path.isfile(SSH_CONFIG):
@@ -72,7 +73,10 @@ def ssh_initialize():
 
     user = read_ssh_config()
     # If the username is None or if the command line argument was passed,
-    # set the username to the global USER.
+    # set the username to the global USER. The order of precedence is:
+    #   command line argument
+    #   config file
+    #   global variable USER
     if user is None or USER_CMD:
         user = USER
 
