@@ -48,6 +48,7 @@ def ssh_initialize():
         ssh.connect(SERVER, username=USER, allow_agent=True)
         logging.info('Connection to Alioth successful')
     except (paramiko.SSHException, socket.error) as detail:
+        logging.error('Please check your username')
         logging.error(detail)
         sys.exit(1)
 
