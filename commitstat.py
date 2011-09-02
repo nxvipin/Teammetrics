@@ -37,7 +37,6 @@ CONF_FILE_PATH = os.path.join('/etc/teammetrics', CONF_FILE)
 
 SERVER = 'vasks.debian.org'
 USER = ''
-PASSWORD = ''
 
 
 def ssh_initialize():
@@ -45,24 +44,8 @@ def ssh_initialize():
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-    private_key_file = os.path.expanduser('~/.ssh/id_rsa')
-
-    if not os.path.isfile(private_key_file):
-        logging.error('Private key file not found OR '
-                        'did you provide your Alioth username?')
-        sys.exit(1)
-    
     try:
-        user_key = paramiko.RSAKey.from_private_key_file(private_key_file,
-                                                        password=PASSWORD)
-    except (paramiko.PasswordRequiredException,
-            paramiko.SSHException) as detail:
-        logging.error('Please check the key password')
-        logging.error(detail)
-        sys.exit(1)
-
-    try:
-        ssh.connect(SERVER, username=USER, pkey=user_key)
+        ssh.connect(SERVER, username=USER, allow_agent=True)
         logging.info('Connection to Alioth successful')
     except (paramiko.SSHException, socket.error) as detail:
         logging.error(detail)
