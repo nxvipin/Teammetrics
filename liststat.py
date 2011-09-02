@@ -222,46 +222,46 @@ def parse_and_save(mbox_files, nntp=False):
             # Some messages have faulty Date headers. It's better to skip them.
             try:
                 format_date = datetime.datetime(*parsed_date[:4])   
-            except ValueError as detail:
-                logging.error(detail)
-                logging.error('Message #: %d' % key)
+            except (ValueError, TypeError) as detail:
+                logging.error("Invalid message #: %d in list '%s'" % (key, mbox_name))
+                logging.error('\t%s' % detail)
                 continue
             try:
                 archive_date = format_date.strftime("%Y-%m-%d") 
             except ValueError as detail:
-                logging.error("%s: %s" % (mbox_name, detail))
-                logging.error('Message #: %d' % key)
+                logging.error("Invalid message #: %d in list '%s'" % (key, mbox_name))
+                logging.error('\t%s' % detail)
                 continue
             
             try:
-        	raw_subject = ' '.join(message['Subject'].split())
+                raw_subject = ' '.join(message['Subject'].split())
             except AttributeError as detail:
-                logging.error("%s: %s" % (mbox_name, detail))
-                logging.error('Message #: %d' % key)
+                logging.error("Invalid message #: %d in list '%s'" % (key, mbox_name))
+                logging.error('\t%s' % detail)
                 raw_subject = ''
 
             try:
                 decoded_subject = email.header.decode_header(raw_subject)
             except ValueError:
                 logging.warning("Invalid 'Subject' encoding in mbox %s" % mbox_name)
-                logging.warning('Message #: %d' % key)
+                logging.warning('\tMessage #: %d' % key)
             except email.errors.HeaderParseError as detail:
                 logging.warning("Problem parsing 'Subject' in mbox %s" % mbox_name)
-                logging.warning('Message #: %d' % key)
+                logging.warning('\tMessage #: %d' % key)
 
             try:
                 subject = u" ".join([unicode(text, charset or 'ascii')
                                         for text, charset in decoded_subject])
             except (UnicodeDecodeError, LookupError) as detail:
-                logging.warning('%s - %s'% (detail, subject))
-                logging.warning('Message #: %d' % key)
+                logging.warning("Invalid message #: %d in list '%s'" % (key, mbox_name))
+                logging.warning('\t%s' % detail)
 
             # The Message-ID that can be used to check for errors.
             msg_id_raw = message['Message-ID']
 
             if msg_id_raw is None:
                 logging.warning('No Message-ID found, setting default ID')
-                logging.warning('Message #: %d' % key)
+                logging.warning('\tMessage #: %d' % key)
                 # Create a Message-ID:
                 #   sha1(date + subject) @ teammetrics-spam.debian.org.
                 domain_str = '@teammetrics-spam.debian.org'

@@ -160,7 +160,7 @@ def detect_vcs():
     if missing_teams:
         logging.warning('Teams not using Git or SVN or are missing: ')
         for each in missing_teams:
-            logging.warning('%s' % each)
+            logging.warning('\t%s' % each)
 
     return ssh, git_lst, svn_lst, svn_and_git, users
 
@@ -173,11 +173,11 @@ def get_stats():
         conn = psycopg2.connect(database=DATABASE['name'])
         cur = conn.cursor()
     except psycopg2.OperationalError:
-	try: 
-    	    conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
-	except psycopg2.Error as detail:
-    	    logging.error(detail)
-    	    sys.exit(1)
+        try: 
+            conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
+        except psycopg2.Error as detail:
+            logging.error(detail)
+            sys.exit(1)
     except psycopg2.Error as detail:
         logging.error(detail)
         sys.exit(1)

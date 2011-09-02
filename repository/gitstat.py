@@ -13,7 +13,6 @@ There is support for fetching statistics of multiple packages per team also.
 
 import os
 import re
-import sys
 import socket
 import logging
 import datetime
