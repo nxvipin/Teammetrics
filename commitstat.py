@@ -39,7 +39,7 @@ SERVER = 'vasks.debian.org'
 USER_CMD = False
 USER = ''
 
-SSH_CONFIG  = os.path.join(os.path.expanduser('~'), '.ssh', 'config')
+SSH_CONFIG = os.path.join(os.path.expanduser('~'), '.ssh', 'config')
 
 DATABASE = {
             'name':        'teammetrics',
@@ -70,13 +70,13 @@ def ssh_initialize():
     """Connect to Alioth and return a SSHClient instance."""
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
     user = read_ssh_config()
+
     # If the username is None or if the command line argument was passed,
     # set the username to the global USER. The order of precedence is:
-    #   command line argument
-    #   config file
-    #   global variable USER
+    #     Command line argument
+    #     Config file
+    #     Global variable USER
     if user is None or USER_CMD:
         user = USER
 
