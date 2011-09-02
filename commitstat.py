@@ -175,15 +175,16 @@ def get_stats():
     except psycopg2.OperationalError:
         try: 
             conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
+            cur = conn.cursor()
         except psycopg2.Error as detail:
             logging.error(detail)
             sys.exit(1)
 	try: 
-    	    conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
-            cur = conn.cursor()
+        conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
+        cur = conn.cursor()
 	except psycopg2.Error as detail:
-    	    logging.error(detail)
-    	    sys.exit(1)
+        logging.error(detail)
+        sys.exit(1)
     except psycopg2.Error as detail:
         logging.error(detail)
         sys.exit(1)
