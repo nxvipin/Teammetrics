@@ -36,7 +36,10 @@ CONF_FILE = 'commitinfo.conf'
 CONF_FILE_PATH = os.path.join('/etc/teammetrics', CONF_FILE)
 
 SERVER = 'vasks.debian.org'
+USER_CMD = False
 USER = ''
+
+SSH_CONFIG  = os.path.join(os.path.expanduser('~'), '.ssh', 'config')
 
 DATABASE = {
             'name':        'teammetrics',
@@ -44,13 +47,37 @@ DATABASE = {
             'port':        5441, # ... use this on blends.debian.net / udd.debian.net
            }
 
+def read_ssh_config():
+    """Read the configuration settings from the SSH configuration file."""
+    if os.path.isfile(SSH_CONFIG):
+        config = paramiko.SSHConfig()
+        config.parse(open(SSH_CONFIG))
+        # Read the configuration for the host Alioth.
+        alioth_config = config.lookup('Alioth')
+        if not alioth_config:
+            return None
+        try:
+            username = alioth_config['user']
+        except KeyError:
+            return None
+        return username
+    else:
+        return None
+
+
 def ssh_initialize():
     """Connect to Alioth and return a SSHClient instance."""
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
+    user = read_ssh_config()
+    # If the username is None or if the command line argument was passed,
+    # set the username to the global USER.
+    if user is None or USER_CMD:
+        user = USER
+
     try:
-        ssh.connect(SERVER, username=USER, allow_agent=True)
+        ssh.connect(SERVER, username=user, allow_agent=True)
         logging.info('Connection to Alioth successful')
     except (paramiko.SSHException, socket.error) as detail:
         logging.error('Please check your username')
@@ -179,15 +206,6 @@ def get_stats():
         except psycopg2.Error as detail:
             logging.error(detail)
             sys.exit(1)
-	try: 
-        conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
-        cur = conn.cursor()
-	except psycopg2.Error as detail:
-        logging.error(detail)
-        sys.exit(1)
-    except psycopg2.Error as detail:
-        logging.error(detail)
-        sys.exit(1)
 
     # First call the Git repositories.
     if git:
@@ -222,6 +240,15 @@ def start_logging():
 
 
 if __name__ == '__main__':
+    args = sys.argv[1:]
+    if '-u' in args:
+        pos = args.index('-u')
+        USER_CMD = True
+        try:
+            USER = args[pos+1]
+        except IndexError:
+            USER_CMD = False
+
     start_logging()
     logging.info('\t\tStarting CommitStat')
 
