@@ -205,8 +205,8 @@ def parse_and_save(mbox_files, nntp=False):
                 name = u" ".join([unicode(text, charset or 'ascii') 
                                         for text, charset in decoded_name])
             except (LookupError, UnicodeDecodeError) as detail:
-                logging.warning('%s - %s' % (detail, name))
-                logging.warning('Message #: %d' % key)
+                logging.error("Invalid message #: %d in list '%s'" % (key, mbox_name))
+                logging.error('\t%s' % detail)
 
             if name.endswith('alioth.debian.org'):
                 name = name.split()[0]

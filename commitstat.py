@@ -74,9 +74,9 @@ def ssh_initialize():
 
     # If the username is None or if the command line argument was passed,
     # set the username to the global USER. The order of precedence is:
-    #     Command line argument
-    #     Config file
-    #     Global variable USER
+    #     command line argument,
+    #     config file SSH_CONFIG,
+    #     global variable USER.
     if user is None or USER_CMD:
         user = USER
 
