@@ -191,6 +191,27 @@ def parse_and_save(mbox_files, nntp=False):
             if from_field is None:
                 continue
 
+            # The Message-ID that can is used to check for errors.
+            msg_id_raw = message['Message-ID']
+            if msg_id_raw is None:
+                logging.warning('No Message-ID found, setting default ID')
+                # Create a Message-ID:
+                #   sha1(date + subject) @ teammetrics-spam.debian.org.
+                domain_str = '@teammetrics-spam.debian.org'
+                hash_obj = hashlib.sha1()
+                hash_string = str(archive_date) + project
+                hash_obj.update(hash_string)
+                msg_id = hash_obj.hexdigest() + '@teammetrics-spam.debian.org'
+                logging.info(debug_msg)
+                is_spam = True
+            else:
+                is_spam = False
+                msg_id = msg_id_raw.strip('<>')
+
+            # Set the debug message.
+            debug_msg = ("\tMessage-ID: '%s' of '%s' project in mbox file '%s'" %
+                                                    (msg_id, project, mbox_name))
+            # Get the name.
             name_start_pos = from_field.find("(")
             name_end_pos = from_field.find(")")
             raw_name = from_field[name_start_pos+1:name_end_pos]
@@ -198,15 +219,16 @@ def parse_and_save(mbox_files, nntp=False):
             # go through the SPAM checker.
             try:
                 decoded_name = email.header.decode_header(raw_name)
-            except ValueError:
-                logging.warning("Invalid 'Name' encoding")
+            except ValueError as detail:
+                logging.warning("Invalid 'Name' encoding: %s" % detail)
+                logging.warning(debug_msg)
 
             try:
                 name = u" ".join([unicode(text, charset or 'ascii') 
                                         for text, charset in decoded_name])
             except (LookupError, UnicodeDecodeError) as detail:
-                logging.error("Invalid message #: %d in list '%s'" % (key, mbox_name))
-                logging.error('\t%s' % detail)
+                logging.error('Decoding error: %s' % detail)
+                logging.error(debug_msg)
 
             if name.endswith('alioth.debian.org'):
                 name = name.split()[0]
@@ -223,61 +245,43 @@ def parse_and_save(mbox_files, nntp=False):
             try:
                 format_date = datetime.datetime(*parsed_date[:4])   
             except (ValueError, TypeError) as detail:
-                logging.error("Invalid message #: %d in list '%s'" % (key, mbox_name))
-                logging.error('\t%s' % detail)
+                logging.error("Invalid 'Date' header: %s" % detail)
+                logging.error(debug_msg)
                 continue
             try:
                 archive_date = format_date.strftime("%Y-%m-%d") 
             except ValueError as detail:
-                logging.error("Invalid message #: %d in list '%s'" % (key, mbox_name))
-                logging.error('\t%s' % detail)
+                logging.error("Unable to parse 'Date' header: %s" % detail)
+                logging.error(debug_msg)
                 continue
             
             try:
                 raw_subject = ' '.join(message['Subject'].split())
             except AttributeError as detail:
-                logging.error("Invalid message #: %d in list '%s'" % (key, mbox_name))
-                logging.error('\t%s' % detail)
+                logging.error("Invalid 'Subject' header: %s" % detail)
+                logging.error(debug_msg)
                 raw_subject = ''
 
             try:
                 decoded_subject = email.header.decode_header(raw_subject)
-            except ValueError:
-                logging.warning("Invalid 'Subject' encoding in mbox %s" % mbox_name)
-                logging.warning('\tMessage #: %d' % key)
+            except ValueError as detail:
+                logging.warning("Invalid 'Subject' encoding: %s" % detail)
+                logging.warning(debug_msg)
             except email.errors.HeaderParseError as detail:
-                logging.warning("Problem parsing 'Subject' in mbox %s" % mbox_name)
-                logging.warning('\tMessage #: %d' % key)
+                logging.warning("Unable to parse 'Subject' header: %s" % detail)
+                logging.warning(debug_msg)
 
             try:
                 subject = u" ".join([unicode(text, charset or 'ascii')
                                         for text, charset in decoded_subject])
             except (UnicodeDecodeError, LookupError) as detail:
-                logging.warning("Invalid message #: %d in list '%s'" % (key, mbox_name))
-                logging.warning('\t%s' % detail)
+                logging.warning("Unable to decode 'Subject' field: %s" % detail)
+                logging.warning(debug_msg)
 
-            # The Message-ID that can be used to check for errors.
-            msg_id_raw = message['Message-ID']
-
-            if msg_id_raw is None:
-                logging.warning('No Message-ID found, setting default ID')
-                logging.warning('\tMessage #: %d' % key)
-                # Create a Message-ID:
-                #   sha1(date + subject) @ teammetrics-spam.debian.org.
-                domain_str = '@teammetrics-spam.debian.org'
-                hash_obj = hashlib.sha1()
-                hash_string = str(archive_date) + project
-                hash_obj.update(hash_string)
-                msg_id = hash_obj.hexdigest() + '@teammetrics-spam.debian.org'
-                is_spam = True
-            else:
-                is_spam = False
-                msg_id = msg_id_raw.strip('<>')
-            
             name, subject, reason, spam = spamfilter.check_spam(name, subject)
             # If there is spam, populate the listspam database instead.
             if is_spam:
-                reason = 'No Message ID'
+                reason = 'No Message-ID found'
             if spam:
                 try:
                     cur.execute(
