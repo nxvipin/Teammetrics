@@ -209,8 +209,8 @@ def parse_and_save(mbox_files, nntp=False):
                 msg_id = msg_id_raw.strip('<>')
 
             # Set the debug message.
-            debug_msg = ("\tMessage-ID: '%s' of '%s' project in mbox file '%s'" %
-                                                    (msg_id, project, mbox_name))
+            debug_msg = ("\tMessage-ID %s of '%s' project in mbox file '%s'" %
+                                                (msg_id, project, mbox_name))
             # Get the name.
             name_start_pos = from_field.find("(")
             name_end_pos = from_field.find(")")
