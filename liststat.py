@@ -226,7 +226,7 @@ def parse_and_save(mbox_files, nntp=False):
                 name = u" ".join([unicode(text, charset or 'ascii') 
                                         for text, charset in decoded_name])
             except (LookupError, UnicodeDecodeError) as detail:
-                logging.error('Decoding error: %s\n%s' % (detail, debug_msg))
+                logging.error("Unable to decode 'Name': %s\n%s" % (detail, debug_msg))
 
             if name.endswith('alioth.debian.org'):
                 name = name.split()[0]
@@ -268,7 +268,7 @@ def parse_and_save(mbox_files, nntp=False):
                 subject = u" ".join([unicode(text, charset or 'ascii')
                                         for text, charset in decoded_subject])
             except (UnicodeDecodeError, LookupError) as detail:
-                logging.warning("Unable to decode 'Subject' field: %s\n%s" % (detail, debug_msg))
+                logging.warning("Unable to decode 'Subject': %s\n%s" % (detail, debug_msg))
 
             name, subject, reason, spam = spamfilter.check_spam(name, subject)
             # If there is spam, populate the listspam database instead.

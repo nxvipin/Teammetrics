@@ -68,7 +68,7 @@ def check_spam(name, subject):
         for ignore_name in SPAM_KEYWORDS:
             if ignore_name in field:
                 spam_detected = True
-                reason = 'Ignored keyword in %s: %s' % (fields[field], ignore_name)
+                reason = "Ignored keyword in '%s' (%s)" % (fields[field], ignore_name)
                 logging.warning(logging_msg % reason)
 
     return name, subject, reason, spam_detected
