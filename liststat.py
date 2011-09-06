@@ -220,15 +220,13 @@ def parse_and_save(mbox_files, nntp=False):
             try:
                 decoded_name = email.header.decode_header(raw_name)
             except ValueError as detail:
-                logging.warning("Invalid 'Name' encoding: %s" % detail)
-                logging.warning(debug_msg)
+                logging.warning("Invalid 'Name' encoding: %s\n%s" % (detail, debug_msg))
 
             try:
                 name = u" ".join([unicode(text, charset or 'ascii') 
                                         for text, charset in decoded_name])
             except (LookupError, UnicodeDecodeError) as detail:
-                logging.error('Decoding error: %s' % detail)
-                logging.error(debug_msg)
+                logging.error('Decoding error: %s\n%s' % (detail, debug_msg))
 
             if name.endswith('alioth.debian.org'):
                 name = name.split()[0]
@@ -245,38 +243,32 @@ def parse_and_save(mbox_files, nntp=False):
             try:
                 format_date = datetime.datetime(*parsed_date[:4])   
             except (ValueError, TypeError) as detail:
-                logging.error("Invalid 'Date' header: %s" % detail)
-                logging.error(debug_msg)
+                logging.error("Invalid 'Date' header: %s\n%s" % (detail, debug_msg))
                 continue
             try:
                 archive_date = format_date.strftime("%Y-%m-%d") 
             except ValueError as detail:
-                logging.error("Unable to parse 'Date' header: %s" % detail)
-                logging.error(debug_msg)
+                logging.error("Unable to parse 'Date' header: %s\n%s" % (detail, debug_msg))
                 continue
             
             try:
                 raw_subject = ' '.join(message['Subject'].split())
             except AttributeError as detail:
-                logging.error("Invalid 'Subject' header: %s" % detail)
-                logging.error(debug_msg)
+                logging.error("Invalid 'Subject' header: %s\n%s" % (detail, debug_msg))
                 raw_subject = ''
 
             try:
                 decoded_subject = email.header.decode_header(raw_subject)
             except ValueError as detail:
                 logging.warning("Invalid 'Subject' encoding: %s" % detail)
-                logging.warning(debug_msg)
             except email.errors.HeaderParseError as detail:
-                logging.warning("Unable to parse 'Subject' header: %s" % detail)
-                logging.warning(debug_msg)
+                logging.warning("Unable to parse 'Subject' header: %s\n%s" % (detail, debug_msg))
 
             try:
                 subject = u" ".join([unicode(text, charset or 'ascii')
                                         for text, charset in decoded_subject])
             except (UnicodeDecodeError, LookupError) as detail:
-                logging.warning("Unable to decode 'Subject' field: %s" % detail)
-                logging.warning(debug_msg)
+                logging.warning("Unable to decode 'Subject' field: %s\n%s" % (detail, debug_msg))
 
             name, subject, reason, spam = spamfilter.check_spam(name, subject)
             # If there is spam, populate the listspam database instead.
@@ -296,7 +288,7 @@ def parse_and_save(mbox_files, nntp=False):
                     continue
                 except psycopg2.IntegrityError as detail:
                     conn.rollback()
-                    logging.error('Message-ID %s already stored (%s)' % (msg_id, detail))
+                    logging.info('Message-ID %s already in database, skipping' % msg_id)
                     continue
 
                 conn.commit()
@@ -312,7 +304,7 @@ def parse_and_save(mbox_files, nntp=False):
             # than have a special case for them. 
             if isinstance(payload, list):
                 logging.error(msg_id)
-                logging.info('Previous Message-ID skipped due to invalid payload')
+                logging.info('Message-ID skipped due to invalid payload\n%s' % debug_msg)
                 continue
 
             # The lines in the message body excluding blank lines. 
@@ -356,7 +348,7 @@ def parse_and_save(mbox_files, nntp=False):
                 # for instance because concerning two different bugs and BTS is
                 # sending a copy for each bug separately.
                 conn.rollback()
-                logging.error('Message-ID %s just stored (%s)' % (msg_id, detail))
+                logging.info('Message-ID %s already in database, skipping' % msg_id)
                 continue
 
             conn.commit()
