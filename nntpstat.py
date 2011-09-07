@@ -195,7 +195,7 @@ Message-ID: {4}
 
             email, name = format_mail_name(f)
             if not email or not name:
-                logging.error('Invalid name/ email for Message-ID: %s' % m)
+                logging.error('Invalid Name and/or Email for Message-ID: %s' % m)
                 continue 
 
             updated_date = asctime_update(d, m)

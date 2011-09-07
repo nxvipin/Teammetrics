@@ -32,6 +32,7 @@ import urlparse
 import datetime
 import ConfigParser
 
+import chardet
 import psycopg2
 import BeautifulSoup
 
@@ -239,12 +240,20 @@ def parse_and_save(mbox_files, nntp=False):
             get_date = message['Date']
             parsed_date = email.utils.parsedate(get_date)
 
-            # Some messages have faulty Date headers. It's better to skip them.
+            # last_f_date is used in case a message has an invalid date.
+            # In such a case, the date of the previous date is used.
+            last_f_date = ''
+
+            # Some messages have faulty Date headers. Get the last_f_date in 
+            # such cases and even if that fails, skip the message. 
             try:
                 format_date = datetime.datetime(*parsed_date[:4])   
             except (ValueError, TypeError) as detail:
-                logging.error("Invalid 'Date' header: %s\n%s" % (detail, debug_msg))
-                continue
+                if last_f_date:
+                    format_date = last_f_date
+                else:
+                    logging.error("Invalid 'Date' header: %s\n%s" % (detail, debug_msg))
+                    continue
             try:
                 archive_date = format_date.strftime("%Y-%m-%d") 
             except ValueError as detail:
@@ -265,15 +274,25 @@ def parse_and_save(mbox_files, nntp=False):
                 logging.warning("Unable to parse 'Subject' header: %s\n%s" % (detail, debug_msg))
 
             try:
-                subject = u" ".join([unicode(text, charset or 'ascii')
-                                        for text, charset in decoded_subject])
+                subject = u" ".join([unicode(text, charset or chardet.detect(text)['encoding'])
+                                                        for text, charset in decoded_subject])
             except (UnicodeDecodeError, LookupError) as detail:
                 logging.warning("Unable to decode 'Subject': %s\n%s" % (detail, debug_msg))
+
+            # Get the message body. 
+            payload = message.get_payload()
+            # Some message payloads return a list of messages rather than a string.
+            # We pass such messages through the spam filter just to be sure.
+            if isinstance(payload, list):
+                is_spam = True
+                logging.info('Invalid payload detected for %s' % msg_id)
+            else:
+                is_spam = False
 
             name, subject, reason, spam = spamfilter.check_spam(name, subject)
             # If there is spam, populate the listspam database instead.
             if is_spam:
-                reason = 'No Message-ID found'
+                reason = 'No Message-ID found or invalid payload detected'
             if spam:
                 try:
                     cur.execute(
@@ -285,6 +304,7 @@ def parse_and_save(mbox_files, nntp=False):
                 except psycopg2.DataError as detail:
                     conn.rollback()
                     logging.error(detail)
+                    logging.error(debug_msg)
                     continue
                 except psycopg2.IntegrityError as detail:
                     conn.rollback()
@@ -294,18 +314,8 @@ def parse_and_save(mbox_files, nntp=False):
                 conn.commit()
                 continue
 
-            today_ = datetime.date.today()
-            today_date = today_.strftime("%Y-%m-%d")
-
-            # Get the message body. 
-            payload = message.get_payload()
-            # Some message payloads return a list of messages rather than a
-            # string. This is very rare and it is safer to ignore these messages
-            # than have a special case for them. 
-            if isinstance(payload, list):
-                logging.error(msg_id)
-                logging.info('Message-ID skipped due to invalid payload\n%s' % debug_msg)
-                continue
+            today_raw = datetime.date.today()
+            today_date = today_raw.strftime("%Y-%m-%d")
 
             # The lines in the message body excluding blank lines. 
             msg_blank_raw = [line.strip() for line in payload.splitlines() if line]
@@ -342,6 +352,7 @@ def parse_and_save(mbox_files, nntp=False):
             except psycopg2.DataError as detail:
                 conn.rollback()
                 logging.error(detail)
+                logging.error(debug_msg)
                 continue
             except psycopg2.IntegrityError as detail:
                 # It happens that the very same message hits a mailing list twice
@@ -350,8 +361,10 @@ def parse_and_save(mbox_files, nntp=False):
                 conn.rollback()
                 logging.info('Message-ID %s already in database, skipping' % msg_id)
                 continue
-
             conn.commit()
+            # Save the date for later use.
+            last_f_date = format_date
+
         current_lists.append(mbox_name)
         logging.info('Parsed: %s' % mailing_list)
 
