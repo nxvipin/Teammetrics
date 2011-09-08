@@ -1,6 +1,5 @@
 #!/bin/sh
 # Render all graphs from mailing lists which are contained in the database
-# TODO: Render graph from commitstats
 
 projects=`psql -t teammetrics -c 'SELECT project FROM listarchives GROUP BY project ;'`
 for proj in $projects ; do
