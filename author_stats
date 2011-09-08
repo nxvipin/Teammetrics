@@ -27,7 +27,7 @@ DATFILE="${NAME}_year.txt"
 #       -e 's/[[:space:]]*|[[:space:]]*/\t/g'           \
 #       "$DATFILE"
 
-./author_stats_helper.py $1 $NUM > $DATFILE
+./author_stats_helper.py list $1 > $DATFILE
 
 ##       -e 's/&#xAE;//g'  -e 's/&#xE9;/e/' \
 ##       -e 's/&#xE1;/á/g' -e 's/&#xF1;/ñ/' \

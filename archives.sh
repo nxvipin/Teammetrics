@@ -84,8 +84,43 @@ SELECT * FROM author_per_year_of_list('soc-coordination', 12) AS (author text, y
 SELECT * FROM author_per_year_of_list('debian-med-packaging', 12) AS (author text, year int, value int) ;
  */
 
+-- top N authors of commits to project
+CREATE OR REPLACE FUNCTION commit_names_of_project(text,int) RETURNS SETOF RECORD AS '
+  SELECT name FROM (
+    SELECT name, COUNT(*)::int
+      FROM commitstat
+      WHERE project = \$1
+      GROUP BY name
+      ORDER BY count DESC
+      LIMIT \$2
+  ) tmp
+' LANGUAGE 'SQL';
+
+/*
+SELECT * FROM commit_names_of_project('teammetrics', 12) AS (category text) ;
+SELECT * FROM commit_names_of_project('debian-med', 12) AS (category text) ;
+ */
+
+CREATE OR REPLACE FUNCTION commmit_per_year_of_project(text,int) RETURNS SETOF RECORD AS '
+  SELECT name, year, COUNT(*)::int FROM (
+    SELECT name,  EXTRACT(year FROM commit_date)::int AS year
+      FROM commitstat
+     WHERE name IN (SELECT * FROM commit_names_of_project(\$1, \$2) AS (author text))
+       AND project = \$1
+  ) tmp
+  GROUP BY name, year
+  ORDER BY year, count DESC, name
+' LANGUAGE 'SQL';
+
+/*
+SELECT * FROM commit_per_year_of_project('teammetrics', 12) AS (author text, year int, value int) ;
+SELECT * FROM commit_per_year_of_project('debian-med', 12) AS (author text, year int, value int) ;
+ */
+
 GRANT EXECUTE ON FUNCTION author_names_of_list(text,integer) TO guest ;
 GRANT SELECT ON listarchives To guest ;
+GRANT EXECUTE ON FUNCTION commit_names_of_project(text,integer) TO guest ;
+GRANT SELECT ON commitstat To guest ;
 
 COMMIT;
 EOF

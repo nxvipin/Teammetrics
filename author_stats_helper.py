@@ -9,10 +9,15 @@ NMAX=30
 from sys import argv, stderr, exit
 
 if len(argv) != 3 :
-    print >>stderr, "Usage: %s <project> <no authors>" % (argv[0])
+    print >>stderr, "Usage: %s <mode> <project>\n       where mode is either 'list' or 'commit'" % (argv[0])
     exit(-1)
 
-project = argv[1]
+mode    = argv[1]
+if mode not in ('list','commit'):
+    print >>stderr, "mode needs to be either 'list' or 'commit' but is", mode
+    exit(-1)
+
+project = argv[2]
 
 PORT=5441
 DEFAULTPORT=5432
@@ -58,7 +63,16 @@ def RowDictionaries(cursor):
 
 crosstab_missing_re  = re.compile(".* crosstab.*")
 
-query = "SELECT replace(author,' ','_') AS author FROM author_names_of_list('%s', %i) AS (author text);" % (project, NMAX)
+top_n_func = {'list'   : 'author_names_of_list',
+              'commit' : 'commit_names_of_project'
+             }
+
+per_year_func = {'list'   : 'author_per_year_of_list',
+                 'commit' : 'commmit_per_year_of_project',
+                }
+
+query = "SELECT replace(author,' ','_') AS author FROM %s('%s', %i) AS (author text);" % \
+         (top_n_func[mode], project, NMAX)
 # print query
 curs.execute(query)
 
@@ -76,11 +90,11 @@ query = """SELECT *
 	FROM 
 	crosstab(
              'SELECT year AS row_name, name AS bucket, count AS value
-                     FROM author_per_year_of_list(''%s'', %i) AS (name text, year int, count int)',
-             'SELECT * FROM author_names_of_list(''%s'', %i) AS (category text)'
+                     FROM %s(''%s'', %i) AS (name text, year int, count int)',
+             'SELECT * FROM %s(''%s'', %i) AS (category text)'
 
         ) As (%s)
-""" % (project, nuploaders, project, nuploaders, typestring)
+""" % (per_year_func[mode], project, nuploaders, top_n_func[mode], project, nuploaders, typestring)
 
 try:
     # print query
@@ -91,7 +105,7 @@ except psycopg2.ProgrammingError, err:
 	psql udd < /usr/share/postgresql/<pgversion>/contrib/tablefunc.sql
 before calling this program."""
     else:
-        print >>stderr, "To few authors in %s list.\n%s" % (project, err)
+        print >>stderr, "To few authors in %s %s.\n%s" % (project, mode, err)
     exit(-1)
 for row in curs.fetchall():
     print ' ' + row[0] ,
