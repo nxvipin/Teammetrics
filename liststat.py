@@ -224,9 +224,12 @@ def parse_and_save(mbox_files, nntp=False):
                 logging.warning("Invalid 'Name' encoding: %s\n%s" % (detail, debug_msg))
 
             try:
-                name = u" ".join([unicode(text, charset or 'ascii') 
-                                        for text, charset in decoded_name])
-            except (LookupError, UnicodeDecodeError) as detail:
+                name = u" ".join([unicode(text, charset or chardet.detect(text)['encoding']) 
+                                                            for text, charset in decoded_name])
+            except TypeError:
+                logging.error("Unable to detect 'Name' encoding for: %s" % msg_id)
+                continue
+            except (UnicodeDecodeError, LookupError) as detail:
                 logging.error("Unable to decode 'Name': %s\n%s" % (detail, debug_msg))
 
             if name.endswith('alioth.debian.org'):
@@ -276,23 +279,34 @@ def parse_and_save(mbox_files, nntp=False):
             try:
                 subject = u" ".join([unicode(text, charset or chardet.detect(text)['encoding'])
                                                         for text, charset in decoded_subject])
+            except TypeError:
+                logging.error("Unable to detect 'Subject' encoding for %s" % msg_id)
+                continue
             except (UnicodeDecodeError, LookupError) as detail:
                 logging.warning("Unable to decode 'Subject': %s\n%s" % (detail, debug_msg))
 
-            # Get the message body. 
-            payload = message.get_payload()
-            # Some message payloads return a list of messages rather than a string.
-            # We pass such messages through the spam filter just to be sure.
-            if isinstance(payload, list):
-                is_spam = True
-                logging.info('Invalid payload detected for %s' % msg_id)
+            # Get the message payload.
+            if message.is_multipart():
+                # We are interested only in the plain text parts.
+                msg_text_parts = [part for part in email.Iterators.typed_subpart_iterator(message,
+                                                                                        'text',
+                                                                                        'plain')]
+                msg_body = []
+                for part in msg_text_parts:
+                    msg_body.append(unicode(part.get_payload(decode=True),
+                                            chardet.detect(part.get_payload())['encoding'],
+                                            "replace"))
+
+                payload = u"\n".join(body).strip()
             else:
-                is_spam = False
+                payload = unicode(message.get_payload(decode=True), 
+                                  chardet.detect(message.get_payload())['encoding'],
+                                  "replace")
 
             name, subject, reason, spam = spamfilter.check_spam(name, subject)
             # If there is spam, populate the listspam database instead.
             if is_spam:
-                reason = 'No Message-ID found or invalid payload detected'
+                reason = 'No Message-ID found'
             if spam:
                 try:
                     cur.execute(
