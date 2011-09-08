@@ -299,9 +299,13 @@ def parse_and_save(mbox_files, nntp=False):
 
                 payload = u"\n".join(body).strip()
             else:
-                payload = unicode(message.get_payload(decode=True), 
-                                  chardet.detect(message.get_payload())['encoding'],
-                                  "replace")
+                try:
+                    payload = unicode(message.get_payload(decode=True), 
+                                      chardet.detect(message.get_payload())['encoding'],
+                                      "replace")
+                except TypeError:
+                    logging.error("Unable to detect payload encoding for %s" % msg_id)
+                    continue
 
             name, subject, reason, spam = spamfilter.check_spam(name, subject)
             # If there is spam, populate the listspam database instead.
