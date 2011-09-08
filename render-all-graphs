@@ -6,7 +6,7 @@ for proj in $projects ; do
     ./author_stats $proj
 done
 
-projects=`psql -t teammetrics -c 'SELECT project FROM commitstats GROUP BY project ;'`
+projects=`psql -t teammetrics -c 'SELECT project FROM commitstat GROUP BY project ;'`
 for proj in $projects ; do
     ./author_stats_commits $proj
 done
