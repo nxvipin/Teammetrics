@@ -212,10 +212,32 @@ def parse_and_save(mbox_files, nntp=False):
             # Set the debug message.
             debug_msg = ("\tMessage-ID %s of '%s' project in mbox file '%s'" %
                                                 (msg_id, project, mbox_name))
-            # Get the name.
-            name_start_pos = from_field.find("(")
-            name_end_pos = from_field.find(")")
-            raw_name = from_field[name_start_pos+1:name_end_pos]
+
+            # Get the name for two possible cases of formatting of 'From' header.
+            #       John Doe <john@doe.com> 
+            #       john@doe.com (John Doe)
+            # Both will return:
+            #       john at doe.com (John Doe)
+            if from_field.endswith('>'):
+                # Get the position of < and > to parse the email.
+                email_start_pos = from_field.find("<")
+                email_end_pos = from_field.find(">")
+                email_raw = from_field[email_start_pos+1:email_end_pos]
+                email_addr = email_raw.replace('@', ' at ')
+
+                name_raw = from_field[:email_start_pos-1].strip()
+                name = name_raw.strip('"')
+
+            # For the second case.
+            elif from_field.endswith(')'):
+                # Get the position of ( and ) to parse the name.
+                name_start_pos = from_field.find("(")
+                name_end_pos = from_field.find(")")
+                name_raw = from_field[name_start_pos+1: name_end_pos]
+                name = name_raw.strip('"')
+
+                email_addr = from_field[:name_start_pos-1]
+
             # Resolve the encodings but don't skip the message yet; let it
             # go through the SPAM checker.
             try:
@@ -234,10 +256,6 @@ def parse_and_save(mbox_files, nntp=False):
 
             if name.endswith('alioth.debian.org'):
                 name = name.split()[0]
-
-            # The email address of the sender.
-            email_addr_raw = from_field[:name_start_pos-1]
-            email_addr = ''.join(email_addr_raw.replace('at', '@').split())
 
             # The date the message was sent.
             get_date = message['Date']
