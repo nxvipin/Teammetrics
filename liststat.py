@@ -229,7 +229,7 @@ def parse_and_save(mbox_files, nntp=False):
                 name = name_raw.strip('"')
 
             # For the second case.
-            elif from_field.endswith(')'):
+            else from_field.endswith(')'):
                 # Get the position of ( and ) to parse the name.
                 name_start_pos = from_field.find("(")
                 name_end_pos = from_field.find(")")
