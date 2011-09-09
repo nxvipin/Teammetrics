@@ -293,11 +293,14 @@ def parse_and_save(mbox_files, nntp=False):
                                                                                         'plain')]
                 msg_body = []
                 for part in msg_text_parts:
-                    msg_body.append(unicode(part.get_payload(decode=True),
-                                            chardet.detect(part.get_payload())['encoding'],
-                                            "replace"))
-
-                payload = u"\n".join(body).strip()
+                    try:
+                        msg_body.append(unicode(part.get_payload(decode=True),
+                                                chardet.detect(part.get_payload())['encoding'],
+                                                "replace"))
+                    except TypeError:
+                        logging.error("Unable to detect payload encoding for %s" % msg_id)
+                        continue
+                payload = u"\n".join(msg_body).strip()
             else:
                 try:
                     payload = unicode(message.get_payload(decode=True), 
