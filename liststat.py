@@ -229,7 +229,7 @@ def parse_and_save(mbox_files, nntp=False):
                 name = name_raw.strip('"')
 
             # For the second case.
-            else from_field.endswith(')'):
+            elif from_field.endswith(')'):
                 # Get the position of ( and ) to parse the name.
                 name_start_pos = from_field.find("(")
                 name_end_pos = from_field.find(")")
@@ -237,6 +237,10 @@ def parse_and_save(mbox_files, nntp=False):
                 name = name_raw.strip('"')
 
                 email_addr = from_field[:name_start_pos-1]
+
+            # For no such case, it's better to skip since we need the Name.
+            else:
+                logging.error("No proper formatting for 'Name' found in %s" % msg_id)
 
             # Resolve the encodings but don't skip the message yet; let it
             # go through the SPAM checker.
