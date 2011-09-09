@@ -241,7 +241,7 @@ def parse_and_save(mbox_files, nntp=False):
             # Resolve the encodings but don't skip the message yet; let it
             # go through the SPAM checker.
             try:
-                decoded_name = email.header.decode_header(raw_name)
+                decoded_name = email.header.decode_header(name_raw)
             except ValueError as detail:
                 logging.warning("Invalid 'Name' encoding: %s\n%s" % (detail, debug_msg))
 
