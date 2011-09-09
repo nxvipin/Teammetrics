@@ -241,6 +241,7 @@ def parse_and_save(mbox_files, nntp=False):
             # For no such case, it's better to skip since we need the Name.
             else:
                 logging.error("No proper formatting for 'Name' found in %s" % msg_id)
+                continue
 
             # Resolve the encodings but don't skip the message yet; let it
             # go through the SPAM checker.
