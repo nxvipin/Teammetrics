@@ -45,8 +45,6 @@ def fetch_logs(ssh, conn, cur, teams):
     done_revisions = get_revisions()
     today_date = datetime.date.today()
 
-    # Open the REVISION_FILE_PATH that is used to save the parsed revisions.
-    f = open(REVISION_FILE_PATH, 'a')
 
     for team in teams:
         logging.info('Fetching team: %s' % team)
@@ -76,6 +74,8 @@ def fetch_logs(ssh, conn, cur, teams):
             # Fetch the diff for each revision of an author. If the revision
             # has already been downloaded, it won't be downloaded again.
             for change in revision:
+                # Open the REVISION_FILE_PATH that is used to save the parsed revisions.
+                f = open(REVISION_FILE_PATH, 'a')
                 inserted = 0
                 deleted = 0
 
@@ -115,10 +115,16 @@ def fetch_logs(ssh, conn, cur, teams):
                     conn.rollback()
                     logging.error(detail)
                     continue
+                except psycopg2.IntegrityError as detail:
+                    conn.rollback()
+                    logging.error('%s: project: %s, revision #: %d' % (detail, 
+                                                                    project, 
+                                                                    change))
+                    continue
 
                 logging.info('Parsed %d' % change)
                 f.write(change_format)
                 f.write('\n')
+                f.close()
 
-    f.close()
     logging.info('SVN logs saved...')
