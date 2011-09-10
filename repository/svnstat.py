@@ -30,29 +30,13 @@ REVISION_FILE_PATH = os.path.join('/var/cache/teammetrics', REVISION_FILE)
 
 def get_revisions():
     """Fetch the revisions that have already been saved."""
-    revisions = {}
+    revisions = []
     try:
         with open(REVISION_FILE_PATH) as f:
-            reader = csv.reader(f, delimiter=':')
-            try:
-                for row in reader:
-                    revisions[row[0]] = row[1] 
-            except (csv.Error, IndexError) as detail:
-                logging.error(detail)
-                sys.exit()
+            revisions = [line.strip() for line in f.readlines()]
     except IOError: 
-        revisions = {}
-
+        revisions = []
     return revisions
-
-
-def save_revisions(revisions):
-    """Save the revisions to REVISION_FILE."""
-    with open(REVISION_FILE_PATH, 'w') as f:
-        writer = csv.writer(f, delimiter=':')
-        writer.writerows(revisions.iteritems())
-
-    logging.info('Done writing revisions')
 
 
 def fetch_logs(ssh, conn, cur, teams):
@@ -60,6 +44,9 @@ def fetch_logs(ssh, conn, cur, teams):
     revisions = collections.defaultdict(list)
     done_revisions = get_revisions()
     today_date = datetime.date.today()
+
+    # Open the REVISION_FILE_PATH that is used to save the parsed revisions.
+    f = open(REVISION_FILE_PATH, 'a')
 
     for team in teams:
         logging.info('Fetching team: %s' % team)
@@ -88,17 +75,13 @@ def fetch_logs(ssh, conn, cur, teams):
 
             # Fetch the diff for each revision of an author. If the revision
             # has already been downloaded, it won't be downloaded again.
-            old_changes = []
-
-            if team in done_revisions:
-                old_changes = done_revisions[team]
-
             for change in revision:
                 inserted = 0
                 deleted = 0
 
-                if str(change) in old_changes:
-                    logging.info('Skipping already done archive: %d' % change)
+                change_format = '{0}:{1}'.format(project, change)
+                if change_format in done_revisions:
+                    logging.info('Skipping already parsed revision: %d' % change)
                     continue
 
                 cmd = 'svn diff -c {0} file:///svn/{1}/'.format(change, team) 
@@ -134,13 +117,8 @@ def fetch_logs(ssh, conn, cur, teams):
                     continue
 
                 logging.info('Parsed %d' % change)
-                new_changes.append(change)
+                f.write(change_format)
+                f.write('\n')
 
-        # Club all the revisions.
-        all_revisions = list(itertools.chain(*author_info.values()))
-        # Write the revisions corresponding to a team.
-        total_changes = list(set(all_revisions) | set(new_changes))
-        revisions[team] = total_changes
-
-    save_revisions(revisions)
+    f.close()
     logging.info('SVN logs saved...')
