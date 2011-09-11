@@ -302,8 +302,8 @@ def parse_and_save(mbox_files, nntp=False):
             try:
                 subject = u" ".join([unicode(text, charset or chardet.detect(text)['encoding'])
                                                         for text, charset in decoded_subject])
-            except (LookupError, TypeError):
-                logging.error("Unable to detect 'Subject' encoding for %s" % msg_id)
+            except (LookupError, TypeError) as detail:
+                logging.error("Unable to detect 'Subject' encoding for %s: %s" % (msg_id, detail))
                 continue
             except (UnicodeDecodeError, LookupError) as detail:
                 logging.warning("Unable to decode 'Subject': %s\n%s" % (detail, debug_msg))
@@ -320,8 +320,8 @@ def parse_and_save(mbox_files, nntp=False):
                         msg_body.append(unicode(part.get_payload(decode=True),
                                                 chardet.detect(part.get_payload())['encoding'],
                                                 "replace"))
-                    except (LookupError, TypeError):
-                        logging.error("Unable to detect payload encoding for %s" % msg_id)
+                    except (LookupError, TypeError) as detail:
+                        logging.error("Unable to detect payload encoding for %s: %s" % (msg_id, detail))
                         continue
                 payload = u"\n".join(msg_body).strip()
             else:
@@ -329,8 +329,8 @@ def parse_and_save(mbox_files, nntp=False):
                     payload = unicode(message.get_payload(decode=True), 
                                       chardet.detect(message.get_payload())['encoding'],
                                       "replace")
-                except (LookupError, TypeError):
-                    logging.error("Unable to detect payload encoding for %s" % msg_id)
+                except (LookupError, TypeError) as detail:
+                    logging.error("Unable to detect payload encoding for %s: %s" % (msg_id, detail))
                     continue
 
             name, subject, reason, spam = spamfilter.check_spam(name, subject)
