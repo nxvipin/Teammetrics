@@ -197,7 +197,7 @@ def parse_and_save(mbox_files, nntp=False):
             if msg_id_raw is None:
                 logging.warning('No Message-ID found, setting default ID')
                 # Create a Message-ID:
-                #   sha1(date + subject) @ teammetrics-spam.debian.org.
+                #   sha1(archive_date + project) @ teammetrics-spam.debian.org.
                 domain_str = '@teammetrics-spam.debian.org'
                 hash_obj = hashlib.sha1()
                 hash_string = str(archive_date) + project
@@ -302,7 +302,7 @@ def parse_and_save(mbox_files, nntp=False):
             try:
                 subject = u" ".join([unicode(text, charset or chardet.detect(text)['encoding'])
                                                         for text, charset in decoded_subject])
-            except TypeError:
+            except (LookupError, TypeError):
                 logging.error("Unable to detect 'Subject' encoding for %s" % msg_id)
                 continue
             except (UnicodeDecodeError, LookupError) as detail:
@@ -320,7 +320,7 @@ def parse_and_save(mbox_files, nntp=False):
                         msg_body.append(unicode(part.get_payload(decode=True),
                                                 chardet.detect(part.get_payload())['encoding'],
                                                 "replace"))
-                    except TypeError:
+                    except (LookupError, TypeError):
                         logging.error("Unable to detect payload encoding for %s" % msg_id)
                         continue
                 payload = u"\n".join(msg_body).strip()
@@ -329,7 +329,7 @@ def parse_and_save(mbox_files, nntp=False):
                     payload = unicode(message.get_payload(decode=True), 
                                       chardet.detect(message.get_payload())['encoding'],
                                       "replace")
-                except TypeError:
+                except (LookupError, TypeError):
                     logging.error("Unable to detect payload encoding for %s" % msg_id)
                     continue
 
