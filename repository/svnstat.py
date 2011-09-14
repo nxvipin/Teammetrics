@@ -88,14 +88,10 @@ def fetch_logs(ssh, conn, cur, teams):
                 stdin, stdout, stderr = ssh.exec_command(cmd)
 
                 output = stdout.read()
-                lines = [line for line in output.splitlines() 
-                                                        if line.startswith('+') 
-                                                        or line.startswith('-')]
+                lines = [line for line in output.splitlines() if line.startswith(('+', '-'))]
 
                 for line in lines:
-                    if line.startswith('+++') or line.startswith('---'):
-                        continue
-                    else: 
+                    if not line.startswith(('+++', '---')):
                         if line.startswith('+'):
                             inserted += 1
                         else:
