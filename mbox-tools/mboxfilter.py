@@ -91,6 +91,7 @@ def main(mbox_file):
                 start_h = False
             
     print 'Headers stripped from mbox'
+    mbox.close()
 
     # Now open the converted mbox archive to delete messages with the
     # Message-IDs specified in the file messageid. If the file is not
@@ -108,7 +109,9 @@ def main(mbox_file):
     mbox.lock()
     counter = 0
     for key, msg in mbox.iteritems():
-        msg_id = msg['Message-ID']
+        msg_id_raw = msg['Message-ID']
+        if msg_id_raw is not None:
+            msg_id = msg_id_raw.strip('<>')
         if msg_id in msg_ids: 
             mbox.remove(key)
             counter += 1
