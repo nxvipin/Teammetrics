@@ -9,6 +9,8 @@
    2. Remove certain messages specified my Message-IDs.
 """
 
+from __future__ import with_statement
+
 import sys
 import mailbox
 
