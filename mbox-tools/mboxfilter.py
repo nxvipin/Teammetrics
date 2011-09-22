@@ -11,6 +11,7 @@
 
 from __future__ import with_statement
 
+import re
 import sys
 import mailbox
 
@@ -46,7 +47,7 @@ possible_HEADERS = ('CC',
 
 def main(mbox_file):
 
-    out_mbox = mbox_file + '.converted'
+    out_mbox = '/tmp/testdir/' + mbox_file + '.converted'
     mbox = open(out_mbox, 'w')
 
     with open(mbox_file) as f:
@@ -100,8 +101,9 @@ def main(mbox_file):
     # found at this point, simply exit. 
     msg_ids = []
     try:
-        with open('messageid') as f:
-            msg_ids = [line.strip() for line in f.readlines()]
+        with open(mbox_file + '.spam') as f:
+            for line in f.readlines():
+               msg_ids.append(re.split('\s+', line.strip())[1].strip('<>'))
     except IOError:
         sys.exit('Error: messageid file not found in current working directory')
 
