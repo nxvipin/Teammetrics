@@ -62,7 +62,7 @@ def fetch_logs(ssh, conn, cur, teams):
                 conn.rollback()
                 logging.error('%s: project: %s, revision #: %d' % (detail, 
                                                                 project, 
-                                                                change))
+                                                                rev))
                 continue
 
     logging.info('SVN logs saved...')
