@@ -93,6 +93,8 @@ def parse_revision():
 
                 revision_f.write(change_format)
                 revision_f.write('\n')
+                parse_f.flush()
+                revision_f.flush()
 
     parse_f.close()
     revision_f.close()
