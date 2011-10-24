@@ -105,9 +105,10 @@ for team in teams.keys():
         curs.execute(query)
     except psycopg2.ProgrammingError, err:
 	if crosstab_missing_re.match(str(err)):
-	    print >>stderr, """Please do
-	psql udd < /usr/share/postgresql/<pgversion>/contrib/tablefunc.sql
-before calling this program."""
+#	    print >>stderr, """Please do
+#	psql udd < /usr/share/postgresql/<pgversion>/contrib/tablefunc.sql
+#before calling this program."""
+	    print >>stderr, "Please do `psql udd -c 'CREATE EXTENSION tablefunc;'` before calling this program."
 	else:
             print >>stderr, "To few uploaders in %s team.\n%s" % (team, err)
 	exit(-1)
