@@ -100,6 +100,10 @@ WHITELIST = ('Ramakrishnan Muthukrishnan',
              'Tony Palma',
              'Debian running development group',
              'Debian Printing Group',
+             'intrigeri',
+             'Andrew O. Shadoura',
+             'Tcl/Tk Debian Packagers',
+             'Debian Flash Team',
             )
 
 has_quotes_re = re.compile('".*"')
@@ -109,7 +113,7 @@ def prompt(prompt):
     return raw_input(prompt).strip()
 
 def quote(s):
-    return "'" + s.replace("\\", "\\\\").replace("'", "\\'").replace('"', '\\"') + "'"
+    return "'" + s.replace("\\", "\\\\").replace("'", "''").replace('"', '""') + "'"
 
 def List2PgArray(list):
     # turn a list of strings into the syntax for a PostgreSQL array:
@@ -119,7 +123,7 @@ def List2PgArray(list):
     komma='{'
     PgArray=''
     for s in list:
-        PgArray=PgArray+komma+'"'+ s.replace("'", "''").replace('"', '\\\\"') +'"'
+        PgArray=PgArray+komma+'"'+ s.replace("'", "''").replace('"', '\\"') +'"'
         komma=','
     return PgArray+'}'
 
