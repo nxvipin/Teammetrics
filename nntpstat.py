@@ -125,7 +125,7 @@ def asctime_update(mail_asctime, msg_id):
     # return None and skip the message.
     try:
         asctime = datetime.datetime(*parse_date[:7], tzinfo=None)
-    except TypeError:
+    except (ValueError, TypeError):
         return None
 
     # The adjusted timezone according to the offset.
