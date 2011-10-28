@@ -132,7 +132,10 @@ def asctime_update(mail_asctime, msg_id):
     asctime_updated = asctime - tz
 
     # Return an asctime string.
-    return time.asctime(asctime_updated.timetuple())
+    try:
+        return time.asctime(asctime_updated.timetuple())
+    except ValueError:
+        return None
 
 
 def format_mail_name(from_field):
