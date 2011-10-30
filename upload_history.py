@@ -109,9 +109,26 @@ for team in teams.keys():
 #	psql udd < /usr/share/postgresql/<pgversion>/contrib/tablefunc.sql
 #before calling this program."""
 	    print >>stderr, "Please do `psql udd -c 'CREATE EXTENSION tablefunc;'` before calling this program."
+	    exit(-1)
 	else:
-            print >>stderr, "To few uploaders in %s team.\n%s" % (team, err)
-	exit(-1)
+	    m = re.match(".*\n.*Query-specified return tuple has (\d+) columns but crosstab returns (\d+).*", str(err))
+	    nuploaders_calculated = int(m.group(1))
+	    nuploaders_returned   = int(m.group(2))
+	    # somehow the crosstable returns less columns
+	    print >>stderr, "Warning: team %s should have %d uploaders but crosstable returned only %d. Try again with this number." % (team, nuploaders_calculated, nuploaders_returned)
+	    typestring = 'year text'
+	    for i in range(nuploaders_returned - 1):
+    		typestring = typestring + ', upl' + str(i+1) + ' int'
+		query = """SELECT *
+	FROM 
+	crosstab(
+	     'SELECT year AS row_name, name AS bucket, count AS value
+                     FROM active_uploader_per_year_of_pkggroup(''%s'', %i) AS (name text, year int, count int)',
+             'SELECT * FROM active_uploader_names_of_pkggroup(''%s'', %i) AS (category text)'
+        ) As (%s)
+""" % (teams[team], nuploaders, teams[team], nuploaders, typestring)
+	    print query
+            curs.execute(query)
     for row in curs.fetchall():
         print >>out, ' ' + row[0] ,
         for v in row[1:]:
