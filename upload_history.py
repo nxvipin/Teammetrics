@@ -76,6 +76,7 @@ def RowDictionaries(cursor):
     return result
 
 for team in teams.keys():
+    # print team
     datafile='uploaders_'+team+'.txt'
     out = open(datafile, 'w')
     query = "SELECT replace(uploader,' ','_') AS uploader FROM active_uploader_names_of_pkggroup('%s', 1000) AS (uploader text);" % (teams[team])
@@ -88,6 +89,9 @@ for team in teams.keys():
         print >>out, '\t' + re.sub('^(.*_\w)[^_]*$', '\\1', row[0]),
         nuploaders += 1
     print >>out, ''
+    if nuploaders == 0:
+	print >>stderr, "No uploaders found for team %s" % team
+	continue
 
     typestring = 'year text'
     for i in range(nuploaders):
@@ -109,7 +113,7 @@ for team in teams.keys():
 #	    print >>stderr, """Please do
 #	psql udd < /usr/share/postgresql/<pgversion>/contrib/tablefunc.sql
 #before calling this program."""
-	    print >>stderr, "Please do `psql udd -c 'CREATE EXTENSION tablefunc;'` before calling this program."
+	    print >>stderr, "Please do `psql udd -c 'CREATE EXTENSION tablefunc;'` before calling this program.\n", err, query, nuploaders
 	    exit(-1)
 	else:
 	    m = re.match(".*\n.*Query-specified return tuple has (\d+) columns but crosstab returns (\d+).*", str(err))
