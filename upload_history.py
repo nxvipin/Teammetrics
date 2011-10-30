@@ -40,6 +40,7 @@ import re
 
 try:
     conn = psycopg2.connect(host="localhost",port=PORT,user="guest",database="udd")
+    conn.set_session(autocommit) # make sure it is possible to continue after a query error
 except psycopg2.OperationalError:
     try:
         conn = psycopg2.connect(host="localhost",port=DEFAULTPORT,user="guest",database="udd")
@@ -127,7 +128,8 @@ for team in teams.keys():
              'SELECT * FROM active_uploader_names_of_pkggroup(''%s'', %i) AS (category text)'
         ) As (%s)
 """ % (teams[team], nuploaders, teams[team], nuploaders, typestring)
-	    print query
+	    # print query
+	    conn.rollback()
             curs.execute(query)
     for row in curs.fetchall():
         print >>out, ' ' + row[0] ,
