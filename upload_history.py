@@ -2,8 +2,10 @@
 # Copyright 2011: Andreas Tille <tille@debian.org>
 # License: GPL
 
-# MAXUPLOADERS=20
-MAXUPLOADERS=10
+# PLOTUPLOADERS=20
+PLOTUPLOADERS=10
+
+MAXUPLOADERS=1000
 
 teams = { 
           'debian-med' :       'debian-med-packaging@lists.alioth.debian.org'      ,
@@ -79,19 +81,19 @@ for team in teams.keys():
     # print team
     datafile='uploaders_'+team+'.txt'
     out = open(datafile, 'w')
-    query = "SELECT replace(uploader,' ','_') AS uploader FROM active_uploader_names_of_pkggroup('%s', 1000) AS (uploader text);" % (teams[team])
+    query = "SELECT replace(uploader,' ','_') AS uploader FROM active_uploader_names_of_pkggroup('%s', %i) AS (uploader text);" % (teams[team], MAXUPLOADERS)
     # print query
     curs.execute(query)
 
-    print >>out, ' year',
-    nuploaders = 0
-    for row in curs.fetchall():
-        print >>out, '\t' + re.sub('^(.*_\w)[^_]*$', '\\1', row[0]),
-        nuploaders += 1
-    print >>out, ''
+    nuploaders = curs.rowcount
     if nuploaders == 0:
 	print >>stderr, "No uploaders found for team %s" % team
 	continue
+
+    print >>out, ' year',
+    for row in curs.fetchall():
+        print >>out, '\t' + re.sub('^(.*_\w)[^_]*$', '\\1', row[0]),
+    print >>out, ''
 
     typestring = 'year text'
     for i in range(nuploaders):
@@ -103,7 +105,7 @@ for team in teams.keys():
                      FROM active_uploader_per_year_of_pkggroup(''%s'', %i) AS (name text, year int, count int)',
              'SELECT * FROM active_uploader_names_of_pkggroup(''%s'', %i) AS (category text)'
         ) As (%s)
-""" % (teams[team], nuploaders, teams[team], nuploaders, typestring)
+""" % (teams[team], nuploaders, teams[team], MAXUPLOADERS, typestring)
 
     try:
 	# print query
@@ -144,7 +146,7 @@ for team in teams.keys():
                 print >>out, '\t0',
         print >>out, ''
     out.close()
-    cmdstring='./author_stats_create_graph ' + datafile + ' ' + str(min(nuploaders, MAXUPLOADERS))
+    cmdstring='./author_stats_create_graph ' + datafile + ' ' + str(min(nuploaders, PLOTUPLOADERS))
     if len(argv) > 1 :
 	if argv[1].startswith('pdf'):
 	    cmdstring = cmdstring + ' "" pdf'
