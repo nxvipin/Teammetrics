@@ -70,6 +70,7 @@ NAMES = {
             'Martin-Éric Racine':       {'like': 'Martin-%ric% Racine'},
             'Mathieu Malaterre':        {'author': ('malat-guest', '"Mathieu Malaterre"')},
             'Mathieu Parent':           {'author': ('mparent-guest', 'Mathieu PARENT', 'sathieu')},
+            'Mechtilde Stehmann':       {'author': 'Mechtilde'},
             'Michael Banck':            {'author': 'mbanck'},
             'Michael Hanke':            {'author': 'mhanke-guest'},
             'Moriyoshi Koizumi':        {'author': 'moriyoshi-guest'},
