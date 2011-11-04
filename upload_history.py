@@ -42,7 +42,6 @@ import re
 
 try:
     conn = psycopg2.connect(host="localhost",port=PORT,user="guest",database="udd")
-    conn.set_session(autocommit) # make sure it is possible to continue after a query error
 except psycopg2.OperationalError:
     try:
         conn = psycopg2.connect(host="localhost",port=DEFAULTPORT,user="guest",database="udd")
