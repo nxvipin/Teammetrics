@@ -132,7 +132,7 @@ def update_names(conn, cur, table='listarchives'):
         if 'like' in NAMES[key] and 'or' in NAMES[key]:
             query = """UPDATE {0}
                        SET name = %s 
-                       WHERE name LIKE %s
+                       WHERE name ILIKE %s
                        OR name = %s;""".format(table) 
             cur.execute(query, (key, NAMES[key]['like'], NAMES[key]['or']))
             conn.commit()
@@ -142,7 +142,7 @@ def update_names(conn, cur, table='listarchives'):
         if 'like' in NAMES[key]:
             query = """UPDATE {0}
                        SET name = %s
-                       WHERE name LIKE %s;""".format(table)
+                       WHERE name ILIKE %s;""".format(table)
             cur.execute(query, (key, NAMES[key]['like']))
             conn.commit()
             continue
