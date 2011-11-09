@@ -220,7 +220,8 @@ def parse_and_save(mbox_files, nntp=False):
                 # Get the position of < and > to parse the email.
                 email_start_pos = from_field.find("<")
                 email_end_pos = from_field.find(">")
-                email_addr = from_field[email_start_pos+1:email_end_pos]
+                email_raw = from_field[email_start_pos+1:email_end_pos]
+                email_addr = email_raw.replace(' at ', '@')
 
                 name_raw = from_field[:email_start_pos-1].strip()
                 name = name_raw.strip("""'">""")
@@ -233,7 +234,8 @@ def parse_and_save(mbox_files, nntp=False):
                 name_raw = from_field[name_start_pos+1: name_end_pos]
                 name = name_raw.strip("""'">""")
 
-                email_addr = from_field[:name_start_pos-1]
+                email_raw = from_field[:name_start_pos-1]
+                email_addr = email_raw.replace(' at ', '@')
 
             # For no such case, it's better to skip since we need the Name.
             else:

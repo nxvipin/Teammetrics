@@ -156,7 +156,7 @@ def format_mail_name(from_field):
         email_start_pos = from_field.find("<")
         email_end_pos = from_field.find(">")
         email = from_field[email_start_pos+1:email_end_pos]
-        name = email
+        name = email.strip("""'"<""")
         return email, name
 
     if from_field.endswith('>'):
