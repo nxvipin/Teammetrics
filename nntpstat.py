@@ -152,15 +152,21 @@ def format_mail_name(from_field):
     """
 
     # No regex!
+    if from_field.startswith('<') and from_field.endswith('>'):
+        email_start_pos = from_field.find("<")
+        email_end_pos = from_field.find(">")
+        email = from_field[email_start_pos+1:email_end_pos]
+        name = email
+        return email, name
+
     if from_field.endswith('>'):
         # Get the position of < and > to parse the email.
         email_start_pos = from_field.find("<")
         email_end_pos = from_field.find(">")
-        email_raw = from_field[email_start_pos+1:email_end_pos]
-        email = email_raw.replace('@', ' at ')
+        email = from_field[email_start_pos+1:email_end_pos]
         
         name_raw = from_field[:email_start_pos-1].strip()
-        name = name_raw.strip('"')
+        name = name_raw.strip("""'">""")
         return email, name
 
     # For the second case.
@@ -169,7 +175,7 @@ def format_mail_name(from_field):
         name_start_pos = from_field.find("(")
         name_end_pos = from_field.find(")")
         name_raw = from_field[name_start_pos+1: name_end_pos]
-        name = name_raw.strip('"')
+        name = name_raw.strip("""'">""")
 
         email = from_field[:name_start_pos-1]
         return email, name
