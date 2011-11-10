@@ -18,6 +18,8 @@ import logging
 
 import psycopg2
 
+import liststat
+
 NAMES = {
             'Adrian Knoth':             {'author': 'adiknoth-guest'},
             'Adrian von Bidder':        {'like': 'Adrian % von Bidder'},
@@ -191,3 +193,14 @@ def update_names(conn, cur, table='listarchives'):
                 WHERE name = %s;""".format(table)
         cur.execute(query, (name, ))
         conn.commit()
+
+
+if __name__ == '__main__':
+    DATABASE = liststat.DATABASE
+    # Connect to the database.
+    try:
+        conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['defaultport'])
+    except psycopg2.OperationalError:
+        conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
+    cur = conn.cursor()
+    update_names(conn, cur)
