@@ -224,7 +224,7 @@ def parse_and_save(mbox_files, nntp=False):
                 email_addr = email_raw.replace(' at ', '@')
 
                 name_raw = from_field[:email_start_pos-1].strip()
-                name = name_raw.strip("""'">""")
+                name = name_raw.strip("""'"<>""")
 
             # For the second case.
             elif from_field.endswith(')'):
@@ -232,7 +232,7 @@ def parse_and_save(mbox_files, nntp=False):
                 name_start_pos = from_field.find("(")
                 name_end_pos = from_field.find(")")
                 name_raw = from_field[name_start_pos+1: name_end_pos]
-                name = name_raw.strip("""'">""")
+                name = name_raw.strip("""'"<>""")
 
                 email_raw = from_field[:name_start_pos-1]
                 email_addr = email_raw.replace(' at ', '@')
