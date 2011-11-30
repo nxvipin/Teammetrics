@@ -4,9 +4,9 @@
 
 import re
 import time
-import datetime
 import urllib2
 import logging
+import datetime
 
 from BeautifulSoup import BeautifulSoup
 import psycopg2
@@ -62,7 +62,13 @@ def main(conn, cur):
                     message_url = '{0}{1}/{2}/{3}/{4}'.format(BASE_URL, lst_name, 
                                                             year, month, message)
 
-                    message_read = urllib2.urlopen(message_url)
+                    try:
+                        message_read = urllib2.urlopen(message_url)
+                    except urllib2.URLError as detail:
+                        logging.error('Skipping message, error connecting to lists.debian.org')
+                        logging.error('%s' % detail)
+                        continue
+
                     soup = BeautifulSoup(message_read)
 
                     # Now we are at a single message, so parse it.
@@ -74,18 +80,17 @@ def main(conn, cur):
 
                     raw_date = all_elements_text[0].split(':', 1)[1].strip()
                     name_email = all_elements_text[1].split(':')[1]
-                    message_id = all_elements_text[2].split(':')[1].strip(' &lgt;')
+                    # Spam message without any 'From' field.
+                    try:
+                        message_id = all_elements_text[2].split(':')[1].strip(' &lgt;')
+                    except IndexError:
+                        logging.warning('Possible spam: %s' % message_id)
+                        continue
                     subject = all_elements_text[3].split(':')[1]
 
                     # Let's parse the date now.
-                    try:
-                        date = time.strptime(raw_date[:25], '%a, %d %b %Y %H:%M:%S')
-                    except ValueError:
-                        logging.warning('Possible spam: %s' % message_id)
-                        continue
-
-                    message_year = date.tm_year
-                    message_month = date.tm_mon
+                    date = re.findall(r'\d\d\s(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{4}', raw_date)
+                    day, message_month, message_year = ''.join(date).split()
 
                     if (message_year != year) or (message_month != month):
                         logging.warning('Possible spam: date mismatch in message %s' % message_id)
@@ -94,15 +99,20 @@ def main(conn, cur):
                         final_month = month
                         final_year = year
                     else:
-                        final_day = date.tm_mday
+                        final_day = day
                         final_month = month
                         final_year = year
 
                     # Format the 'From' field to return the name and email address.
                     #   Foo Bar &lt;foo@bar.com&gt; 
-                    name_raw, email_raw = name_email.strip().rsplit(None, 1)
-                    name = name_raw.strip(' &quot;')
-                    email = email_raw[4:-4]
+                    try:
+                        name_raw, email_raw = name_email.strip().rsplit(None, 1)
+                        name = name_raw.strip(' &quot;')
+                        email = email_raw[4:-4]
+                    except ValueError:
+                        # The name is the same as the email address.
+                        name = email = name_email
+
                     final_date = '{0}-{1}-{2}'.format(final_year, final_month, final_day)
 
                     today_raw = datetime.date.today()
