@@ -89,11 +89,11 @@ def main(conn, cur):
                     subject = all_elements_text[3].split(':')[1]
 
                     # Let's parse the date now.
-                    date = re.findall(r'\d\d\s(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{4}', raw_date)
+                    date = re.findall(r'\d{1,2}\s(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{4}', raw_date)
                     day, message_month, message_year = ''.join(date).split()
 
-                    if (message_year != year) or (message_month != month):
-                        logging.warning('Possible spam: date mismatch in message %s' % message_id)
+                    if (message_year != year):
+                        logging.warning('Possible spam: Date mismatch in message %s' % message_id)
                         # We default the date to 15 of the month (random).
                         final_day = '15'
                         final_month = month
