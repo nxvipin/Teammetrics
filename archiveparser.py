@@ -12,6 +12,7 @@ from BeautifulSoup import BeautifulSoup
 import psycopg2
 
 import liststat
+import updatenames
 
 BASE_URL = 'http://lists.debian.org/'
 FIELDS = ('From', 'Date', 'Subject', 'Message-id')
@@ -45,7 +46,12 @@ def main(conn, cur):
 
             for link in links:
                 month_url = '{0}{1}/{2}'.format(BASE_URL, lst_name, link)
-                month_read = urllib2.urlopen(month_url)
+                try:
+                    month_read = urllib2.urlopen(month_url)
+                except urllib2.URLError as detail:
+                    logging.error('Skipping message, error connecting to lists.debian.org')
+                    logging.error('%s' % detail)
+                    continue
 
                 soup = BeautifulSoup(month_read)
                 message_links = soup.findAll('a', href=re.compile('msg'))
@@ -89,8 +95,12 @@ def main(conn, cur):
                     subject = all_elements_text[3].split(':')[1]
 
                     # Let's parse the date now.
-                    date = re.findall(r'\d{1,2}\s(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{4}', raw_date)
-                    day, message_month, message_year = ''.join(date).split()
+                    try:
+                        date = re.findall(r'\d{1,2}\s(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{4}', raw_date)
+                        day, message_month, message_year = ''.join(date).split()
+                    except ValueError:
+                        message_year = 0
+                        pass
 
                     if (message_year != year):
                         logging.warning('Possible spam: Date mismatch in message %s' % message_id)
@@ -106,9 +116,14 @@ def main(conn, cur):
                     # Format the 'From' field to return the name and email address.
                     #   Foo Bar &lt;foo@bar.com&gt; 
                     try:
-                        name_raw, email_raw = name_email.strip().rsplit(None, 1)
-                        name = name_raw.strip(' &quot;')
-                        email = email_raw[4:-4]
+                        if '(' in name_email or ')' in email:
+                            email_raw, name_raw = name_email.split('(', 1)
+                            name = name_raw.strip('()')
+                            email = email_raw
+                        else:
+                            name_raw, email_raw = name_email.strip().rsplit(None, 1)
+                            name = name_raw.strip(' &quot;')
+                            email = email_raw[4:-4]
                     except ValueError:
                         # The name is the same as the email address.
                         name = email = name_email
@@ -133,6 +148,9 @@ def main(conn, cur):
                     conn.commit()
 
             counter += 1
+
+    logging.info('Updating names...')
+    updatenames.update_names(conn, cur)
 
 
 if __name__ == '__main__':
