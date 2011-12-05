@@ -116,14 +116,22 @@ def main(conn, cur):
                     # Format the 'From' field to return the name and email address.
                     #   Foo Bar &lt;foo@bar.com&gt; 
                     try:
-                        if '(' in name_email or ')' in email:
+                        if '(' in name_email or ')' in name_email:
                             email_raw, name_raw = name_email.split('(', 1)
                             name = name_raw.strip('()')
                             email = email_raw
                         else:
                             name_raw, email_raw = name_email.strip().rsplit(None, 1)
-                            name = name_raw.strip(' &quot;')
-                            email = email_raw[4:-4]
+                            # Name.
+                            if name_raw.endswith('&quot;'):
+                                name = name_raw.strip(' &quot;')
+                            else:
+                                name = name_raw
+                            # Email.
+                            if email_raw.startswith('&lt;') and email_raw.endswith('&gt;'):
+                                email = email_raw[4:-4]
+                            else:
+                                email = email_raw
                     except ValueError:
                         # The name is the same as the email address.
                         name = email = name_email
