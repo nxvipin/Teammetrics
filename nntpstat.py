@@ -324,7 +324,6 @@ def main():
                         logging.info('\t%d' % i)
                     msg_counter += 1
                 except (nntplib.NNTPTemporaryError, EOFError) as detail:
-                    logging.error('%s' % detail)
                     continue
 
             logging.info('Fetched %d message bodies', msg_counter-1)
