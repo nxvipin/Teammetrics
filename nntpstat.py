@@ -316,18 +316,15 @@ def main():
             logging.info('At message: ')
             for i in range(first, last+1):
                 try:
-                    try:
-                        resp, article_id, msg_id, msg = conn.body(str(i))
-                    except EOFError:
-                        logging.error('Connection closed by Gmane, please try again')
-                        break
+                    resp, article_id, msg_id, msg = conn.body(str(i))
                     msg_id_lst.append(msg_id)
                     body.append('\n'.join(msg))
                     # Log the count.
                     if i in logging_counter:
                         logging.info('\t%d' % i)
                     msg_counter += 1
-                except nntplib.NNTPTemporaryError as detail:
+                except (nntplib.NNTPTemporaryError, EOFError) as detail:
+                    logging.error('%s' % detail)
                     continue
 
             logging.info('Fetched %d message bodies', msg_counter-1)
