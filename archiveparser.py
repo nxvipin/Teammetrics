@@ -80,19 +80,23 @@ def main(conn, cur):
                     # Now we are at a single message, so parse it.
                     body = soup.body.ul
                     all_elements = body.findAll('li')
-                    all_elements_text = [str(element.text) for element in all_elements if str(element.text).startswith(FIELDS)]
-
+                    all_elements_text = [element.text for element in all_elements if element.text.startswith(FIELDS)]
                     all_elements_text.sort()
 
-                    raw_date = all_elements_text[0].split(':', 1)[1].strip()
-                    name_email = all_elements_text[1].split(':')[1]
-                    # Spam message without any 'From' field.
-                    try:
-                        message_id = all_elements_text[2].split(':')[1].strip(' &lgt;')
-                    except IndexError:
-                        logging.warning('Possible spam: %s' % message_id)
+                    # The list should have four elements (fields): 
+                    #   From, Date, Subject, Message-id.
+                    # If not, this is due to a badly formed header, so just continue.
+                    if len(all_elements_text) != 4:
                         continue
-                    subject = all_elements_text[3].split(':')[1]
+
+                    # Date.
+                    raw_date = all_elements_text[0].split(':', 1)[1].strip()
+                    # Name, Email.
+                    name_email = all_elements_text[1].split(':')[1]
+                    # Message-id.
+                    message_id = all_elements_text[2].split(':', 1)[1].replace('&lt;', '').replace('&gt;', '')
+                    # Subject.
+                    subject = all_elements_text[3].split(':', 1)[1]
 
                     # Let's parse the date now.
                     try:
@@ -101,7 +105,6 @@ def main(conn, cur):
                     except ValueError:
                         message_year = 0
                         pass
-
                     if (message_year != year):
                         logging.warning('Possible spam: Date mismatch in message %s' % message_id)
                         # We default the date to 15 of the month (random).
@@ -124,12 +127,12 @@ def main(conn, cur):
                             name_raw, email_raw = name_email.strip().rsplit(None, 1)
                             # Name.
                             if name_raw.endswith('&quot;'):
-                                name = name_raw.strip(' &quot;')
+                                name = name_raw.replace('&quot;', '')
                             else:
                                 name = name_raw
                             # Email.
                             if email_raw.startswith('&lt;') and email_raw.endswith('&gt;'):
-                                email = email_raw[4:-4]
+                                email = email_raw.replace('&lt;', '').replace('&gt;', '')
                             else:
                                 email = email_raw
                     except ValueError:
