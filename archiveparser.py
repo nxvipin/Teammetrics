@@ -7,6 +7,7 @@ import time
 import urllib2
 import logging
 import datetime
+import HTMLParser
 
 from BeautifulSoup import BeautifulSoup
 import psycopg2
@@ -126,7 +127,7 @@ def main(conn, cur):
                         else:
                             name_raw, email_raw = name_email.strip().rsplit(None, 1)
                             # Name.
-                            if name_raw.endswith('&quot;'):
+                            if name_raw.startswith('&quot;') or name.endswith('&quot;'):
                                 name = name_raw.replace('&quot;', '')
                             else:
                                 name = name_raw
@@ -138,6 +139,15 @@ def main(conn, cur):
                     except ValueError:
                         # The name is the same as the email address.
                         name = email = name_email
+
+                    # Some names have the form: LastName, FirstName. 
+                    if ',' in name:
+                        name = ' '.join(e for e in reversed(name.split())).replace(',', '').strip()
+
+                    parser = HTMLParser.HTMLParser()
+                    name = parser.unescape(name).strip()
+
+                    email = email.strip()
 
                     final_date = '{0}-{1}-{2}'.format(final_year, final_month, final_day)
 
