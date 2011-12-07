@@ -118,7 +118,8 @@ BOTS = (
             'Debian Installer',
             'Debian Boot CVS Master',
             'Skolelinux archive Installer',
-            'NM Front D'
+            'NM Front D',
+            'Debian Wiki'
        )
 
 # new-name: old-name.
