@@ -127,7 +127,7 @@ def main(conn, cur):
                         else:
                             name_raw, email_raw = name_email.strip().rsplit(None, 1)
                             # Name.
-                            if name_raw.startswith('&quot;') or name.endswith('&quot;'):
+                            if name_raw.startswith('&quot;') or name_raw.endswith('&quot;'):
                                 name = name_raw.replace('&quot;', '')
                             else:
                                 name = name_raw
