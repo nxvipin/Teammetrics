@@ -81,6 +81,7 @@ NAMES = {
             'Nicholas Breen':           {'author': 'nbreen-guest'},
             'Nicolas Évrard':           {'like': 'Nicolas %vrard'},
             'Noèl Köthe':               {'author': ('Noel Koethe', 'noel')},
+            'Olivier Sallou':           {'like': '%olivier sallou%', 'or': '%sallou-guest-guest'},
             'Otavio Salvador':          {'author': 'otavio'},
             'Paul Wise':                {'author': ('pabs', 'pabs-guest')},
             'Petter Reinholdtsen':      {'author': 'pere'},
