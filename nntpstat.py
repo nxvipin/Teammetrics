@@ -185,7 +185,7 @@ def format_mail_name(from_field):
         return '', ''
 
 
-def nntp_to_mbox(lst_name, lst_url, frm, date, sub, msg, body, first, last):
+def nntp_to_mbox(lst_name, lst_url, frm, date, sub, msg, body, first, last, mbox_file_path):
     """Convert the information fetched from the NNTP server to a mbox archive."""
 
     logging.info('Parsing and creating mbox archive for %s' % lst_name)
@@ -196,10 +196,7 @@ Subject: {3}
 Message-ID: {4}
 
 """
-    mbox_file_name = '{0}-{1}-{2}.mbox'.format(lst_name, first, last)
-    mbox_file_path = os.path.join(ARCHIVES_FILE_PATH, mbox_file_name)
-
-    with open(mbox_file_path, 'w') as mbox_file:
+    with open(mbox_file_path, 'a') as mbox_file:
         for f, d, s, m, b in zip(frm, date, sub, msg, body):
 
             email, name = format_mail_name(f)
@@ -218,12 +215,7 @@ Message-ID: {4}
             mbox_file.write(mbox_format.format(f_one, f_two, d, s, m)) 
             mbox_file.write(b)
             mbox_file.write('\n')
-
-    logging.info('mbox archive saved for %s' % lst_name)
-    save_parsed_lists(lst_name, last)
-
-    # Call liststat that will parse the mbox created.
-    liststat.parse_and_save({lst_url: mbox_file_path}, nntp=True)
+            mbox_file.flush()
 
 
 def main():
@@ -295,46 +287,50 @@ def main():
 
             msg_range = str(first) + '-' + str(last)
 
-            from_lst = []
-            date_lst = [] 
-            subject_lst = []
-            msg_id_lst = []
-
-            resp, from_lst = conn.xhdr('From', msg_range)
-            resp, date_lst = conn.xhdr('Date', msg_range)
-            resp, subject_lst = conn.xhdr('Subject', msg_range)
-
             # A list of numbers with breaks at 100 that will be used for
             # logging. This is helpful in cases where lots of messages
             # are to be downloaded so as to make the user aware of the
             # status of the download.
             logging_counter = [i for i in range(last) if not i % 100]
 
-            body = []
             msg_counter = 1
             logging.info('Updating message count...')
             logging.info('At message: ')
             for i in range(first, last+1):
                 try:
-                    resp, article_id, msg_id, msg = conn.body(str(i))
-                    msg_id_lst.append(msg_id)
+                    resp, from_lst = conn.xhdr('From', str(i))
+                    resp, date_lst = conn.xhdr('Date', str(i))
+                    resp, subject_lst = conn.xhdr('Subject', str(i))
+
+                    from_field = [frm for (article_id, frm) in from_lst]
+                    date_field = [date for (article_id, date) in date_lst]
+                    subject_field = [subject for (article_id, subject) in subject_lst]
+
+                    resp, article_id, msg_id_raw, msg = conn.body(str(i))
+                    msg_id = msg_id_raw.split()
+
+                    body = []
                     body.append('\n'.join(msg))
+
                     # Log the count.
                     if i in logging_counter:
                         logging.info('\t%d' % i)
+
+                    mbox_file_name = '{0}-{1}-{2}.mbox'.format(lst_name, first, last)
+                    mbox_file_path = os.path.join(ARCHIVES_FILE_PATH, mbox_file_name)
+                    nntp_to_mbox(lst_name, lst, from_field, date_field,
+                                subject_field, msg_id, body, first, last, mbox_file_path)
                     msg_counter += 1
+
                 except (nntplib.NNTPTemporaryError, EOFError) as detail:
                     continue
 
             logging.info('Fetched %d message bodies', msg_counter-1)
+            logging.info('mbox archive saved for %s' % lst_name)
 
-            from_lst = [frm for (article_id, frm) in from_lst]
-            date_lst = [date for (article_id, date) in date_lst]
-            subject_lst = [subject for (article_id, subject) in subject_lst]
-
-            nntp_to_mbox(lst_name, lst,
-                        from_lst, date_lst, subject_lst, msg_id_lst, 
-                        body, first, last)
+            save_parsed_lists(lst_name, last)
+            # Call liststat that will parse the mbox created.
+            liststat.parse_and_save({lst: mbox_file_path}, nntp=True)
 
             counter += 1
 
