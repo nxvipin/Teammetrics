@@ -3,11 +3,12 @@
 DB=teammetrics
 
 createdb $DB
-psql $DB < /usr/share/postgresql/9.0/contrib/tablefunc.sql
 
 psql $DB <<EOF
 
 BEGIN;
+
+CREATE EXTENSION tablefunc;
 
 CREATE TABLE listarchives (
     project             text,
