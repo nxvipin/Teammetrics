@@ -206,3 +206,4 @@ if __name__ == '__main__':
         conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
     cur = conn.cursor()
     update_names(conn, cur)
+    update_names(conn, cur, 'commitstat')
