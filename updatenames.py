@@ -81,7 +81,7 @@ NAMES = {
             'Nicholas Breen':           {'author': 'nbreen-guest'},
             'Nicolas Évrard':           {'like': 'Nicolas %vrard'},
             'Noèl Köthe':               {'author': ('Noel Koethe', 'noel')},
-            'Olivier Sallou':           {'like': '%olivier sallou%', 'or': '%sallou-guest-guest'},
+            'Olivier Sallou':           {'like': '%olivier sallou%', 'or': '%sallou-guest'},
             'Otavio Salvador':          {'author': 'otavio'},
             'Paul Wise':                {'author': ('pabs', 'pabs-guest')},
             'Petter Reinholdtsen':      {'author': 'pere'},
@@ -137,7 +137,7 @@ def update_names(conn, cur, table='listarchives'):
             query = """UPDATE {0}
                        SET name = %s 
                        WHERE name ILIKE %s
-                       OR name = %s;""".format(table) 
+                       OR name ILIKE %s;""".format(table) 
             cur.execute(query, (key, NAMES[key]['like'], NAMES[key]['or']))
             conn.commit()
             continue
