@@ -23,5 +23,5 @@ if [ "$3" = "pdf" ] ; then
     # PDFs are usually used in slides where we add the headline in LaTeX
     ./author_stats_create_graph $DATFILE $NUM "" "$3" "$4"
 else
-    ./author_stats_create_graph $DATFILE $NUM "List activities for $1 list" "$3" "$4"
+    ./author_stats_create_graph $DATFILE $NUM "VCS commits in $1 team" "$3" "$4"
 fi
