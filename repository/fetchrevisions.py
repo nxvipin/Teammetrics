@@ -51,7 +51,11 @@ def parse_revision():
         author_info = collections.defaultdict(list)
         revision_date = {}
         for info in output_xml.getiterator('logentry'):
-            author, date, msg = [element.text for element in info.getchildren()]
+            # In some cases, the author tag is missing.
+            try:
+                author, date, msg = [element.text for element in info.getchildren()]
+            except ValueError:
+                continue
             revision = int(info.get('revision'))
             author_info[author].append(revision)
             revision_date[revision] = date.split('T')[0]
