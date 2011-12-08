@@ -9,12 +9,12 @@ NMAX=30
 from sys import argv, stderr, exit
 
 if len(argv) != 3 :
-    print >>stderr, "Usage: %s <mode> <project>\n       where mode is either 'list' or 'commit'" % (argv[0])
+    print >>stderr, "Usage: %s <mode> <project>\n       where mode is either 'list', 'commit' or 'commitlines'" % (argv[0])
     exit(-1)
 
 mode    = argv[1]
-if mode not in ('list','commit'):
-    print >>stderr, "mode needs to be either 'list' or 'commit' but is", mode
+if mode not in ('list','commit','commitlines'):
+    print >>stderr, "mode needs to be either 'list', 'commit' or 'commitlines' but is", mode
     exit(-1)
 
 project = argv[2]
@@ -63,17 +63,27 @@ def RowDictionaries(cursor):
 
 crosstab_missing_re  = re.compile(".* crosstab.*")
 
-top_n_func = {'list'   : 'author_names_of_list',
-              'commit' : 'commit_names_of_project'
+top_n_func = {'list'        : 'author_names_of_list',
+              'commit'      : 'commit_names_of_project',
+              'commitlines' : 'commitlines_names_of_project',
              }
 
-per_year_func = {'list'   : 'author_per_year_of_list',
-                 'commit' : 'commmit_per_year_of_project',
+per_year_func = {'list'        : 'author_per_year_of_list',
+                 'commit'      : 'commmit_per_year_of_project',
+                 'commitlines' : 'commmitlines_per_year_of_project',
                 }
 
-query = "SELECT replace(author,' ','_') AS author FROM %s('%s', %i) AS (author text);" % \
-         (top_n_func[mode], project, NMAX)
-# print query
+limit_line_commits = {'list'        : '',
+                      'commit'      : '',
+                      'commitlines' : ', 10000', # ignore commits featuring > 10000 lines which
+                                                 # are probably not coded by the commiter himself
+                     }
+
+
+
+query = "SELECT replace(author,' ','_') AS author FROM %s('%s', %i %s) AS (author text);" % \
+         (top_n_func[mode], project, NMAX, limit_line_commits[mode])
+# print >>stderr, "DEBUG", query
 curs.execute(query)
 
 print ' year',
@@ -90,14 +100,16 @@ query = """SELECT *
 	FROM 
 	crosstab(
              'SELECT year AS row_name, name AS bucket, count AS value
-                     FROM %s(''%s'', %i) AS (name text, year int, count int)',
-             'SELECT * FROM %s(''%s'', %i) AS (category text)'
+                     FROM %s(''%s'', %i%s) AS (name text, year int, count int)',
+             'SELECT * FROM %s(''%s'', %i%s) AS (category text)'
 
         ) As (%s)
-""" % (per_year_func[mode], project, nuploaders, top_n_func[mode], project, nuploaders, typestring)
+""" % (per_year_func[mode], project, nuploaders, limit_line_commits[mode], \
+       top_n_func[mode], project, nuploaders, \
+       limit_line_commits[mode], typestring)
 
 try:
-    # print query
+    # print >>stderr, "DEBUG", query
     curs.execute(query)
 except psycopg2.ProgrammingError, err:
     if crosstab_missing_re.match(str(err)):

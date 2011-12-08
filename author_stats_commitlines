@@ -1,0 +1,27 @@
+#!/bin/sh -e
+# This script draws a plot to compare commit activities
+
+# set -x
+if [ "$1" = "" ] ; then
+    echo "Usage: `basename $0` <listname> [numauthors] [outputformat] [textcolor]"
+    exit 1
+fi
+
+NUM=10
+if [ $# -gt 1 ] ; then
+    if [ "$2" -lt $NUM -o "$2" -gt $NUM ] ; then
+	NUM=$2
+    fi
+fi
+
+NAME=commitlines_"$1"
+DATFILE="${NAME}_year.txt"
+
+./author_stats_helper.py commitlines $1 > $DATFILE
+
+if [ "$3" = "pdf" ] ; then
+    # PDFs are usually used in slides where we add the headline in LaTeX
+    ./author_stats_create_graph $DATFILE $NUM "" "$3" "$4"
+else
+    ./author_stats_create_graph $DATFILE $NUM "List activities for $1 list" "$3" "$4"
+fi
