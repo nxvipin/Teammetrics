@@ -188,7 +188,6 @@ def format_mail_name(from_field):
 def nntp_to_mbox(lst_name, lst_url, frm, date, sub, msg, body, first, last, mbox_file_path):
     """Convert the information fetched from the NNTP server to a mbox archive."""
 
-    logging.info('Parsing and creating mbox archive for %s' % lst_name)
     mbox_format = """From {0}
 From: {1}
 Date: {2}
@@ -282,6 +281,7 @@ def main():
                     logging.info('Last run ended at message %d', last_run)
                     first = last_run+1
 
+            logging.info('Parsing and creating mbox archive for %s' % lst_name)
             logging.info('Fetching message bodies for '
                                             'articles %d - %d' % (first, last))
 
