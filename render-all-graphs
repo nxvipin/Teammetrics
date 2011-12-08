@@ -9,4 +9,8 @@ done
 projects=`psql -t teammetrics -c 'SELECT project FROM commitstat GROUP BY project ;'`
 for proj in $projects ; do
     ./author_stats_commits $proj
+    ./author_stats_commitlines $proj
 done
+
+# Render also Uploaders history
+upload_history.py
