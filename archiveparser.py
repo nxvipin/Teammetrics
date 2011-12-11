@@ -3,6 +3,7 @@
 """Fetches and parses web archives from lists.debian.org."""
 
 import re
+import sys
 import time
 import urllib2
 import logging
@@ -107,7 +108,7 @@ def main(conn, cur):
                         message_year = 0
                         pass
                     if (message_year != year):
-                        logging.warning('Possible spam: Date mismatch in message %s' % message_id)
+                        logging.warning('Date mismatch in message: %s' % message_id)
                         # We default the date to 15 of the month (random).
                         final_day = '15'
                         final_month = month
@@ -138,7 +139,7 @@ def main(conn, cur):
                                 email = email_raw
                     except ValueError:
                         # The name is the same as the email address.
-                        name = email = name_email
+                        name = email = name_email.replace('&lt;', '').replace('&gt;', '')
 
                     # Some names have the form: LastName, FirstName. 
                     if ',' in name:
@@ -146,7 +147,6 @@ def main(conn, cur):
 
                     parser = HTMLParser.HTMLParser()
                     name = parser.unescape(name).strip()
-                    email = email.strip()
 
                     final_date = '{0}-{1}-{2}'.format(final_year, final_month, final_day)
 
@@ -156,7 +156,7 @@ def main(conn, cur):
                     # this is usually due to the issue of the last day of a given
                     # month being counted in the next. So default the day to 1.
                     try:
-                        time.strptime(today_date, '%Y-%m-%d')
+                        time.strptime(final_date, '%Y-%m-%d')
                     except ValueError:
                         final_date = '{0}-{1}-1'.format(final_year, final_month)
 
@@ -183,6 +183,9 @@ def main(conn, cur):
 
     logging.info('Updating names...')
     updatenames.update_names(conn, cur)
+
+    logging.info('Quitting')
+    sys.exit()
 
 
 if __name__ == '__main__':
