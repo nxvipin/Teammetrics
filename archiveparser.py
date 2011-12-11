@@ -120,7 +120,7 @@ def main(conn, cur):
                     # Format the 'From' field to return the name and email address.
                     #   Foo Bar &lt;foo@bar.com&gt; 
                     try:
-                        if '(' in name_email or ')' in name_email:
+                        if name_email.endswith(')'):
                             email_raw, name_raw = name_email.split('(', 1)
                             name = name_raw.strip('()')
                             email = email_raw
@@ -146,13 +146,19 @@ def main(conn, cur):
 
                     parser = HTMLParser.HTMLParser()
                     name = parser.unescape(name).strip()
-
                     email = email.strip()
 
                     final_date = '{0}-{1}-{2}'.format(final_year, final_month, final_day)
 
                     today_raw = datetime.date.today()
                     today_date = today_raw.strftime('%Y-%m-%d')
+                    # Before storing the date, ensure that it is proper. If not,
+                    # this is usually due to the issue of the last day of a given
+                    # month being counted in the next. So default the day to 1.
+                    try:
+                        time.strptime(today_date, '%Y-%m-%d')
+                    except ValueError:
+                        final_date = '{0}-{1}-1'.format(final_year, final_month)
 
                     # Populate the database.
                     try:
