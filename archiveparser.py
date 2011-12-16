@@ -20,10 +20,35 @@ BASE_URL = 'http://lists.debian.org/'
 FIELDS = ('From', 'Date', 'Subject', 'Message-id')
 
 
+def fetch_message_links(soup):
+    """Parse the page and return links to individual messages."""
+    message_links = soup.findAll('a', href=re.compile('msg'))
+    return [links['href'] for links in message_links]
+
+
+def check_next_page(month_url):
+    """Returns the total pages for a month in a list."""
+    total = []
+    counter = 2
+    open_url = month_url.rsplit('/', 1)[0]
+    while True:
+        try:
+            current_url = '{0}/thrd{1}.html'.format(open_url, counter)
+            urllib2.urlopen(current_url)
+            total.append(month_url)
+            total.append(current_url)
+            counter += 1
+        except urllib2.URLError:
+            break
+
+    return total
+
+
 def main(conn, cur):
     conf_info, total_lists = liststat.get_configuration(liststat.CONF_FILE_PATH,
                                                         pipermail=False)
     counter = 0
+    skipped_messages = 0
     for names, lists in conf_info.iteritems():
         for lst in lists:
             lst_name = lst.rsplit('/')[-1]
@@ -42,8 +67,9 @@ def main(conn, cur):
             all_links = soup.findAll('a', href=re.compile('\d'))
             links = [tag['href'] for tag in all_links]
 
-            start = links[0].split('/')[0]
-            end = links[-1].split('/')[0]
+            all_months = soup.body.findAll('ul')[1].findAll('li')
+            start = all_months[0].text.split(None, 1)[0]
+            end = all_months[-1].text.split(None, 1)[0]
             logging.info('List archives are from %s to %s' % (start, end))
 
             for link in links:
@@ -51,13 +77,21 @@ def main(conn, cur):
                 try:
                     month_read = urllib2.urlopen(month_url)
                 except urllib2.URLError as detail:
-                    logging.error('Skipping message, error connecting to lists.debian.org')
+                    logging.error('Skipping month %s: unable to connect to lists.d.o' % link)
                     logging.error('%s' % detail)
                     continue
 
                 soup = BeautifulSoup(month_read)
-                message_links = soup.findAll('a', href=re.compile('msg'))
-                messages = [links['href'] for links in message_links]
+
+                messages = []
+                # There are multiple pages in an archive, check for them.
+                all_pages_month = check_next_page(month_url)
+                if all_pages_month:
+                    for each_month in all_pages_month:
+                        page_soup = BeautifulSoup(urllib2.urlopen(each_month))
+                        messages.extend(fetch_message_links(page_soup))
+                else:
+                    messages.extend(fetch_message_links(soup))
 
                 for message in messages:
                     # Extract the month from the string:
@@ -69,12 +103,11 @@ def main(conn, cur):
                     month = year_month[-2:]
                     message_url = '{0}{1}/{2}/{3}/{4}'.format(BASE_URL, lst_name, 
                                                             year, month, message)
-
                     try:
                         message_read = urllib2.urlopen(message_url)
                     except urllib2.URLError as detail:
-                        logging.error('Skipping message, error connecting to lists.debian.org')
-                        logging.error('%s' % detail)
+                        logging.error('Skipping message: unable to connect to lists.d.o')
+                        skipped_messages += 1
                         continue
 
                     soup = BeautifulSoup(message_read)
@@ -183,6 +216,9 @@ def main(conn, cur):
 
     logging.info('Updating names...')
     updatenames.update_names(conn, cur)
+
+    if skipped_messages:
+        logging.info('Skipped %s messages in current run' % skipped_messages)
 
     logging.info('Quitting')
     sys.exit()
