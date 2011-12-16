@@ -336,9 +336,24 @@ def main():
 
     logging.info('Quit')
     sys.exit()
- 
+
+
+def confirm_run():
+    """Notify the user before starting NNTPStat."""
+    ask = raw_input('Do you really want to run NNTPStat instead of ArchiveParser [y/n]?: ')
+    if ask in ('y', 'Y', 'yes', ''):
+        ask_again = raw_input('WARNING: This will override good data from ArchiveParser. Proceed [y/n]?: ')
+        if ask_again in ('y', 'Y', 'yes', ''):
+            return
+        else:
+            sys.exit()
+    else:
+        sys.exit()   
+
 
 if __name__ == '__main__':
+    confirm_run()
+
     liststat.start_logging()
 
     if not os.path.isfile(NNTP_CONF_SAVE_PATH):
