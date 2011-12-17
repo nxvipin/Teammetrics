@@ -30,13 +30,16 @@ def check_next_page(month_url):
     """Returns the total pages for a month in a list."""
     total = []
     counter = 2
+    added_url = False
     open_url = month_url.rsplit('/', 1)[0]
     while True:
         try:
             current_url = '{0}/thrd{1}.html'.format(open_url, counter)
             urllib2.urlopen(current_url)
-            total.append(month_url)
+            if not added_url:
+                total.append(month_url)
             total.append(current_url)
+            added_url = True
             counter += 1
         except urllib2.URLError:
             break
@@ -129,7 +132,7 @@ def main(conn, cur):
                     # Name, Email.
                     name_email = all_elements_text[1].split(':')[1]
                     # Message-id.
-                    message_id = all_elements_text[2].split(':', 1)[1].replace('&lt;', '').replace('&gt;', '')
+                    message_id = all_elements_text[2].split(':', 1)[1].replace('&lt;', '').replace('&gt;', '').strip()
                     # Subject.
                     subject = all_elements_text[3].split(':', 1)[1]
 
