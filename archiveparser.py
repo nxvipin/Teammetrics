@@ -67,7 +67,7 @@ def main(conn, cur):
 
             # Get the links to the archives.
             soup = BeautifulSoup(url_read)
-            all_links = soup.findAll('a', href=re.compile('\d'))
+            all_links = soup.findAll('a', href=re.compile('threads.html'))
             links = [tag['href'] for tag in all_links]
 
             all_months = soup.body.findAll('ul')[1].findAll('li')
