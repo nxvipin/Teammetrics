@@ -76,11 +76,23 @@ def RowDictionaries(cursor):
         result.append(resultrow)
     return result
 
+if argv[0].endswith('upload_history.py'):
+    sql_procedure_prefix = 'active_uploader'
+    outputname           = 'uploaders'
+    print "Calculate uploaders history"
+elif argv[0].endswith('bug_close_history.py'):
+    sql_procedure_prefix = 'bug_closer'
+    outputname           = 'bugs'
+    print "Calculate bug closing history"
+else:
+    print >>stderr, "Unexpected script name %s" % argv[0]
+    exit(1)
+
 for team in teams.keys():
     # print team
-    datafile='uploaders_'+team+'.txt'
+    datafile=outputname+'_'+team+'.txt'
     out = open(datafile, 'w')
-    query = "SELECT replace(uploader,' ','_') AS uploader FROM active_uploader_names_of_pkggroup('%s', %i) AS (uploader text);" % (teams[team], MAXUPLOADERS)
+    query = "SELECT replace(uploader,' ','_') AS uploader FROM %s_names_of_pkggroup('%s', %i) AS (uploader text);" % (sql_procedure_prefix, teams[team], MAXUPLOADERS)
     # print query
     curs.execute(query)
 
@@ -101,10 +113,10 @@ for team in teams.keys():
 	FROM 
 	crosstab(
 	     'SELECT year AS row_name, name AS bucket, count AS value
-                     FROM active_uploader_per_year_of_pkggroup(''%s'', %i) AS (name text, year int, count int)',
-             'SELECT * FROM active_uploader_names_of_pkggroup(''%s'', %i) AS (category text)'
+                     FROM %s_per_year_of_pkggroup(''%s'', %i) AS (name text, year int, count int)',
+             'SELECT * FROM %s_names_of_pkggroup(''%s'', %i) AS (category text)'
         ) As (%s)
-""" % (teams[team], nuploaders, teams[team], MAXUPLOADERS, typestring)
+""" % (sql_procedure_prefix, teams[team], nuploaders, sql_procedure_prefix, teams[team], MAXUPLOADERS, typestring)
 
     try:
 	# print query
@@ -129,10 +141,10 @@ for team in teams.keys():
 	FROM 
 	crosstab(
 	     'SELECT year AS row_name, name AS bucket, count AS value
-                     FROM active_uploader_per_year_of_pkggroup(''%s'', %i) AS (name text, year int, count int)',
-             'SELECT * FROM active_uploader_names_of_pkggroup(''%s'', %i) AS (category text)'
+                     FROM %s_per_year_of_pkggroup(''%s'', %i) AS (name text, year int, count int)',
+             'SELECT * FROM %s_names_of_pkggroup(''%s'', %i) AS (category text)'
         ) As (%s)
-""" % (teams[team], nuploaders, teams[team], nuploaders, typestring)
+""" % (sql_procedure_prefix, teams[team], nuploaders, sql_procedure_prefix, teams[team], nuploaders, typestring)
 	    # print query
 	    conn.rollback()
             curs.execute(query)
