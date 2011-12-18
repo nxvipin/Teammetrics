@@ -3,55 +3,54 @@
 """Fetches and parses web archives from lists.debian.org."""
 
 import re
+import os
 import sys
 import time
 import urllib2
 import logging
 import datetime
 import HTMLParser
+import email.header
 
 from BeautifulSoup import BeautifulSoup
 import psycopg2
 
 import liststat
-import updatenames
+import nntpstat
+
+ARCHIVE_SAVE_DIR = '/var/cache/teammetrics/'
 
 BASE_URL = 'http://lists.debian.org/'
 FIELDS = ('From', 'Date', 'Subject', 'Message-id')
+MESSAGE_FORMAT = """From {0}
+From: {1}
+Date: {2}
+Subject: {3}
+Message-ID: <{4}>
+
+"""
 
 
-def fetch_message_links(soup):
-    """Parse the page and return links to individual messages."""
-    message_links = soup.findAll('a', href=re.compile('msg'))
-    return [links['href'] for links in message_links]
+def create_mbox(lst_name, mbox_name, name, email_addr, raw_d, updated_d, sub, msg_id, body):
+    """Creates mbox archives for a given message article."""
+    with open(os.path.join(ARCHIVE_SAVE_DIR, mbox_name), 'a') as f:
+        encode_name = email.header.Header(name, 'utf-8')
+        encode_subject = email.header.Header(sub, 'utf-8')
+
+        from_one = '{0}  {1}'.format(email_addr, updated_d)
+        from_two = '{0} ({1})'.format(email_addr, encode_name)
+
+        f.write(MESSAGE_FORMAT.format(from_one, from_two, raw_d, encode_subject, msg_id))
+        f.write(body.encode('utf-8'))
+        f.write('\n\n\n')
+        f.flush()
 
 
-def check_next_page(month_url):
-    """Returns the total pages for a month in a list."""
-    total = []
-    counter = 2
-    added_url = False
-    open_url = month_url.rsplit('/', 1)[0]
-    while True:
-        try:
-            current_url = '{0}/thrd{1}.html'.format(open_url, counter)
-            urllib2.urlopen(current_url)
-            if not added_url:
-                total.append(month_url)
-            total.append(current_url)
-            added_url = True
-            counter += 1
-        except urllib2.URLError:
-            break
-
-    return total
-
-
-def main(conn, cur):
+def main():
+    """Read a list archive message and parse it."""
     conf_info, total_lists = liststat.get_configuration(liststat.CONF_FILE_PATH,
                                                         pipermail=False)
     counter = 0
-    skipped_messages = 0
     for names, lists in conf_info.iteritems():
         for lst in lists:
             lst_name = lst.rsplit('/')[-1]
@@ -67,12 +66,11 @@ def main(conn, cur):
 
             # Get the links to the archives.
             soup = BeautifulSoup(url_read)
-            all_links = soup.findAll('a', href=re.compile('threads.html'))
+            all_links = soup.findAll('a', href=re.compile('\d'))
             links = [tag['href'] for tag in all_links]
 
-            all_months = soup.body.findAll('ul')[1].findAll('li')
-            start = all_months[0].text.split(None, 1)[0]
-            end = all_months[-1].text.split(None, 1)[0]
+            start = links[0].split('/')[0]
+            end = links[-1].split('/')[0]
             logging.info('List archives are from %s to %s' % (start, end))
 
             for link in links:
@@ -80,21 +78,13 @@ def main(conn, cur):
                 try:
                     month_read = urllib2.urlopen(month_url)
                 except urllib2.URLError as detail:
-                    logging.error('Skipping month %s: unable to connect to lists.d.o' % link)
+                    logging.error('Skipping message, error connecting to lists.debian.org')
                     logging.error('%s' % detail)
                     continue
 
                 soup = BeautifulSoup(month_read)
-
-                messages = []
-                # There are multiple pages in an archive, check for them.
-                all_pages_month = check_next_page(month_url)
-                if all_pages_month:
-                    for each_month in all_pages_month:
-                        page_soup = BeautifulSoup(urllib2.urlopen(each_month))
-                        messages.extend(fetch_message_links(page_soup))
-                else:
-                    messages.extend(fetch_message_links(soup))
+                message_links = soup.findAll('a', href=re.compile('msg'))
+                messages = [links['href'] for links in message_links]
 
                 for message in messages:
                     # Extract the month from the string:
@@ -106,15 +96,15 @@ def main(conn, cur):
                     month = year_month[-2:]
                     message_url = '{0}{1}/{2}/{3}/{4}'.format(BASE_URL, lst_name, 
                                                             year, month, message)
+
                     try:
                         message_read = urllib2.urlopen(message_url)
                     except urllib2.URLError as detail:
-                        logging.error('Skipping message: unable to connect to lists.d.o')
-                        skipped_messages += 1
+                        logging.error('Skipping message, error connecting to lists.debian.org')
+                        logging.error('%s' % detail)
                         continue
 
                     soup = BeautifulSoup(message_read)
-
                     # Now we are at a single message, so parse it.
                     body = soup.body.ul
                     all_elements = body.findAll('li')
@@ -134,25 +124,7 @@ def main(conn, cur):
                     # Message-id.
                     message_id = all_elements_text[2].split(':', 1)[1].replace('&lt;', '').replace('&gt;', '').strip()
                     # Subject.
-                    subject = all_elements_text[3].split(':', 1)[1]
-
-                    # Let's parse the date now.
-                    try:
-                        date = re.findall(r'\d{1,2}\s(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{4}', raw_date)
-                        day, message_month, message_year = ''.join(date).split()
-                    except ValueError:
-                        message_year = 0
-                        pass
-                    if (message_year != year):
-                        logging.warning('Date mismatch in message: %s' % message_id)
-                        # We default the date to 15 of the month (random).
-                        final_day = '15'
-                        final_month = month
-                        final_year = year
-                    else:
-                        final_day = day
-                        final_month = month
-                        final_year = year
+                    subject = all_elements_text[3].split(':', 1)[1].strip()
 
                     # Format the 'From' field to return the name and email address.
                     #   Foo Bar &lt;foo@bar.com&gt; 
@@ -183,47 +155,27 @@ def main(conn, cur):
 
                     parser = HTMLParser.HTMLParser()
                     name = parser.unescape(name).strip()
-
-                    final_date = '{0}-{1}-{2}'.format(final_year, final_month, final_day)
+                    email = email.replace('&lt;', '').replace('&gt;', '')
 
                     today_raw = datetime.date.today()
                     today_date = today_raw.strftime('%Y-%m-%d')
-                    # Before storing the date, ensure that it is proper. If not,
-                    # this is usually due to the issue of the last day of a given
-                    # month being counted in the next. So default the day to 1.
-                    try:
-                        time.strptime(final_date, '%Y-%m-%d')
-                    except ValueError:
-                        final_date = '{0}-{1}-1'.format(final_year, final_month)
-
-                    # Populate the database.
-                    try:
-                        cur.execute(
-                                """INSERT INTO listarchives
-                        (project, domain, name, email_addr, subject, message_id, archive_date, today_date)
-                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s);""",
-                    (lst_name, 'lists.debian.org', name, email, subject, message_id, final_date, today_date)
-                                    )
-                    except psycopg2.DataError as detail:
-                        conn.rollback()
-                        logging.error(detail)
-                        continue
-                    except psycopg2.IntegrityError as detail:
-                        conn.rollback()
-                        logging.info('Message-ID %s already in database, skipping' % message_id)
+                    updated_date = nntpstat.asctime_update(raw_date, message_id)
+                    if updated_date is None:
+                        logging.error('Unable to decode date, skipping message %s' % message_id)
                         continue
 
-                    conn.commit()
+                    body_unescape = HTMLParser.HTMLParser()
+                    body = body_unescape.unescape(soup.body.pre.text)
+
+                    mbox_name = '{0}-{1}{2}'.format(lst_name, year, month)
+                    create_mbox(lst_name, mbox_name, 
+                                name, email, 
+                                raw_date, updated_date,
+                                subject, message_id, body)
 
             counter += 1
 
-    logging.info('Updating names...')
-    updatenames.update_names(conn, cur)
-
-    if skipped_messages:
-        logging.info('Skipped %s messages in current run' % skipped_messages)
-
-    logging.info('Quitting')
+    logging.info('Quit')
     sys.exit()
 
 
@@ -231,12 +183,4 @@ if __name__ == '__main__':
     liststat.start_logging()
     logging.info('\t\tStarting Web Archive Parser')
 
-    DATABASE = liststat.DATABASE
-    # Connect to the database.
-    try:
-        conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['defaultport'])
-    except psycopg2.OperationalError:
-        conn = psycopg2.connect(database=DATABASE['name'], port=DATABASE['port'])
-    cur = conn.cursor()
-
-    main(conn, cur)
+    main()
