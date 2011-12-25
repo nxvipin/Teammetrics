@@ -9,6 +9,7 @@ import urllib2
 import logging
 import datetime
 import HTMLParser
+import ConfigParser
 
 from BeautifulSoup import BeautifulSoup
 import psycopg2
@@ -18,6 +19,37 @@ import updatenames
 
 BASE_URL = 'http://lists.debian.org/'
 FIELDS = ('From', 'Date', 'Subject', 'Message-id')
+CONFIG_FILE = '/etc/teammetrics/webarchiver.conf'
+
+
+def read_config(name):
+    """Read the configuration from CONFIG_FILE.
+    
+    Reads the configuration for list_name from CONFIG_FILE and if the list is
+    present, returns the information from the last parsed messages. This helps 
+    resume the ArchiveParser from the last run.
+    """
+
+    parser = ConfigParser.SafeConfigParser()
+    parser.read(CONFIG_FILE)
+
+    if parser.has_section(name):
+        return parser.get(name, 'year'), parser.get(name, 'month'), parser.get(name, 'message')
+    else:
+        return ()
+
+
+def write_config(name, year, month, message):
+    """Write the configuration file for the current run."""
+    parser = ConfigParser.SafeConfigParser()
+    parser.read(CONFIG_FILE)
+
+    if not parser.has_section(name):
+        parser.add_section(name)
+    parser.set(name, 'year', year)
+    parser.set(name, 'month', month)
+    parser.set(name, 'message', message)
+    parser.write(open(CONFIG_FILE, 'w'))
 
 
 def fetch_message_links(soup):
@@ -52,9 +84,22 @@ def main(conn, cur):
                                                         pipermail=False)
     counter = 0
     skipped_messages = 0
+    did_not_run = True
     for names, lists in conf_info.iteritems():
         for lst in lists:
             lst_name = lst.rsplit('/')[-1]
+
+            # In consecutive runs, the already parsed message are skipped without even being fetched.
+            # Everything is set to type: Unicode because that is what BeautifulSoup returns.
+            config_data = tuple(unicode(ele) for ele in read_config(lst_name))
+            if config_data:
+                c_year = config_data[0]
+                c_month = config_data[1]
+                c_message = config_data[2]
+                year_month_flag = message_flag = True
+            else:
+                year_month_flag = message_flag = False
+
             logging.info('\tList %d of %d' % (counter+1, total_lists))
             logging.info("Fetching '%s'" % lst_name)
 
@@ -70,13 +115,24 @@ def main(conn, cur):
             all_links = soup.findAll('a', href=re.compile('threads.html'))
             links = [tag['href'] for tag in all_links]
 
+            if year_month_flag:
+                logging.info('Last run was on %s-%s/%s' % (c_year,  c_month, c_message))
+                last_link = unicode('{0}/{1}-{0}{2}/threads.html'.format(c_year, lst_name, c_month))
+                links = links[links.index(last_link):]
+                year_month_flag = False
+
             all_months = soup.body.findAll('ul')[1].findAll('li')
             start = all_months[0].text.split(None, 1)[0]
             end = all_months[-1].text.split(None, 1)[0]
             logging.info('List archives are from %s to %s' % (start, end))
 
             for link in links:
+                # Get the year for which the messages are to be fetched.
                 month_url = '{0}{1}/{2}'.format(BASE_URL, lst_name, link)
+                year_month = link.split('/')[-2].rsplit('-')[-1]
+                year = year_month[:-2]
+                month = year_month[-2:]
+
                 try:
                     month_read = urllib2.urlopen(month_url)
                 except urllib2.URLError as detail:
@@ -96,22 +152,27 @@ def main(conn, cur):
                 else:
                     messages.extend(fetch_message_links(soup))
 
+                if message_flag:
+                    upto_messages = [unicode('msg{0:05}.html'.format(e)) 
+                                        for e in range(int(c_message[3:].strip('.html'))+1)]
+                    messages = list(set(messages) - set(upto_messages))
+                    message_flag = False
+
+                # Sort the list before starting so as to match up to the notion of upto_messages.
+                messages.sort()
                 for message in messages:
-                    # Extract the month from the string:
-                    #   <list-name>/<year>/<list-name>-<year><month>/threads.html
-                    # and then construct the message URL:
-                    #   <list-name>/<year>/<month>/<message-url>
-                    year_month = month_url.split('/')[-2].rsplit('-')[-1]
-                    year = year_month[:-2]
-                    month = year_month[-2:]
+                    # Construct the message URL:
                     message_url = '{0}{1}/{2}/{3}/{4}'.format(BASE_URL, lst_name, 
-                                                            year, month, message)
+                                                                year, month, message)
                     try:
                         message_read = urllib2.urlopen(message_url)
                     except urllib2.URLError as detail:
                         logging.error('Skipping message: unable to connect to lists.d.o')
                         skipped_messages += 1
                         continue
+
+                    # Even if a single message is fetched.
+                    did_not_run = False
 
                     soup = BeautifulSoup(message_read)
 
@@ -137,22 +198,10 @@ def main(conn, cur):
                     subject = all_elements_text[3].split(':', 1)[1]
 
                     # Let's parse the date now.
-                    try:
-                        date = re.findall(r'\d{1,2}\s(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{4}', raw_date)
-                        day, message_month, message_year = ''.join(date).split()
-                    except ValueError:
-                        message_year = 0
-                        pass
-                    if (message_year != year):
-                        logging.warning('Date mismatch in message: %s' % message_id)
-                        # We default the date to 15 of the month (random).
-                        final_day = '15'
-                        final_month = month
-                        final_year = year
-                    else:
-                        final_day = day
-                        final_month = month
-                        final_year = year
+                    day = re.findall(r'\d{1,2}', raw_date)[0]
+                    final_day = day
+                    final_month = month
+                    final_year = year
 
                     # Format the 'From' field to return the name and email address.
                     #   Foo Bar &lt;foo@bar.com&gt; 
@@ -215,10 +264,15 @@ def main(conn, cur):
 
                     conn.commit()
 
+                if messages: 
+                    write_config(lst_name, final_year, final_month, message)
+
+            logging.info("Finished processing '%s'" % lst_name)
             counter += 1
 
-    logging.info('Updating names...')
-    updatenames.update_names(conn, cur)
+    if not did_not_run:
+        logging.info('Updating names...')
+        updatenames.update_names(conn, cur)
 
     if skipped_messages:
         logging.info('Skipped %s messages in current run' % skipped_messages)
