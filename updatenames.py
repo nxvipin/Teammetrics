@@ -55,6 +55,7 @@ NAMES = {
             'Giovanni Mascellani':      {'author': 'gmascellani-guest'},
             'Guido Günther':            {'author': ('Guido G&#252;nther', 'Guido Guenther')},
             'Hans-Christoph Steiner':   {'author': 'eighthave-guest'},
+            'Ian Jackson':              {'author': 'Ian Jackson - Debian Project Leader'},
             'J.H.M. Dassen':            {'author': 'J.H.M.Dassen'},
             'Jan Beyer':                {'author': ('beathovn-guest', 'jan\@beathovn.de')},
             'Jaromír Mikeš':            {'author': 'mira-guest'},
