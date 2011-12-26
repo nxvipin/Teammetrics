@@ -15,11 +15,10 @@ from BeautifulSoup import BeautifulSoup
 import psycopg2
 
 import liststat
-import updatenames
 
 BASE_URL = 'http://lists.debian.org/'
 FIELDS = ('From', 'Date', 'Subject', 'Message-id')
-CONFIG_FILE = '/etc/teammetrics/webarchiver.conf'
+CONFIG_FILE = '/etc/teammetrics/archiveparser.conf'
 
 
 def read_config(name):
@@ -84,7 +83,6 @@ def main(conn, cur):
                                                         pipermail=False)
     counter = 0
     skipped_messages = 0
-    did_not_run = True
     for names, lists in conf_info.iteritems():
         for lst in lists:
             lst_name = lst.rsplit('/')[-1]
@@ -170,9 +168,6 @@ def main(conn, cur):
                         logging.error('Skipping message: unable to connect to lists.d.o')
                         skipped_messages += 1
                         continue
-
-                    # Even if a single message is fetched.
-                    did_not_run = False
 
                     soup = BeautifulSoup(message_read)
 
@@ -269,10 +264,6 @@ def main(conn, cur):
 
             logging.info("Finished processing '%s'" % lst_name)
             counter += 1
-
-    if not did_not_run:
-        logging.info('Updating names...')
-        updatenames.update_names(conn, cur)
 
     if skipped_messages:
         logging.info('Skipped %s messages in current run' % skipped_messages)
