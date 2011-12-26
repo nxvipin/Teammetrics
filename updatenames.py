@@ -70,7 +70,7 @@ NAMES = {
             'Loïc Minier':              {'author': ('lool-guest', 'lool')},
             'M. Christophe Mutricy':    {'author': 'xtophe-guest'},
             'Martin-Éric Racine':       {'like': 'Martin-%ric% Racine'},
-            'Manoj Srivastava':         {'author': 'Manoj Srivastava <Manoj Srivastava'},
+            'Manoj Srivastava':         {'author': ('Manoj Srivastava <Manoj Srivastava', '<srivasta@debian.org(va Srivastava Manoj')},
             'Mathieu Malaterre':        {'author': ('malat-guest', '"Mathieu Malaterre"')},
             'Mathieu Parent':           {'author': ('mparent-guest', 'Mathieu PARENT', 'sathieu')},
             'Mechtilde Stehmann':       {'author': 'Mechtilde'},
