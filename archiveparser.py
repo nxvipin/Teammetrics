@@ -272,17 +272,17 @@ def main(conn, cur):
             logging.info("Finished processing '%s'" % lst_name)
             counter += 1
 
-    if not did_not_run:
-        logging.info('Updating names...')
-        updatenames.update_names(conn, cur)
-
     if fetched_messages:
         logging.info('Fetched %s messages in the current run' % fetched_messages)
+    else:
+        logging.info('No messages were fetched in the current run')
 
     if skipped_messages:
         logging.info('Skipped %s messages in the current run' % skipped_messages)
-    else:
-        logging.info('No messages were fetched in the current run')
+
+    if not did_not_run:
+        logging.info('Updating names...')
+        updatenames.update_names(conn, cur)
 
     logging.info('Quitting')
     sys.exit()
