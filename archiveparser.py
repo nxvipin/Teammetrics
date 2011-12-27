@@ -280,7 +280,9 @@ def main(conn, cur):
         logging.info('Fetched %s messages in the current run' % fetched_messages)
 
     if skipped_messages:
-        logging.info('Skipped %s messages in current run' % skipped_messages)
+        logging.info('Skipped %s messages in the current run' % skipped_messages)
+    else:
+        logging.info('No messages were fetched in the current run')
 
     logging.info('Quitting')
     sys.exit()
