@@ -187,6 +187,7 @@ def main(conn, cur):
                     #   From, Date, Subject, Message-id.
                     # If not, this is due to a badly formed header, so just continue.
                     if len(all_elements_text) != 4:
+                        skipped_messages += 1
                         continue
 
                     # Date.
@@ -198,8 +199,13 @@ def main(conn, cur):
                     # Subject.
                     subject = all_elements_text[3].split(':', 1)[1]
 
-                    # Let's parse the date now.
-                    day = re.findall(r'\d{1,2}', raw_date)[0]
+                    # Let's parse the date now and fetch the day the message was sent.
+                    day_re = re.findall(r'\d{1,2}', raw_date)
+                    # Can't parse the day, so set it to random value.
+                    if day_re:
+                        day = day_re[0]
+                    else:
+                        day = '15'
                     final_day = day
                     final_month = month
                     final_year = year
@@ -281,7 +287,7 @@ def main(conn, cur):
         logging.info('Skipped %s messages in the current run' % skipped_messages)
 
     if not did_not_run:
-        logging.info('Updating names...')
+        logging.info('Updating names')
         updatenames.update_names(conn, cur)
 
     logging.info('Quitting')
