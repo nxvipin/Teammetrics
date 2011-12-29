@@ -187,7 +187,8 @@ def main(conn, cur):
                     # The list should have four elements (fields): 
                     #   From, Date, Subject, Message-id.
                     # If not, this is due to a badly formed header, so just continue.
-                    if len(all_elements_text) != 4:
+                    # Converting to a set is required because some messages have repeated headers.
+                    if len(set(all_elements_text)) != 4:
                         skipped_messages += 1
                         continue
 
