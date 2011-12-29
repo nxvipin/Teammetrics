@@ -277,7 +277,7 @@ def main(conn, cur):
                 if messages: 
                     write_config(lst_name, final_year, final_month, message)
 
-            logging.info("Finished processing '%s' (%s messsages)" % (lst_name, list_fetched_messages))
+            logging.info("Finished processing '%s' (%s messages)" % (lst_name, list_fetched_messages))
             counter += 1
 
     if fetched_messages:
