@@ -272,9 +272,8 @@ def main(conn, cur):
                         conn.rollback()
                         logging.error(detail)
                         continue
-                    except psycopg2.IntegrityError as detail:
+                    except psycopg2.IntegrityError:
                         conn.rollback()
-                        logging.info('Message-ID %s already in database, skipping' % message_id)
                         continue
 
                     conn.commit()
