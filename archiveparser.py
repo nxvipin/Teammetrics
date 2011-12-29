@@ -200,6 +200,10 @@ def main(conn, cur):
                     name_email = all_elements_text[1].split(':')[1]
                     # Message-id.
                     message_id = all_elements_text[2].split(':', 1)[1].replace('&lt;', '').replace('&gt;', '').strip()
+                    # The message is missing, so generate a random one.
+                    if not message_id:
+                        message_id = '{0}-{1}@teammetrics-spam.lists.debian.org'.format(name_email, raw_date)
+
                     # Subject.
                     subject = all_elements_text[3].split(':', 1)[1]
 
