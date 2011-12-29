@@ -88,6 +88,7 @@ def main(conn, cur):
     did_not_run = True
     for names, lists in conf_info.iteritems():
         for lst in lists:
+            list_fetched_messages = 0
             lst_name = lst.rsplit('/')[-1]
 
             # In consecutive runs, the already parsed message are skipped without even being fetched.
@@ -101,7 +102,7 @@ def main(conn, cur):
             else:
                 year_month_flag = message_flag = False
 
-            logging.info('\tList %d of %d' % (counter+1, total_lists))
+            logging.info(' List %d of %d' % (counter+1, total_lists))
             logging.info("Fetching '%s'" % lst_name)
 
             try:
@@ -270,12 +271,13 @@ def main(conn, cur):
                         continue
 
                     conn.commit()
+                    list_fetched_messages += 1
                     fetched_messages += 1
 
                 if messages: 
                     write_config(lst_name, final_year, final_month, message)
 
-            logging.info("Finished processing '%s'" % lst_name)
+            logging.info("Finished processing '%s' (%s messsages)" % (lst_name, list_fetched_messages))
             counter += 1
 
     if fetched_messages:
@@ -290,7 +292,7 @@ def main(conn, cur):
         logging.info('Updating names')
         updatenames.update_names(conn, cur)
 
-    logging.info('Quitting')
+    logging.info('Quit')
     sys.exit()
 
 
