@@ -102,7 +102,7 @@ def main(conn, cur):
             else:
                 year_month_flag = message_flag = False
 
-            logging.info(' List %d of %d' % (counter+1, total_lists))
+            logging.info('\tList %d of %d' % (counter+1, total_lists))
             logging.info("Fetching '%s'" % lst_name)
 
             try:
