@@ -181,14 +181,16 @@ def main(conn, cur):
                     # Now we are at a single message, so parse it.
                     body = soup.body.ul
                     all_elements = body.findAll('li')
-                    all_elements_text = [element.text for element in all_elements if element.text.startswith(FIELDS)]
+                    # Converting to a set is required because some messages have repeated headers.
+                    all_elements_text = set([element.text for element in all_elements if element.text.startswith(FIELDS)])
+                    all_elements_text = list(all_elements_text)
+                    # Sort the list because we want the ordering to be the same as that of FIELDS.
                     all_elements_text.sort()
 
                     # The list should have four elements (fields): 
                     #   From, Date, Subject, Message-id.
                     # If not, this is due to a badly formed header, so just continue.
-                    # Converting to a set is required because some messages have repeated headers.
-                    if len(set(all_elements_text)) != 4:
+                    if len(all_elements_text) != 4:
                         skipped_messages += 1
                         continue
 
