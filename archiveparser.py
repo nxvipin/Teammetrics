@@ -183,7 +183,7 @@ def main(conn, cur):
                     all_elements = body.findAll('li')
                     # Fetch the text of all elements in FIELDS.
                     all_elements_text = [element.text for element in all_elements if element.text.startswith(FIELDS)]
-
+                    # Create a mapping of field to values.
                     fields = {}
                     for element in all_elements_text:
                         field, value = element.split(':', 1)
@@ -194,35 +194,11 @@ def main(conn, cur):
                     if 'From' not in fields:
                         skipped_messages += 1
                         continue
-                    name_email = fields.get('From')
-
-                    # Date field.
-                    date = fields.get('Date')
-                    if date is not None:
-                        # Let's parse the date now and fetch the day the message was sent.
-                        day_find = re.findall(r'\d{1,2}', date)
-                        # Can't parse the date, so set it to a random value.
-                        if day_find:
-                            day = day_find[0]
-                        else:
-                            day = '15'
-                    # There is no 'Date' field.
-                    else:
-                        day = '15'
-                    final_day = day
-                    final_month = month
-                    final_year = year
-
-                    # Message-id field.
-                    message_id = fields.get('Message-id', '{0}-{1}@teammetrics-spam.lists.debian.org'.format(name_email, date))
-                    message_id = message_id.replace('&lt;', '').replace('&gt;', '')
-
-                    # Subject field.
-                    subject = fields.get('Subject', '')
 
                     # Name, Email parsing starts here.
                     # Format the 'From' field to return the name and email address.
                     #   Foo Bar &lt;foo@bar.com&gt; 
+                    name_email = fields.get('From')
                     try:
                         if name_email.endswith(')'):
                             email_raw, name_raw = name_email.split('(', 1)
@@ -243,18 +219,33 @@ def main(conn, cur):
                     except ValueError:
                         # The name is the same as the email address.
                         name = email = name_email.replace('&lt;', '').replace('&gt;', '')
-
                     # Some names have the form: LastName, FirstName. 
                     if ',' in name:
                         name = ' '.join(e for e in reversed(name.split())).replace(',', '').strip()
-
                     parser = HTMLParser.HTMLParser()
                     name = parser.unescape(name).strip()
 
-                    final_date = '{0}-{1}-{2}'.format(final_year, final_month, final_day)
+                    # Subject field.
+                    subject = fields.get('Subject', '')
 
-                    today_raw = datetime.date.today()
-                    today_date = today_raw.strftime('%Y-%m-%d')
+                    # Date field.
+                    date = fields.get('Date')
+                    if date is not None:
+                        # Let's parse the date now and fetch the day the message was sent.
+                        day_find = re.findall(r'\d{1,2}', date)
+                        # Can't parse the date, so set it to a random value.
+                        if day_find:
+                            day = day_find[0]
+                        else:
+                            day = '15'
+                    # If there is no 'Date' field.
+                    else:
+                        day = '15'
+                    final_day = day
+                    final_month = month
+                    final_year = year
+
+                    final_date = '{0}-{1}-{2}'.format(final_year, final_month, final_day)
                     # Before storing the date, ensure that it is proper. If not,
                     # this is usually due to the issue of the last day of a given
                     # month being counted in the next. So default the day to 1.
@@ -263,7 +254,15 @@ def main(conn, cur):
                     except ValueError:
                         final_date = '{0}-{1}-1'.format(final_year, final_month)
 
-                    # Populate the database.
+                    today_raw = datetime.date.today()
+                    today_date = today_raw.strftime('%Y-%m-%d')
+
+                    # Message-id field.
+                    # If no Message-id field found, generate a random one.
+                    message_id = fields.get('Message-id', u'{0}-{1}-{2}@spam.lists.debian.org'.format(name, final_month, final_day))
+                    message_id = message_id.replace('&lt;', '').replace('&gt;', '')
+
+                    # Now populate the database.
                     try:
                         cur.execute(
                                 """INSERT INTO listarchives
