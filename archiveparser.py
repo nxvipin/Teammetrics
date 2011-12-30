@@ -259,7 +259,8 @@ def main(conn, cur):
 
                     # Message-id field.
                     # If no Message-id field found, generate a random one.
-                    message_id = fields.get('Message-id', u'{0}-{1}-{2}@spam.lists.debian.org'.format(name, final_month, final_day))
+                    message_id = fields.get('Message-id', u'{0}-{1}-{2}@spam.lists.debian.org'.format(name.replace(' ', ''),
+                                                                                                      final_month, final_day))
                     message_id = message_id.replace('&lt;', '').replace('&gt;', '')
 
                     # Now populate the database.
