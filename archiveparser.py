@@ -181,43 +181,46 @@ def main(conn, cur):
                     # Now we are at a single message, so parse it.
                     body = soup.body.ul
                     all_elements = body.findAll('li')
-                    # Converting to a set is required because some messages have repeated headers.
-                    all_elements_text = set([element.text for element in all_elements if element.text.startswith(FIELDS)])
-                    all_elements_text = list(all_elements_text)
-                    # Sort the list because we want the ordering to be the same as that of FIELDS.
-                    all_elements_text.sort()
+                    # Fetch the text of all elements in FIELDS.
+                    all_elements_text = [element.text for element in all_elements if element.text.startswith(FIELDS)]
 
-                    # The list should have four elements (fields): 
-                    #   From, Date, Subject, Message-id.
-                    # If not, this is due to a badly formed header, so just continue.
-                    if len(all_elements_text) != 4:
+                    fields = {}
+                    for element in all_elements_text:
+                        field, value = element.split(':', 1)
+                        fields[field.strip()] = value.strip()
+
+                    # From field.
+                    # In case of a missing 'From' field, just skip because we don't need to parse the message then.
+                    if 'From' not in fields:
                         skipped_messages += 1
                         continue
+                    name_email = fields.get('From')
 
-                    # Date.
-                    raw_date = all_elements_text[0].split(':', 1)[1].strip()
-                    # Name, Email.
-                    name_email = all_elements_text[1].split(':')[1]
-                    # Message-id.
-                    message_id = all_elements_text[2].split(':', 1)[1].replace('&lt;', '').replace('&gt;', '').strip()
-                    # The message is missing, so generate a random one.
-                    if not message_id:
-                        message_id = '{0}-{1}@teammetrics-spam.lists.debian.org'.format(name_email, raw_date)
-
-                    # Subject.
-                    subject = all_elements_text[3].split(':', 1)[1]
-
-                    # Let's parse the date now and fetch the day the message was sent.
-                    day_re = re.findall(r'\d{1,2}', raw_date)
-                    # Can't parse the day, so set it to random value.
-                    if day_re:
-                        day = day_re[0]
+                    # Date field.
+                    date = fields.get('Date')
+                    if date is not None:
+                        # Let's parse the date now and fetch the day the message was sent.
+                        day_find = re.findall(r'\d{1,2}', date)
+                        # Can't parse the date, so set it to a random value.
+                        if day_find:
+                            day = day_find[0]
+                        else:
+                            day = '15'
+                    # There is no 'Date' field.
                     else:
                         day = '15'
                     final_day = day
                     final_month = month
                     final_year = year
 
+                    # Message-id field.
+                    message_id = fields.get('Message-id', '{0}-{1}@teammetrics-spam.lists.debian.org'.format(name_email, date))
+                    message_id = message_id.replace('&lt;', '').replace('&gt;', '')
+
+                    # Subject field.
+                    subject = fields.get('Subject', '')
+
+                    # Name, Email parsing starts here.
                     # Format the 'From' field to return the name and email address.
                     #   Foo Bar &lt;foo@bar.com&gt; 
                     try:
