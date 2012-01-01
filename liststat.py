@@ -180,7 +180,7 @@ def parse_and_save(mbox_files, nntp=False):
         mbox_name = os.path.basename(files)
         mailing_list = os.path.basename(files).split('.')[0]
         project = mailing_list.rsplit('-', 2)[0]
-        logging.info('Parsing: %s' % mailing_list)
+        logging.info("Parsing '%s'" % mailing_list)
 
         for key, message in mbox_file.iteritems():
             # The 'From' field value returns a string of the format:
@@ -409,7 +409,6 @@ def parse_and_save(mbox_files, nntp=False):
             last_f_date = format_date
 
         current_lists.append(mbox_name)
-        logging.info('Parsed: %s' % mailing_list)
 
     logging.info('Updating names')
     updatenames.update_names(conn, cur)
@@ -483,7 +482,7 @@ def main(conf_info, total_lists):
                 continue
 
             # Download the mbox archives and save them to DIRECTORY_PATH.
-            logging.info("Fetching %d mbox archives..." % len(archive_dates))
+            logging.info("Fetching %d mbox archives:" % len(archive_dates))
             for date in archive_dates:
                 # Get the mbox URL and the name. 
                 mbox_url = '{0}/{1}'.format(lst, date)
