@@ -80,11 +80,13 @@ if argv[0].endswith('upload_history.py'):
     sql_procedure_prefix = 'active_uploader'
     outputname           = 'uploaders'
     title                = 'Uploaders'
+    headline             = 'Uploaders of'
     print "Calculate uploaders history"
 elif argv[0].endswith('bug_close_history.py'):
     sql_procedure_prefix = 'bug_closer'
     outputname           = 'bugs'
     title                = 'Bugs'
+    headline             = 'Bugs closed by'
     print "Calculate bug closing history"
 else:
     print >>stderr, "Unexpected script name %s" % argv[0]
@@ -166,6 +168,6 @@ for team in teams.keys():
 	if len(argv) > 2:
 	    cmdstring = cmdstring + ' ' + argv[2]
     else:
-	cmdstring = cmdstring + ' "' + title + ' of ' + team + ' team"'
+	cmdstring = cmdstring + ' "' + headline + ' ' + team + ' team"'
     system(cmdstring)
 
