@@ -1,6 +1,11 @@
 #!/bin/sh
 # Render all graphs from mailing lists which are contained in the database
 
+# make sure all postings to debian-custom list will be moved to debian-blends
+psql teammetrics --tuples-only --command "UPDATE listarchives SET project = 'debian-blends' WHERE project = 'debian-custom' AND message_id IN (SELECT message_id FROM (SELECT message_id, count(*) from listarchives WHERE project IN ('debian-custom', 'debian-blends') GROUP BY message_id ) AS tmp WHERE count = 1) ;"
+# now remove those messages from debian-custom which were duplicated to get completely rid of this list
+psql teammetrics --tuples-only --command "DELETE FROM listarchives WHERE project = 'debian-custom';"
+
 projects=`psql -t teammetrics -c 'SELECT project FROM listarchives GROUP BY project ;'`
 for proj in $projects ; do
     ./author_stats $proj
