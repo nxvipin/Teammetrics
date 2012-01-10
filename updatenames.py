@@ -7,6 +7,7 @@ The posters and their multiple names are stored in a mapping of real name to the
         UPDATE listarchives SET name='Name' WHERE name ILIKE $FOO
 """
 
+import os
 import codecs
 import logging
 
@@ -54,7 +55,7 @@ def update_names(conn, cur, table='listarchives'):
 
         else:
             query += ';'
-            cur.execute(query, (key, ))
+            cur.execute(query, (key, ''.join(item)))
             conn.commit()
 
     # Remove the bots from the list.
@@ -63,7 +64,7 @@ def update_names(conn, cur, table='listarchives'):
     for name in bots:
         query = """DELETE FROM {0}
                 WHERE name ILIKE %s;""".format(table)
-        cur.execute(query, (name, ))
+        cur.execute(query, (name,))
         conn.commit()
 
 
