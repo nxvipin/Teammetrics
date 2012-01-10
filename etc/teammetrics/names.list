@@ -12,6 +12,10 @@ Andreas Tille                 :     Andreas T, tille@debian.org, Tille A, tille,
 Andres Mejia                  :     ceros-guest
 Andrew Lee                    :     ajqlee
 Andriy Beregovenko            :     jet-guest
+Ansgar Wiechers               :     Ansgar%Wiechers
+Anton Gladky                  :     gladky-anton-guest
+Aurélien GÉRÔME               :     ag-guest
+Barak Pearlmutter             :     bap
 Bart Cornelis                 :     cobaco%
 Ben Armstrong                 :     synrg
 Benjamin Drung                :     %bdrung%, bdrung-guest
@@ -23,10 +27,12 @@ Christian Perrier             :     bubulle, Christian PERRIER
 Christophe Prud_homme         :     prudhomm, prudhomm-guest
 Christophe Trophime           :     trophime%, christophe.trophime
 Christopher Walker            :     cjw1006-guest
+Damien Caliste                :     dcaliste-guest
 Daniel Leidert                :     Daniel Leidert (dale), dleidert-guest
 David Bremner                 :     bremner-guest
 David Paleino                 :     hanska-guest
-Dominique Belhachemi          :     domibel-guest
+Dmitry Oboukhov               :     unera
+Dominique Belhachemi          :     domibel%
 Eddy Petrisor                 :     Eddy Petri%or
 Egon Willighagen              :     egonw-guest
 Eric Sharkey                  :     sharkey, sharkey@superk.physics.sunysb.edu
@@ -48,6 +54,7 @@ Hans-Christoph Steiner        :     eighthave-guest
 Harry Rickards                :     hrickards%, Harry RIckards
 IOhannes M. Zmölnig           :     %zmoelnig%
 Ian Jackson                   :     Ian Jackson - Debian Project Leader
+Nobuhiro Iwamatsu             :     iwamatsu
 J.H.M. Dassen                 :     J.H.M.Dassen
 Jan Beyer                     :     beathovn-guest, jan\@beathovn.de
 Jaromír Mikeš                 :     mira-guest
@@ -63,6 +70,7 @@ Jérôme Warnier                :     Jerome Warnier
 Karol Langner                 :     klm-guest
 Karol M. Langner              :     kml-guest, Karol Langner
 Ko van der Sloot              :     sloot-guest
+Konstantinos Poulios          :     logari81-guest
 L. V. Gandhi                  :     L . V . Gandhi, L.V.Gandhi
 LI Daobing                    :     lidaobing-guest
 Linas Zvirblis                :     Linas %virblis
@@ -98,9 +106,11 @@ Reinhard Tartler              :     siretart
 Roman Haefeli                 :     rdz%
 Rosea Grammostola             :     rosea-%, rosea%grammosto%a, Grammostola Rosea, rosea
 Ryan Kavanagh                 :     ryanakca%
+Sam Hocevar                   :     sho
 Samuel Thibault               :     sthibaul-guest, sthibault
 Sargis Dallakyan              :     sargis, sargis-guest
 Sebastian Dröge               :     slomo
+Serge Guelton                 :     guelton-guest
 Steffen Möller                :     smoe-guest, moeller, Steffen Moeller
 Steve Langasek                :     vorlon
 Steven M. Robbins             :     Steve%Robbins, smr
@@ -111,6 +121,6 @@ Sylvestre Ledru               :     sylvestre-guest, sylvestre, sylvestre.ledru
 Thijs Kinkhorst               :     thijs
 Thomas BSG Bushnell           :     Thomas Bushnell%, %BSG Bushnell T%
 Tobias Quathamer              :     Tobias Toedter
-Torsten Werner                :     twerner
+Torsten Werner                :     twerner, mail.twerner
 Vagrant Cascadian             :     %vagrant%
 Yaroslav Halchenko            :     yoh-guest, yoh
