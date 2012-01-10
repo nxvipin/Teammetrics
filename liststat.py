@@ -337,6 +337,7 @@ def parse_and_save(mbox_files, nntp=False):
             if is_spam:
                 reason = 'No Message-ID found'
             if spam:
+                logging.warning('Spam detected for %s. Reason: %s' % (msg_id, reason))
                 try:
                     cur.execute(
                             """INSERT INTO listspam
@@ -412,7 +413,6 @@ def parse_and_save(mbox_files, nntp=False):
 
     logging.info('Updating names')
     updatenames.update_names(conn, cur)
-    logging.info('Names updated')
 
     cur.close()
     conn.close()

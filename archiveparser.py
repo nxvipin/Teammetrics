@@ -15,11 +15,12 @@ from BeautifulSoup import BeautifulSoup
 import psycopg2
 
 import liststat
+import spamfilter
 import updatenames
 
 BASE_URL = 'http://lists.debian.org/'
 FIELDS = ('From', 'Date', 'Subject', 'Message-id')
-CONFIG_FILE = '/etc/teammetrics/archiveparser.conf'
+CONFIG_FILE = '/var/cache/teammetrics/archiveparser.status'
 
 
 def read_config(name):
@@ -263,7 +264,30 @@ def main(conn, cur):
                                                                                                       final_month, final_day))
                     message_id = message_id.replace('&lt;', '').replace('&gt;', '')
 
-                    # Now populate the database.
+                    # Run it through the spam filter.
+                    name, subject, reason, spam = spamfilter.check_spam(name, subject)
+                    # If a message is spam, populate the 'listspam' database.
+                    if spam:
+                        logging.warning('Spam detected for %s. Reason: %s' % (message_id, reason))
+                        try:
+                            cur.execute(
+                                    """INSERT INTO listspam
+                                (message_id, project, name, email_addr, subject, reason)
+                                    VALUES(%s, %s, %s, %s, %s, %s);""",
+                            (message_id, lst_name, name, email, subject, reason)
+                                        )
+                        except psycopg2.DataError as detail:
+                            conn.rollback()
+                            logging.error(detail)
+                            continue
+                        except psycopg2.IntegrityError:
+                            conn.rollback()
+                            continue
+
+                        conn.commit()
+                        continue
+
+                    # Now populate the 'listarchives' database.
                     try:
                         cur.execute(
                                 """INSERT INTO listarchives
