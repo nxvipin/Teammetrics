@@ -2,6 +2,7 @@ Archive Administrator
 Cron Daemon
 BugScan reporter
 bts-link-upstream
+DDPOMail robot
 Debian Archive Maintenance
 Debian BTS
 Debian External Health System
@@ -23,3 +24,4 @@ bugzilla%
 NM Front Desk
 Mini-Dinstall
 samba-bugs at samba.org
+X Strike Force SVN
