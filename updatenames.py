@@ -50,7 +50,7 @@ def update_names(conn, cur, table='listarchives'):
                 query += " OR name ILIKE %s"
             item.insert(0, key)
             query += ';'
-            curr.execute(query, item)
+            cur.execute(query, item)
             conn.commit()
 
         else:
