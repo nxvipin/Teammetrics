@@ -34,30 +34,22 @@ def fetch_logs(ssh, conn, cur, teams):
         stdin, stdout, stderr = ssh.exec_command(cmd)
         output = stdout.read()
 
-        logging.info('Fetching parse info from vasks.debian.org ...')
+        logging.info('Fetching info from vasks.debian.org for %s...' % team)
         ftp.get('parse.info', 'parse.info')
 
         with open('parse.info') as f:
-            for line in f:
-                rev, project, package, author, rev_date, parse_date, inserted, deleted = line.split(',')
-                try:
-                    cur.execute(
-                """INSERT INTO commitstat(commit_id, project, package, vcs, name, 
-                    commit_date, today_date, lines_inserted, lines_deleted) 
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);""",
-                            (rev, project, package, 'svn', author, 
-                        rev_date, parse_date, inserted, deleted)
-                                )
-                    conn.commit()
-                except psycopg2.DataError as detail:
-                    conn.rollback()
-                    logging.error(detail)
-                    continue
-                except psycopg2.IntegrityError as detail:
-                    conn.rollback()
-                    logging.error('%s: project: %s, revision #: %s' % (detail, 
-                                                                    project, 
-                                                                    rev))
-                    continue
+            try:
+                cur.copy_from(f, 'commitstat', sep=',')
+                conn.commit()
+            except psycopg2.DataError as detail:
+                conn.rollback()
+                logging.error(detail)
+                continue
+            except psycopg2.IntegrityError as detail:
+                conn.rollback()
+                logging.error('%s: project: %s, revision #: %s' % (detail, 
+                                                                project, 
+                                                                rev))
+                continue
 
     logging.info('SVN logs saved...')
