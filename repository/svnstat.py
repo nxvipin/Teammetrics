@@ -26,6 +26,7 @@ def fetch_logs(ssh, conn, cur, teams):
     """Fetch and save the logs for SVN repositories."""
 
     logging.info('Parsing repository data')
+    ftp = ssh.open_sftp()
 
     for team in teams:
         cmd = 'python {0}/fetchrevisions.py {1}'.format(ALIOTH_PATH, team)
