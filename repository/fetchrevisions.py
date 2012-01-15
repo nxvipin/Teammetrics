@@ -13,7 +13,7 @@ ALIOTH_PATH = '/srv/home/groups/teammetrics'
 REVISION_FILE = os.path.join(ALIOTH_PATH, 'revisions.hash')
 PARSE_INFO_FILE = os.path.join(ALIOTH_PATH, 'parse.info')
 
-FORMAT = '{0},{1},{2},{3},{4},{5},{6},{7}'
+FORMAT = '{0},{1},{2},{3},{4},{5},{6},{7},{8}'
 
 
 def get_revisions():
@@ -87,7 +87,8 @@ def parse_revision():
                     else:
                         deleted += 1
 
-            parse_f.write(FORMAT.format(change, project, package, 
+            vcs = 'svn'
+            parse_f.write(FORMAT.format(change, project, package, vcs,
                                         author, revision_date[change],
                                         today_date, inserted, deleted))
             parse_f.write('\n')
