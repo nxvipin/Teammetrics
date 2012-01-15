@@ -47,9 +47,7 @@ def fetch_logs(ssh, conn, cur, teams):
                 continue
             except psycopg2.IntegrityError as detail:
                 conn.rollback()
-                logging.error('%s: project: %s, revision #: %s' % (detail, 
-                                                                project, 
-                                                                rev))
+                logging.error(detail)
                 continue
 
     logging.info('SVN logs saved...')
