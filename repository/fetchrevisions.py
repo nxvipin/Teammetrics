@@ -57,6 +57,7 @@ def parse_revision():
         author_info[author].append(revision)
         revision_date[revision] = date.split('T')[0]
 
+    vcs = 'svn'
     total_authors = len(author_info)
     for committer, revision in author_info.iteritems():
         project = team
@@ -87,7 +88,6 @@ def parse_revision():
                     else:
                         deleted += 1
 
-            vcs = 'svn'
             parse_f.write(FORMAT.format(change, project, package, vcs,
                                         author, revision_date[change],
                                         today_date, inserted, deleted))
