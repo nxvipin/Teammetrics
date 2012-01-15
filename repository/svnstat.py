@@ -27,6 +27,7 @@ def fetch_logs(ssh, conn, cur, teams):
 
     logging.info('Parsing repository data')
     ftp = ssh.open_sftp()
+    ftp.chdir(ALIOTH_PATH)
 
     for team in teams:
         cmd = 'python {0}/fetchrevisions.py {1}'.format(ALIOTH_PATH, team)
