@@ -4,7 +4,7 @@ import urllib2
 import BeautifulSoup
 
 URL = 'https://alioth.debian.org/users/{0}'
-OUTPUT = '{0}\t\t\t\t\t:\t\t\t\t{1}\n'
+OUTPUT = '{0}\t\t\t\t\t:\t\t\t{1}\n'
 
 
 def main():

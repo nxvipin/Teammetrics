@@ -44,6 +44,7 @@ Ansgar Burchardt		    	:           ansgar-guest
 Ansgar Wiechers                 :           Ansgar%Wiechers
 Antal A. Buss					:           abuss-guest
 Anton Gladky                    :           gladky-anton-guest
+Anton Martchukov				:				antonm-guest
 Antonio De Luci					:           osrevolution-guest
 Armin Ronacher					:           mitsuhiko-guest
 Arnaud Fontaine					:           arnau-guest
@@ -64,6 +65,7 @@ Branden Robinson                :           Branden Robinson%
 Brandon Hale					:           tseng-guest
 Brett Parker					:           brettp-guest
 Bruno "Fuddl" Kleinert          :           Bruno%Fuddl%, fuddl-guest
+Cameron Shorter					:			camerons-guest
 Carl Chenet			    		:           chaica-guest
 Carl Fürstenberg				:           azatoth-guest
 Carlo Segre			    		:           segre-guest
@@ -114,8 +116,6 @@ Dmitry Shachnev					:           mitya57-guest
 Dominik Smatana					:           dominik-guest
 Dominique Belhachemi            :           domibel%
 Dominique Dumont				:           ddumont-guest
-Jeremy Sanders				:           jeremysanders-guest
-Pablo Duboue					:           pabloduboue-guest
 Dustin Rayner					:           sworoc-guest
 Eddy Petrisor					:           eddyp-guest
 Eddy Petrisor                   :           Eddy Petri%or
@@ -166,6 +166,7 @@ Guido Günther                   :           Guido G&#252;nther, Guido Guenther
 Guilherme de S. Pastore			:           ftlerror-guest
 Guillaume Mazoyer				:           gmazoyer-guest
 Gürkan Sengün					:           gurkan-guest
+Hamish Bowman					:			hamish-guest
 Hans-Christoph Steiner          :           eighthave-guest
 Harry Rickards                  :           hrickards%, Harry RIckards
 Helge Kreutzmann				:           kreutzm-guest
@@ -199,6 +200,7 @@ Jean Parpaillon					:           artefact-guest
 Jelmer Vernooij                 :           ctrlsoft-guest, jelmer
 Jeremiah Foster					:           jeremiah-guest
 Jeremy Bicha					:           jbicha-guest
+Jeremy Sanders				:           jeremysanders-guest
 Jerome Alet					    :           jalet-guest
 Jerry Haltom					:           wasabi-guest
 Johan Svedberg					:           winkle-guest
@@ -248,6 +250,7 @@ M. David Anderson				:           danderson-guest
 M. Nicolas Dandrimont			:           dandrimont-guest
 M. Tanguy Ortolo				:           tanguy-guest
 M. Thomas Péteul				:           tpeteul-guest
+Magnus Hagdorn					:			magi-guest
 Maia Kozheva                    :           lucidfox%, Sikon
 Manoj Srivastava                :           Manoj Srivastava <Manoj Srivastava, <srivasta@debian.org(va Srivastava Manoj
 Manu Mahajan					:           zuch-guest
@@ -285,7 +288,6 @@ Michael K. Edwards				:           medwards-guest
 Michael Koch					:           mkoch-guest
 Michael Shuler					:           mshuler-guest
 Michael Ziegler					:           svedrin-guest
-Michale Adam                    :           obnox-guest
 Michel Casabona					:           mca-guest
 Michele Baldessari				:           mbaldessari-guest
 Miguel Colon                    :           micove-%
@@ -326,6 +328,7 @@ Ondrej Certik					:           certik-guest
 Onkar Shinde					:           onkarshinde-guest
 Otavio Salvador                 :           otavio
 Oxan van Leeuwen				:           oxan-guest
+Pablo Duboue					:           pabloduboue-guest
 Pablo Fischer					:           pabl0-guest
 Panu Kalliokoski				:           atehwa-guest
 Paul Cager					    :           paulcager-guest
