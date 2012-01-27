@@ -75,7 +75,7 @@ SELECT * FROM active_uploader_names_of_pkggroup('debian-science-maintainers@list
 /*
  Finally you need to
 
-   psql udd < /usr/share/postgresql/<pgversion>/contrib/tablefunc.sql
+   psql udd -c 'CREATE EXTENSION tablefunc;'
 
  to be able to run uploader statistics script
  */
