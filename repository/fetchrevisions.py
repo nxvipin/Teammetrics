@@ -57,6 +57,9 @@ def parse_revision():
         author_info[author].append(revision)
         revision_date[revision] = date.split('T')[0]
 
+    if 'unknown' in author_info:
+        del author_info['unknown']
+
     vcs = 'svn'
     total_authors = len(author_info)
     for committer, revision in author_info.iteritems():
