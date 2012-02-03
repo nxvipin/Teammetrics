@@ -29,12 +29,13 @@ def fetch_logs(ssh, conn, cur, teams):
     ftp = ssh.open_sftp()
     ftp.chdir(ALIOTH_PATH)
 
+    logging.info("Fetching info from 'vasks.debian.org'...")
     for team in teams:
         cmd = 'python {0}/fetchrevisions.py {1}'.format(ALIOTH_PATH, team)
         stdin, stdout, stderr = ssh.exec_command(cmd)
         output = stdout.read()
 
-        logging.info('Fetching info from vasks.debian.org for %s...' % team)
+        logging.info(team)
         ftp.get('parse.info', 'parse.info')
 
         with open('parse.info') as f:
