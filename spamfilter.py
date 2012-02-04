@@ -5,8 +5,6 @@
 The following field patterns are treated as spam where 'field' indicates either
 a 'Name' or a 'Subject' field:
 
-    - all in upper case,
-    - all digits,
     - matches the keywords specified by SPAM_KEYWORDS.
 """
 
@@ -36,19 +34,9 @@ def check_spam(name, subject):
     fields = {name_field: 'Name', subject_field: 'Subject'}
     
     for field, value in fields.iteritems():
-        # If the field is in capital letters only.
-        if field.isupper():
-            spam_detected = True
-            reason = '%s is in upper case' % fields[field]
-
-        # If the field is all digits.
-        if field.isdigit():
-            spam_detected = True
-            reason = '%s is all digits' % fields[field]
-
         # Ignore the spam keywords specified.
         for ignore_name in SPAM_KEYWORDS:
-            if ignore_name in field:
+            if ignore_name.lower() in field.lower():
                 spam_detected = True
                 reason = "Ignored keyword in '%s' (%s)" % (fields[field], ignore_name)
 
