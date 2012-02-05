@@ -264,17 +264,19 @@ def main(conn, cur):
                                                                                                       final_month, final_day))
                     message_id = message_id.replace('&lt;', '').replace('&gt;', '')
 
+                    is_spam = False
                     # Run it through the spam filter.
                     name, subject, reason, spam = spamfilter.check_spam(name, subject)
                     # If a message is spam, populate the 'listspam' database.
                     if spam:
-                        logging.warning('Spam detected for %s. Reason: %s' % (message_id, reason))
+                        is_spam = True
+                        logging.warning('Possible spam: %s. Reason: %s' % (message_id, reason))
                         try:
                             cur.execute(
                                     """INSERT INTO listspam
                                 (message_id, project, name, email_addr, subject, reason)
                                     VALUES(%s, %s, %s, %s, %s, %s);""",
-                            (message_id, lst_name, name, email, subject, reason)
+                                (message_id, lst_name, name, email, subject, reason)
                                         )
                         except psycopg2.DataError as detail:
                             conn.rollback()
@@ -285,15 +287,14 @@ def main(conn, cur):
                             continue
 
                         conn.commit()
-                        continue
 
-                    # Now populate the 'listarchives' database.
+                    # Now populate the 'listarchives' table also, but set the is_spam flag.
                     try:
                         cur.execute(
                                 """INSERT INTO listarchives
-                        (project, domain, name, email_addr, subject, message_id, archive_date, today_date)
-                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s);""",
-                    (lst_name, 'lists.debian.org', name, email, subject, message_id, final_date, today_date)
+                    (project, domain, name, email_addr, subject, message_id, archive_date, today_date, is_spam)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);""",
+                (lst_name, 'lists.debian.org', name, email, subject, message_id, final_date, today_date, is_spam)
                                     )
                     except psycopg2.DataError as detail:
                         conn.rollback()

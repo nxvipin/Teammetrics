@@ -22,7 +22,8 @@ CREATE TABLE listarchives (
     msg_raw_len         int,
     msg_no_blank_len    int,
     msg_no_quotes_len   int,
-    msg_no_sig_len      int
+    msg_no_sig_len      int,
+    is_spam             boolean
 );
 
 ALTER TABLE listarchives ADD CONSTRAINT PK_project_messageid PRIMARY KEY(project,message_id) ;
