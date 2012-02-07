@@ -57,8 +57,11 @@ def parse_revision():
         author_info[author].append(revision)
         revision_date[revision] = date.split('T')[0]
 
+    # 'unknown' and 'None' are a result of missing authors or merges.
     if 'unknown' in author_info:
         del author_info['unknown']
+    if 'None' in author_info:
+        del author_info['None']
 
     vcs = 'svn'
     total_authors = len(author_info)
