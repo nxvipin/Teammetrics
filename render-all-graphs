@@ -17,5 +17,8 @@ for proj in $projects ; do
     ./author_stats_commitlines $proj
 done
 
-# Render also Uploaders history
+# Render uploaders history
 upload_history.py
+
+# Render bug closer history
+bug_close_history.py
