@@ -14,6 +14,12 @@ if [ $# -gt 1 ] ; then
     fi
 fi
 
+LIST_NAME=$1
+TOTAL_AUTHORS=`psql -t teammetrics -c "SELECT COUNT(DISTINCT name) FROM commitstat WHERE project = '$LIST_NAME'"`;
+if [ $TOTAL_AUTHORS -lt $NUM ] ; then
+    NUM=$TOTAL_AUTHORS
+fi
+
 NAME=commitstat_"$1"
 DATFILE="${NAME}_year.txt"
 
