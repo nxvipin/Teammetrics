@@ -267,28 +267,12 @@ def main(conn, cur):
                     is_spam = False
                     # Run it through the spam filter.
                     name, subject, reason, spam = spamfilter.check_spam(name, subject)
-                    # If a message is spam, populate the 'listspam' database.
+                    # If the message is spam, set the is_spam flag.
                     if spam:
                         is_spam = True
                         logging.warning('Possible spam: %s. Reason: %s' % (message_id, reason))
-                        try:
-                            cur.execute(
-                                    """INSERT INTO listspam
-                                (message_id, project, name, email_addr, subject, reason)
-                                    VALUES(%s, %s, %s, %s, %s, %s);""",
-                                (message_id, lst_name, name, email, subject, reason)
-                                        )
-                        except psycopg2.DataError as detail:
-                            conn.rollback()
-                            logging.error(detail)
-                            continue
-                        except psycopg2.IntegrityError:
-                            conn.rollback()
-                            continue
 
-                        conn.commit()
-
-                    # Now populate the 'listarchives' table also, but set the is_spam flag.
+                    # Now populate the 'listarchives' table.
                     try:
                         cur.execute(
                                 """INSERT INTO listarchives

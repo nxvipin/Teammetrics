@@ -42,17 +42,6 @@ CREATE TABLE commitstat (
 
 ALTER TABLE commitstat ADD CONSTRAINT PK_commit_id PRIMARY KEY(commit_id, project) ;
 
-CREATE TABLE listspam (
-    message_id          text,
-    project             text,
-    name                text,
-    email_addr          text,
-    subject             text,
-    reason              text
-);
-
-ALTER TABLE listspam ADD CONSTRAINT PK_spam_messageid PRIMARY KEY(message_id) ;
-
 -- top N authors of mailing list
 CREATE OR REPLACE FUNCTION author_names_of_list(text,int) RETURNS SETOF RECORD AS '
   SELECT name FROM (

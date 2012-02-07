@@ -332,31 +332,14 @@ def parse_and_save(mbox_files, nntp=False):
                     logging.error("Unable to detect payload encoding for %s: %s" % (msg_id, detail))
                     continue
 
+            is_spam_filter = False
             name, subject, reason, spam = spamfilter.check_spam(name, subject)
-            # If there is spam, populate the listspam database instead.
+            # If the message is spam, set the is_spam_filter flag.
             if is_spam:
                 reason = 'No Message-ID found'
             if spam:
+                is_spam_filter = True
                 logging.warning('Spam detected for %s. Reason: %s' % (msg_id, reason))
-                try:
-                    cur.execute(
-                            """INSERT INTO listspam
-                        (message_id, project, name, email_addr, subject, reason)
-                                VALUES (%s, %s, %s, %s, %s, %s);""",
-                            (msg_id, project, name, email_addr, subject, reason)
-                                )
-                except psycopg2.DataError as detail:
-                    conn.rollback()
-                    logging.error(detail)
-                    logging.error(debug_msg)
-                    continue
-                except psycopg2.IntegrityError as detail:
-                    conn.rollback()
-                    logging.info('Message-ID %s already in database, skipping' % msg_id)
-                    continue
-
-                conn.commit()
-                continue
 
             today_raw = datetime.date.today()
             today_date = today_raw.strftime("%Y-%m-%d")
@@ -388,10 +371,10 @@ def parse_and_save(mbox_files, nntp=False):
                 cur.execute(
                 """INSERT INTO listarchives
                 (project, domain, name, email_addr, subject, message_id, archive_date, 
-        today_date, msg_raw_len, msg_no_blank_len, msg_no_quotes_len, msg_no_sig_len)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
+        today_date, msg_raw_len, msg_no_blank_len, msg_no_quotes_len, msg_no_sig_len, is_spam)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
                 (project, netloc, name, email_addr, subject, msg_id, archive_date, 
-            today_date, msg_raw_len, msg_blank_len, msg_quotes_len, msg_sig_len)
+        today_date, msg_raw_len, msg_blank_len, msg_quotes_len, msg_sig_len, is_spam_filter)
                             )
             except psycopg2.DataError as detail:
                 conn.rollback()
