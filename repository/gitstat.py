@@ -21,24 +21,11 @@ import ConfigParser
 import psycopg2
 
 import updatenames
-
-REVISION_FILE = os.path.join('/var/cache/teammetrics/', 'revisions.hash')
-
-
-def get_revisions():
-    """Fetch the revisions that have already been saved."""
-    revisions = []
-    try:
-        with open(REVISION_FILE) as f:
-            revisions = [line.strip() for line in f.readlines()]
-    except IOError:
-        revisions = []
-    return revisions
+import checkrevision
 
 
 def fetch_logs(ssh, conn, cur, teams, users):
     """Fetch and save the logs for Git repositories by SSHing into Alioth."""
-    done_revisions = get_revisions()
 
     today_date = datetime.date.today()
     # A regex pattern to match SHA-1 hashes.
@@ -52,6 +39,9 @@ def fetch_logs(ssh, conn, cur, teams, users):
         cur.execute("""DELETE FROM commitstat WHERE vcs='git' 
                                             AND project=%s;""", (team, ))
         conn.commit()
+
+        # Get the already parsed revisions.
+        all_revisions = checkrevision.read_configuration(team, 'git')
 
         # Get the directory listing.
         logging.info('Parsing repository: %s' % team)
@@ -90,7 +80,6 @@ def fetch_logs(ssh, conn, cur, teams, users):
                 if not authors:
                     continue
 
-            revision_f = open(REVISION_FILE, 'a')
             # Fetch the commit details for each author.
             for author in authors:
                 if author == 'unknown':
@@ -125,16 +114,17 @@ def fetch_logs(ssh, conn, cur, teams, users):
                 for a, b in zip(author_raw[::2], author_raw[1::2]):
                     author_info.append(a+','+b)
 
+                # If the revision has already been parsed.
+                for change in author_info:
+                    if team in all_revisions:
+                        if change[:6] in all_revisions[team]:
+                            continue
+
                 for change in author_info:
                     try:
                         commit_hash, date_raw, changed, added, deleted = change.split(',')
                     except ValueError as detail:
                         logging.error(detail)
-                        continue
-
-                    # If the commit_hash has already been parsed, just skip it.
-                    # TODO: Find a more efficient way of handling this.
-                    if commit_hash in done_revisions:
                         continue
 
                     # There are some invalid dates, just skip those commits.
@@ -167,8 +157,6 @@ def fetch_logs(ssh, conn, cur, teams, users):
                         logging.warning("Hash '%s' in '%s' package duplicated" % (commit_hash, each_dir))
                         continue
 
-                    revision_f.write(commit_hash)
-                    revision_f.write('\n')
-                    revision_f.flush()
+                    checkrevision.save_configuration(team, commit_hash[:6], 'git')
 
     logging.info('Git logs saved...')

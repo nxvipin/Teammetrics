@@ -9,33 +9,21 @@ import collections
 
 from xml.etree import ElementTree as ET
 
+import checkrevision
+
 ALIOTH_PATH = '/srv/home/groups/teammetrics'
-REVISION_FILE = os.path.join(ALIOTH_PATH, 'revisions.hash')
 PARSE_INFO_FILE = os.path.join(ALIOTH_PATH, 'parse.info')
 
 FORMAT = '{0},{1},{2},{3},{4},{5},{6},{7},{8}'
 
 
-def get_revisions():
-    """Fetch the revisions that have already been saved."""
-    revisions = []
-    try:
-        with open(REVISION_FILE) as f:
-            revisions = [line.strip() for line in f.readlines()]
-    except IOError: 
-        revisions = []
-    return revisions
-
-
 def parse_revision():
     """Fetch the revisions for the called teams."""
     revisions = collections.defaultdict(list)
-    done_revisions = get_revisions()
     today_date = datetime.date.today()
 
     team = sys.argv[1]
     parse_f = open(PARSE_INFO_FILE, 'w')
-    revision_f = open(REVISION_FILE, 'a')
 
     cmd_raw = 'svn log --xml file:///svn/{0}/'.format(team)
     cmd = shlex.split(cmd_raw)
@@ -72,14 +60,16 @@ def parse_revision():
 
         # Fetch the diff for each revision of an author. If the revision
         # has already been downloaded, it won't be downloaded again.
+        done_revisions = checkrevision.read_configuration(team, 'svn')
+
         for change in revision:
             # Open the REVISION_FILE_PATH that is used to save the parsed revisions.
+            if team in done_revisions:
+                if change in done_revisions[team]:
+                    continue
+
             inserted = 0
             deleted = 0
-
-            change_format = '{0}:{1}'.format(project, change)
-            if change_format in done_revisions:
-                continue
 
             cmd_raw = 'svn diff -c {0} file:///svn/{1}/'.format(change, team) 
             cmd = shlex.split(cmd_raw)
@@ -98,14 +88,10 @@ def parse_revision():
                                         author, revision_date[change],
                                         today_date, inserted, deleted))
             parse_f.write('\n')
-
-            revision_f.write(change_format)
-            revision_f.write('\n')
             parse_f.flush()
-            revision_f.flush()
+            checkrevision.save_configuration(project, change, 'svn')
 
     parse_f.close()
-    revision_f.close()
     sys.exit()
 
 parse_revision()
