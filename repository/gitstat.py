@@ -22,9 +22,23 @@ import psycopg2
 
 import updatenames
 
+REVISION_FILE = os.path.join('/var/cache/teammetrics/', 'revisions.hash')
+
+
+def get_revisions():
+    """Fetch the revisions that have already been saved."""
+    revisions = []
+    try:
+        with open(REVISION_FILE) as f:
+            revisions = [line.strip() for line in f.readlines()]
+    except IOError:
+        revisions = []
+    return revisions
+
 
 def fetch_logs(ssh, conn, cur, teams, users):
     """Fetch and save the logs for Git repositories by SSHing into Alioth."""
+    done_revisions = get_revisions()
 
     today_date = datetime.date.today()
     # A regex pattern to match SHA-1 hashes.
@@ -76,8 +90,12 @@ def fetch_logs(ssh, conn, cur, teams, users):
                 if not authors:
                     continue
 
+            revision_f = open(REVISION_FILE, 'a')
             # Fetch the commit details for each author.
             for author in authors:
+                if author == 'unknown':
+                    continue
+
                 if no_debian:
                     stat_cmd = ("git --git-dir={0} log --no-merges --author='{1} <' "
                    "--pretty=format:'%H,%ai' --shortstat".format(cwd_process, author))
@@ -114,6 +132,11 @@ def fetch_logs(ssh, conn, cur, teams, users):
                         logging.error(detail)
                         continue
 
+                    # If the commit_hash has already been parsed, just skip it.
+                    # TODO: Find a more efficient way of handling this.
+                    if commit_hash in done_revisions:
+                        continue
+
                     # There are some invalid dates, just skip those commits.
                     try:
                         date = date_raw.split()[0]
@@ -143,5 +166,9 @@ def fetch_logs(ssh, conn, cur, teams, users):
                         conn.rollback()
                         logging.warning("Hash '%s' in '%s' package duplicated" % (commit_hash, each_dir))
                         continue
+
+                    revision_f.write(commit_hash)
+                    revision_f.write('\n')
+                    revision_f.flush()
 
     logging.info('Git logs saved...')
