@@ -107,7 +107,8 @@ WHITELIST = ('Ramakrishnan Muthukrishnan',
              'Debian Libidn Team',
              'Cleto Martin Angelina',
              'Christian M. Amsüss',
-             'Michael Fladischer'
+             'Michael Fladischer',
+             'Alexandre Mestiashvili'
             )
 
 has_quotes_re = re.compile('".*"')
