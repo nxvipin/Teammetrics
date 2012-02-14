@@ -106,7 +106,8 @@ WHITELIST = ('Ramakrishnan Muthukrishnan',
              'Debian Flash Team',
              'Debian Libidn Team',
              'Cleto Martin Angelina',
-             'Christian M. Amsüss'
+             'Christian M. Amsüss',
+             'Michael Fladischer'
             )
 
 has_quotes_re = re.compile('".*"')
@@ -285,7 +286,7 @@ for r in allnames:
                                 i += 1
                             s = prompt("Please type number of prefered name: ")
                             try:
-                                si = int(s)
+                                si = int(s) - 1
                             except ValueError:
                                 print "Please insert integer number"
                                 continue
@@ -293,7 +294,12 @@ for r in allnames:
                                 print "Integer not in range"
                                 continue
                             prefered = si
-            query = "EXECUTE insert_prefered_name (%d, %s)" % (id,  quote(usednames[prefered][0]))
+            try:
+        	query = "EXECUTE insert_prefered_name (%d, %s)" % (id,  quote(usednames[prefered][0]))
+    	    except IndexError, err:
+    		print >>stderr, "Wrong index calculated: perfered = %i, (%s)" % (prefered, str(usednames)), err
+    		conn.commit() # commit anyway previously injected changes
+    		continue
             try:
                 curs.execute(query)
             except psycopg2.ProgrammingError, err:
