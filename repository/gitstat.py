@@ -32,14 +32,6 @@ def fetch_logs(ssh, conn, cur, teams, users):
     pattern = re.compile("[a-f0-9]{40}")
 
     for team in teams:
-        # Connect to the database and clear the existing Git records because we
-        # don't maintain a redundancy checker as fetching logs is fast; clear the
-        # records only for the teams in the configuration file.
-        logging.info("Clearing existing records of '%s' from database" % team)
-        cur.execute("""DELETE FROM commitstat WHERE vcs='git' 
-                                            AND project=%s;""", (team, ))
-        conn.commit()
-
         # Get the already parsed revisions.
         all_revisions = checkrevision.read_configuration(team, 'git')
 
