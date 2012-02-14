@@ -106,13 +106,13 @@ def fetch_logs(ssh, conn, cur, teams, users):
                 for a, b in zip(author_raw[::2], author_raw[1::2]):
                     author_info.append(a+','+b)
 
-                # If the revision has already been parsed.
+
                 for change in author_info:
+                    # If the revision has already been parsed.
                     if team in all_revisions:
                         if change[:6] in all_revisions[team]:
                             continue
 
-                for change in author_info:
                     try:
                         commit_hash, date_raw, changed, added, deleted = change.split(',')
                     except ValueError as detail:
