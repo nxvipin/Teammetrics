@@ -1,4 +1,7 @@
 Achim Bohnet                    :           ach-guest
+Adam C Powell IV                :           hazelsct
+Adam Conrad                     :           adconrad
+Adeodato Simó                   :           adeodato
 Adriaan Peeters                 :           apeeters-guest
 Adrian Knoth                    :           adiknoth-guest
 Adrian Perez                    :           adrianperez-guest
@@ -6,6 +9,7 @@ Adrian von Bidder               :           Adrian % von Bidder
 Ahmed El-Mahmoudy               :           %Ahmed El-Mahmoudy%, aelmahmoudy-guest
 Alan Boudreault                 :           aboudreault-guest
 Alastair McKinstry              :           mckinstry
+Albert Huang                    :           ashuang-guest
 Alberto Garcia                  :           agarcia-guest
 Ales Zabala Alava               :           shagi-guest
 Alessandro Ghedini              :           ghedo%
@@ -20,7 +24,7 @@ Alexandre Mestiashvili          :           Alex Mestiashvili, malex-guest
 Alexandre Quessy                :           alexandrequessy%
 Ali Mezgani                     :           mezgani-guest
 Allard Hoeve                    :           hoeve-guest
-Ana Beatriz Guerrero López      :           ana
+Ana Beatriz Guerrero López      :           ana, ana-guest
 Anatoly Techtonik               :           techtonik-guest
 Andrea Colangelo                :           warp10-guest
 Andrea Corradi                  :           lash-guest
@@ -31,9 +35,11 @@ Andreas Moll                    :           amoll-guest
 Andreas Noteng                  :           anoteng-guest
 Andreas Putzo                   :           nd-guest
 Andreas Schildbach              :           goonie-guest
+Andreas Schuldei                :           andreas
 Andreas Tille                   :           Andreas T, tille@debian.org, Tille A, tille, TilleA, "Tille, Andreas"
 Andreas Wenning                 :           awen-guest
 Andres Mejia                    :           ceros-guest
+Andres Salomon                  :           dilinger, dilinger-guest
 Andrew Gee                      :           andrewgee-guest
 Andrew Lee                      :           ajqlee
 Andrew Price                    :           andyp-guest
@@ -45,16 +51,20 @@ Andriy Beregovenko              :           jet-guest
 Andriy Senkovych                :           jollyroger-guest
 André Gaul                      :           andrenarchy-guest
 Angel Abad Contreras            :           angelabad-guest
+Anne Christine Spang            :           christine
 Ansgar Burchardt                :           ansgar, ansgar-guest
 Ansgar Wiechers                 :           Ansgar%Wiechers
 Antal A. Buss                   :           abuss-guest
 Anton Gladky                    :           gladky-anton-guest
 Anton Martchukov                :           antonm-guest
 Antonio De Luci                 :           osrevolution-guest
+Antonio Radici                  :           antonio
+Armin Berres                    :           trigger-guest
 Armin Ronacher                  :           mitsuhiko-guest
 Arnaud Fontaine                 :           arnau, arnau-guest
 Arnaud Patard                   :           rtp-guest
 Arnaud Vandyck                  :           avdyk, arnaud-guest
+Aurelien Jarno                  :           aurel32
 Aurélien GÉRÔME                 :           ag-guest
 B. Clausius                     :           barcc-guest
 Barak Pearlmutter               :           bap
@@ -67,6 +77,7 @@ Bastian Blank                   :           waldi
 Ben Armstrong                   :           synrg
 Ben Hutchings                   :           benh
 Benjamin Drung                  :           %bdrung%, bdrung-guest
+Benjamin Mesing                 :           bmesing-guest
 Bernd Zeimetz                   :           bzed
 Bernhard Reiter                 :           ockham-guest
 Bjørn Steensrud                 :           catman-guest
@@ -74,23 +85,28 @@ Branden Robinson                :           Branden Robinson%
 Brandon Hale                    :           tseng-guest
 Brendan Sleight                 :           bmsleight-guest
 Brett Parker                    :           brettp-guest
+Brian Cassidy                   :           bricas-guest
+Brian Nelson                    :           pyro
 Bruno "Fuddl" Kleinert          :           Bruno%Fuddl%, fuddl-guest
 Cameron Shorter                 :           camerons-guest
 Carl Chenet                     :           chaica-guest
 Carl Fürstenberg                :           azatoth-guest
-Carlo Segre                     :           segre-guest
+Carl Henrik Holth Lunde         :           chlunde-guest
+Carlo Segre                     :           segre, segre-guest
 Carlos Galisteo                 :           cgalisteo-guest
 Cesare Tirabassi                :           norsetto-guest
 Changyan Xie                    :           panchoat-guest
 Charles Plessy                  :           plessy, charles-guest, charles-debian-nospam
 Charlie Smotherman              :           cjsmo-guest
 Chris AtLee                     :           catlee-guest
-Chris Lamb                      :           lamby-guest
+Chris Butler                    :           chrisb
+Chris Lamb                      :           lamby, lamby-guest
 Chris Murphy                    :           chrismurf-guest
 Chris Silva                     :           cds-guest
 Christian Kastner               :           chrisk-guest, chrisk
 Christian Meissner              :           meissner-guest
 Christian Perrier               :           bubulle, Christian PERRIER
+Christian T. Steigies           :           cts
 Christoffer Jerkeby             :           kugg-guest
 Christoph Berg                  :           myon
 Christoph Egger                 :           christoph-guest
@@ -99,8 +115,9 @@ Christoph Hellwig               :           hch-guest
 Christoph Korn                  :           c_korn-guest
 Christophe Prud_homme           :           prudhomm, prudhomm-guest
 Christophe Trophime             :           trophime%, christophe.trophime
+Christopher L. Cheney           :           ccheney
 Christopher Lunsford            :           binarymutant-guest
-Christopher Martin              :           chrsmrtn, chrmrtn-guest
+Christopher Martin              :           chrsmrtn, chrsmrtn-guest
 Christopher Schmidt             :           crschmidt-guest
 Christopher Walker              :           cjw1006-guest
 Clint Byrum                     :           spamaps-guest
@@ -116,6 +133,8 @@ Damián Viano                    :           des
 Damyan Ivanov                   :           dmn
 Daniel Baumann                  :           daniel
 Daniel Leidert                  :           Daniel Leidert (dale), dleidert-guest
+Daniel Rus Morales              :           danirus-guest
+Daniel Schepler                 :           schepler
 Daniel Stender                  :           danstender-guest
 Daniel Watkins                  :           odd_bloke-guest
 Daniele Tricoli                 :           eriol-guest
@@ -131,10 +150,12 @@ David Villa Alises              :           davidvilla-guest
 David Young                     :           dove-young-guest
 Davide Cavalca                  :           davide125-guest
 Deepak Tripathi                 :           deepak-guest
+Denis Barbier                   :           barbier
 Denis Briand                    :           narcan-guest
 Denis Lutsenko                  :           lutsenkodv-guest
 Derek D Owens                   :           derek-guest
 Devid Antonio Filoni            :           dfiloni-guest
+Didier Raboud                   :           odyx, Monsieur Didier Raboud
 Dimitri Ara                     :           pnou-guest
 Dmitrijs Ledkovs                :           xnox-guest
 Dmitry Oboukhov                 :           unera
@@ -149,10 +170,12 @@ Egon Willighagen                :           egonw-guest
 Eike Nicklas                    :           eike-guest
 Elliot Murphy                   :           statik-guest
 Eloy Paris                      :           peloy
+Emanuele Rocca                  :           ema
 Emiliano Grilli                 :           emillo-guest
 Emmanuel Bourg                  :           ebourg-guest
 Emmanuel Fleury                 :           fleury-guest
 Emmanuel Rodriguez              :           potyl-guest
+Enrico Tassi                    :           gareuselesinge, gares-guest
 Enrico Zini                     :           enrico
 Eric Cooper                     :           ecc-guest
 Eric Dantan Rzewnicki           :           edrz-guest
@@ -160,6 +183,8 @@ Eric Lavarde                    :           ewl-guest
 Eric Maeker                     :           ericmaeker-guest
 Eric Sharkey                    :           sharkey, sharkey@superk.physics.sunysb.edu
 Eric Talevich                   :           etal-guest
+Erich Schubert                  :           erich
+Ernesto Hernández-Novich        :           emhn-guest
 Everton Hermann                 :           ehermann-guest
 Fabian Greffrath                :           fabian-guest
 Fabian Köster                   :           maestro_alubia-guest
@@ -167,6 +192,7 @@ Fabio Castelli                  :           muflone-guest
 Fabio Tranchitella              :           kobold
 Fabrizio Pollastri              :           fabrizio-guest
 Fabrizio Regalli                :           fabreg-guest
+Faidon Liambotis                :           paravoid
 Fathi Boudra                    :           fabo, fboudra-guest
 Federico Ceratto                :           federico-guest
 Felipe Augusto van de Wiel      :           Felipe Augusto van de Wiel%, faw
@@ -182,8 +208,9 @@ Florian Grandel                 :           jerico-guest
 Florian Ragwitz                 :           florian-guest
 Francesca Ciceri                :           madamezou, madamezou-guest
 Francesco P. Lovergine          :           Francesco%Lovergine, frankie
+Frank S. Thomas                 :           fst, fst-guest
 Frederic Lehobey                :           fdl-guest, Frederic Daniel Luc Lehobey
-Frederik Schüler                :           fschueler-guest
+Frederik Schüler                :           fs, fschueler-guest
 Free Ekanayaka                  :           free-guest, freee%
 Frédéric-Emmanuel PICCA         :           Picca Fr%d%ric%,  Fr%d%ric% PICCA, picca
 Gabriele Giacone                :           gg0-guest
@@ -193,14 +220,14 @@ Georg W. Leonhardt              :           geole-guest
 George Danchev                  :           danchev-guest
 Georges Khaznadar               :           georgesk
 Gerardo Curiel                  :           gerardo-guest
-Gerfried Fuchs                  :           rhonda, alfie
+Gerfried Fuchs                  :           rhonda, alfie, rhonda-guest
 Giovanni Mascellani             :           gio, gmascellani-guest
 Giuliano Bordonaro              :           italia1bpf-guest
 Gonéri Le Bouder                :           Gon%ri Le Bouder, goneri-guest
 Gordon Farquharson              :           gordon-guest
 Goswin von Brederlow            :           goswin-guest
 Greg Sharp                      :           gregsharp-guest
-Gregor Herrmann                 :           gregoa, gregoa-guest
+Gregor Herrmann                 :           gregoa, gregoa-guest, gergor herrmann
 Gudjon I. Gudjonsson            :           gudjon-guest
 Guido Günther                   :           Guido G&#252;nther, Guido Guenther
 Guilherme de S. Pastore         :           ftlerror-guest
@@ -217,6 +244,7 @@ Helge Kreutzmann                :           kreutzm-guest
 Helmut Grohne                   :           helmut-guest
 Henning Glawe                   :           glaweh-guest
 Henning Sprang                  :           lazyboy-guest
+Herbert Xu                      :           herbert
 Herman Robak                    :           hermanr-guest
 Holger Levsen                   :           holger, h01ger-guest
 Holger Wansing                  :           holger-guest
@@ -226,14 +254,18 @@ Ian Jackson                     :           Ian Jackson - Debian Project Leader
 Ian Ward                        :           wardi-guest
 Ignace Mouzannar                :           ghantoos-guest
 Ignaz Forster                   :           ifo-guest
+Isaac Clerencia                 :           isaac
+Ivan Kohler                     :           ivan
 Ivo Maintz                      :           ivomaintz-guest
 J.H.M. Dassen                   :           J.H.M.Dassen
 JCF Ploemen                     :           jcfp-guest
 Jakub Adam                      :           xhaakon-guest
 Jakub Wilk                      :           jwilk
+Jaldhar H. Vyas                 :           jaldhar
 James Page                      :           jamespage-guest
 James Stuckey                   :           stuckey-guest
 Jan Beyer                       :           beathovn-guest, jan\@beathovn.de
+Jan Dittberner                  :           jandd
 Jan Michael Alonzo              :           jmalonzo-guest
 Jan-Pascal van Best             :           janpascal-guest
 Janos Guljas                    :           janos-guest
@@ -241,14 +273,18 @@ Jaromír Mikeš                   :           mira-guest
 Jason Brittain                  :           jasonb-guest
 Jason Dorje Short               :           jdorje-guest
 Javi Merino Cacho               :           vicho-guest
+Javier Fernandez-Sanguino       :           jfs
 Jean Luc COULON                 :           Jean-Luc Coulon%
 Jean Parpaillon                 :           artefact-guest
 Jean-Francois Dive              :           jef
 Jelmer Vernooij                 :           ctrlsoft-guest, jelmer
+Jens Schmalzing                 :           jensen
 Jeremiah Foster                 :           jeremiah-guest
 Jeremy Bicha                    :           jbicha-guest
 Jeremy Sanders                  :           jeremysanders-guest
+Jeroen van Wolffelaar           :           jeroen
 Jerome Alet                     :           jalet-guest
+Jerome Marant                   :           jerome
 Jerry Haltom                    :           wasabi-guest
 Jo Shields                      :           directhex, directhex-guest
 Joachim Breitner                :           nomeata
@@ -261,23 +297,29 @@ John Paulett                    :           johnpaulett-guest
 John Skaller                    :           skaller-guest
 Jon Dowland                     :           jmtd-guest
 Jonas Smedegaard                :           js
+Jonathan Riddell                :           jriddell-guest
 Jonathan Wiltshire              :           jmw-guest
 Jonathan Yu                     :           jawnsy-guest
 Joost Yervante Damad            :           andete-guest
 Joost van Baal                  :           Joost van Baal%, joostvb
 Jordan Mantha                   :           laserjock-guest
-Jordi Gutiérrez Hermoso         :           %Jord%G%t%rrez%Hermoso%
+Jordi Gutiérrez Hermoso         :           %Jord%G%t%rrez%Hermoso%, jordigh-guest
 Jordi Vila                      :           jvila-guest
 Jordà Polo                      :           Jord% Polo
 Jose Carlos Garcia Sogo         :           jsogo
 Jose Ernesto Davila Pantoja     :           josernesto-guest
+Jose Luis Rivas Contreras       :           ghostbar
+Josh Metzler                    :           jdmetz-guest
 Joshua Kwan                     :           joshk
 Josip Rodin                     :           joy
 Josselin Mouette                :           joss
+José Manuel Santamaría Lema     :           santa-guest
 Jozef Kutej                     :           jozef-guest
 Juan Luis  Belmonte             :           jlbelmonte-guest
 Julian Mehnle                   :           jmehnle-guest
 Julian Taylor                   :           jtaylor-guest
+Julien Blache                   :           jblache
+Julien Cristau                  :           jcristau
 Julien Jehannet                 :           juj-guest
 Julien Lavergne                 :           gilir-guest
 Julián Moreno Patiño            :           jump-guest
@@ -287,13 +329,17 @@ Jérémie Corbier                 :           toadstool-guest
 Jérémy Bobbio                   :           lunar
 Jérôme Warnier                  :           Jerome Warnier
 Kai Hendry                      :           kai-guest
+Kan-Ru Chen                     :           koster
 Karol M. Langner                :           kml-guest, Karol Langner
+Kartik Mistry                   :           kartik
 Kevin Coyner                    :           rustybear-guest
 Kevin Rosenberg                 :           kevinrosenberg
 Ko van der Sloot                :           sloot-guest
 Konstantinos Poulios            :           logari81-guest
 Krzysztof Krzyzaniak            :           eloy
 Kumar Appaiah                   :           kumanna-guest
+Kyle McMartin                   :           kyle
+Kåre Thor Olsen                 :           kaare
 L. V. Gandhi                    :           L . V . Gandhi, L.V.Gandhi
 LI Daobing                      :           lidaobing-guest
 Laszlo Kajan                    :           lkajan-guest
@@ -302,6 +348,7 @@ Linas Zvirblis                  :           Linas %virblis, linas-guest
 Loong Jin Chow                  :           hyperair-guest
 Loïc Minier                     :           lool-guest, lool
 Luca Falavigna                  :           dktrkranz
+Lucas Nussbaum                  :           lucas
 Ludovic Claude                  :           ludovicc-guest
 Luis Pedro Coelho               :           luispedro-guest
 Luis Rivas Vañó                 :           luinix-guest
@@ -349,8 +396,11 @@ Maurizio Lemmo                  :           tannoiser-guest
 Maximilian Attems               :           maks, maks-guest
 Maximilian Gass                 :           mxey-guest
 Mechtilde Stehmann              :           Mechtilde
+Mehdi Dogguy                    :           dogguy-guest
+Meike Reichle                   :           meike
 Michael Adam                    :           obnox-guest
 Michael Banck                   :           mbanck
+Michael Biebl                   :           biebl
 Michael Bramer                  :           grisu
 Michael Casadevall              :           ncommander-guest
 Michael Fladischer              :           fladi-guest
@@ -360,6 +410,7 @@ Michael Hanke                   :           mhanke-guest, mih
 Michael Heuer                   :           heuermh-guest
 Michael K. Edwards              :           medwards-guest
 Michael Koch                    :           mkoch, mkoch-guest
+Michael Meskes                  :           meskes
 Michael Prokop                  :           mika
 Michael Shuler                  :           mshuler-guest
 Michael Tautschnig              :           mt
@@ -369,6 +420,7 @@ Michel Casabona                 :           mca-guest
 Michele Baldessari              :           mbaldessari-guest
 Miguel Colon                    :           micove-%
 Miguel Landaeta                 :           nomadium-guest
+Mike Furr                       :           mfurr
 Mike O'Connor                   :           stew, stew-guest
 Milan Kupcevic                  :           miki-guest
 Mirco Bauer                     :           meebey, meebey-guest
@@ -393,7 +445,7 @@ Nicolas FRANÇOIS                :           nekral-guest
 Nicolas Valcárcel               :           nxvl-guest
 Nicolas Évrard                  :           Nicolas %vrard
 Niels Thykier                   :           nthykier-guest
-Niko Tyni                       :           ntyni
+Niko Tyni                       :           ntyni, ntyni-guest
 Nikolaus Rath                   :           nikratio-guest
 Nikolaus Schulz                 :           nikolaus-guest
 Nima Talebi                     :           rasputin-guest
@@ -403,6 +455,7 @@ Norbert Tretkowski              :           nobse
 Norman Garcia                   :           n0rman-guest
 Noèl Köthe                      :           Noel Koethe, noel
 Oguz Berke DURAK                :           berke-guest
+Oleksandr Moskalenko            :           malex
 Oliver Osburg                   :           oz-guest
 Olivier Langella                :           tryphon-guest
 Olivier Sallou                  :           %olivier sallou%, %sallou-guest
@@ -416,6 +469,7 @@ Pablo Duboue                    :           pabloduboue-guest
 Pablo Fischer                   :           pabl0-guest
 Panu Kalliokoski                :           atehwa-guest
 Paolo Ariano                    :           paolinux-guest
+Patrick Matthäi                 :           pmatthaei
 Patrick Winnertz                :           winnie
 Paul Cager                      :           paulcager-guest
 Paul Tagliamonte                :           paultag-guest
@@ -424,6 +478,7 @@ Paweł Sadkowski                 :           azhag-guest
 Peter Collingbourne             :           pcc-guest
 Peter De Wachter                :           pdewacht-guest
 Peter Eisentraut                :           petere
+Peter Rockai                    :           mornfall-guest
 Peter S. Galbraith              :           psg
 Peter Van Eynde                 :           Peter Van Eynde !pvaneynd@debian.org
 Peter Van Eynde                 :           pvaneynd
@@ -432,10 +487,12 @@ Philipp Benner                  :           pbenner-guest
 Philipp Kern                    :           pkern
 Philipp Meier                   :           llucifer-guest
 Philippe Coval                  :           rzr-guest, Philippe COVAL
+Pierre Habouzit                 :           madcoder
+Pierre Machard                  :           pmachard
 Pierre Saramito                 :           saramito-guest
 Pietro Abate                    :           munga-guest
 Piotr Lewandowski               :           pl-guest
-Piotr Ozarowski                 :           Piotr O%arowski, piotr
+Piotr Ozarowski                 :           Piotr O%arowski, piotr, pox-guest
 Pjotr Prins                     :           pjotr-guest
 Pootle Server                   :           pootle-guest
 Qijiang Fan                     :           fqj1994-guest
@@ -443,11 +500,15 @@ Rafael Laboissiere              :           rafael
 Ralf Gesellensetter             :           Ralf%setter
 Ralf Treinen                    :           treinen
 Randolph Chung                  :           randolph
+Raphael Hertzog                 :           hertzog
+Raphaël Enrici                  :           blacknoz-guest
 Reinhard Tartler                :           siretart, siretart-guest 
+Rene Mayorga                    :           rmayorga
 Richard Darst                   :           mrbeige-guest, rkd-guest
 Richard Holland                 :           holland-guest
 Richard Jones                   :           rwmj-guest
 Richard Nelson                  :           rjent-guest
+Roberto Sanchez                 :           roberto
 Robin Munn                      :           rmunn-guest
 Rodolphe Quiédeville            :           rodo-guest
 Rodrigo Gallardo                :           rodrigogc-guest
@@ -462,11 +523,12 @@ Rupert Homberger                :           homberger-guest
 Ryan Kavanagh                   :           ryanakca%
 Ryan Niebur                     :           ryan52-guest
 Ryan Verner                     :           xf-guest
+Rémi Vanicat                    :           vanicat
 Salvatore Bonaccorso            :           carnil, carnil-guest
 Sam Hocevar                     :           sho
 Sam Vilain                      :           samv-guest
 Sameer Rahmani                  :           lxsameer-guest
-Samuel Mimram                   :           smimram
+Samuel Mimram                   :           smimram, smimram-guest
 Samuel Thibault                 :           sthibaul-guest, sthibault
 Sandro Tosi                     :           morph
 Sargis Dallakyan                :           sargis, sargis-guest
@@ -474,11 +536,13 @@ Scott Christley                 :           schristley-guest
 Scott Kitterman                 :           kitterman
 Sebastian Dröge                 :           slomo-guest, slomo
 Sebastian Ramacher              :           sramacher-guest
+Seo Sanghyeon                   :           sanxiyn-guest
 Serge Guelton                   :           guelton-guest
 Severin Heiniger                :           lantash-guest
 Siegfried-Angel Gevatter Pujals :           rainct-guest
 Simon Chopin                    :           laarmen-guest
 Simon McVittie                  :           smcv-guest
+Simon Paillard                  :           spaillard
 Soren Hansen                    :           soren-guest
 Sri Girish Srinivasa Murthy     :           jawsai-guest
 Stan Ioan-Eugen                 :           ieugen-guest
@@ -492,12 +556,14 @@ Steinar H. Gunderson            :           sesse
 Stephan Hermann                 :           shermann-guest
 Stephan Michels                 :           tashiro-guest
 Stephan Peijnik                 :           speijnik-guest
+Stephane Del Pino               :           delpinux-guest
 Steve Doonan                    :           xscd-guest
 Steve Kostecke                  :           steve
 Steve Langasek                  :           vorlon
 Steven M. Robbins               :           Steve%Robbins, smr
 Stuart Prescott                 :           themill-guest
 Stéphan Gorget                  :           phantez-guest
+Stéphane Glondu                 :           glondu
 Sukhbir Singh                   :           sukhbir, sukhbir-guest
 Sundaram Ramaswamy              :           legends2k-guest
 Sune Vuorela                    :           pusling-guest
@@ -505,9 +571,11 @@ Sven Arvidsson                  :           svena-guest
 Sven Luther                     :           sven, luther
 Sylvain Le Gall                 :           Sylvain LE GALL, gildor, gildor-guest
 Sylvestre Ledru                 :           sylvestre-guest, sylvestre, sylvestre.ledru
+Takaki Taniguchi                :           takaki
 Tassia Camoes                   :           tassia-guest
 Tatiana Al-Chueyr               :           tatiana_alchueyr-guest
 Ted Percival                    :           tedp-guest
+Thaddeus H. Black               :           thb-guest
 Thiemo Seufer                   :           ths-guest
 Thierry Carrez                  :           ttx-guest
 Thijs Kinkhorst                 :           thijs
@@ -525,21 +593,26 @@ Timur Birsh                     :           taem-guest
 Tobi Vollebregt                 :           tobi-guest
 Tobias Klauser                  :           tklauser-guest
 Tobias Quathamer                :           Tobias Toedter
+Tom Albers                      :           tomalbers-guest
 Tony Mancill                    :           tmancill
 Torsten Marek                   :           shlomme
 Torsten Marek                   :           shlomme-guest
 Torsten Werner                  :           twerner, mail.twerner
 Tristan Seligmann               :           mithrandi-guest
 Trygve Laugstøl                 :           trygvis-guest
+Ulises Vitulli                  :           dererk-guest
 Ulrich Dangel                   :           mru-guest
 Umang Varma                     :           umang-guest
 Uwe Kleine-König                :           ukleinek-guest
 Vagrant Cascadian               :           %vagrant%
+Valerio Paolini                 :           valdez-guest
 Varun Hiremath                  :           varun
 Vernon Tang                     :           vt-guest
+Vincent Bernat                  :           bernat
 Vincent Danjean                 :           vdanjean, vdanjean-guest
 Vincent Fourmond                :           fourmond
 Vincent Legout                  :           vlegout-guest
+Vincent Sanders                 :           vince
 Vladimir Kotov                  :           rk13-guest
 Vladimir Osintsev               :           oc-guest
 Vladimír Lapáček                :           vladimir-guest
@@ -549,10 +622,12 @@ William Grzybowski              :           wgrz-guest
 William Pitcock                 :           nenolod-guest
 Wolfgang Bär                    :           wbaer-guest
 Wouter van Heyst                :           larstiq-guest
+Xavier Vello                    :           wdgt-guest
 Y Giridhar Appaji Nag           :           appaji-guest
 Yaroslav Halchenko              :           yoh-guest, yoh
 Yask Gupta                      :           yask-guest
 Yavor Doganov                   :           yavor-guest
 Youhei Sasaki                   :           uwabami-guest
 Yury Zaytsev                    :           zaytsev-guest
+Yves Agostini                   :           yvesago-guest
 Yves-Alexis Perez               :           corsac, corsac-guest
