@@ -14,6 +14,7 @@ import checkrevision
 ALIOTH_PATH = '/srv/home/groups/teammetrics'
 PARSE_INFO_FILE = os.path.join(ALIOTH_PATH, 'parse.info')
 
+IGNORE = ('unknown', 'None', 'root')
 FORMAT = '{0},{1},{2},{3},{4},{5},{6},{7},{8}'
 
 
@@ -45,11 +46,10 @@ def parse_revision():
         author_info[author].append(revision)
         revision_date[revision] = date.split('T')[0]
 
-    # 'unknown' and 'None' are a result of missing authors or merges.
-    if 'unknown' in author_info:
-        del author_info['unknown']
-    if 'None' in author_info:
-        del author_info['None']
+    # Some authors are a result of missing authors or merges, so ignore them.
+    for ignore_author in IGNORE:
+        if ignore_author in author_info:
+            del author_info[ignore_author]
 
     vcs = 'svn'
     total_authors = len(author_info)
