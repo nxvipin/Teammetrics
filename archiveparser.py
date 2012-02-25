@@ -316,7 +316,7 @@ def main(conn, cur):
 
 
 if __name__ == '__main__':
-    liststat.start_logging(filename=LOG_FILE)
+    liststat.start_logging(logfilepath=LOG_FILE)
     logging.info('\t\tStarting Web Archive Parser')
 
     DATABASE = liststat.DATABASE

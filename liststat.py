@@ -536,9 +536,9 @@ def day_of_month_check():
         return 
 
 
-def start_logging(filename=LOG_FILE_PATH):
+def start_logging(logfilepath=LOG_FILE_PATH):
     """Initialize the logging."""
-    logging.basicConfig(filename,
+    logging.basicConfig(filename=logfilepath,
                         level=logging.INFO,
                         format='%(asctime)s %(levelname)s: %(message)s')
 
