@@ -194,7 +194,7 @@ def main(conn, cur):
                     # From field.
                     # In case of a missing 'From' field, just skip because we don't need to parse the message then.
                     if 'From' not in fields:
-                        skipped_messages += 1
+                        logging.error('Skipping message, no From field found')
                         continue
 
                     # Name, Email parsing starts here.
