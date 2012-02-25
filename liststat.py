@@ -53,7 +53,7 @@ ARCHIVES_FILE_PATH = os.path.join(ARCHIVES_SAVE_DIR, PROJECT_DIR)
 HASH_FILE = 'lists.hash' 
 HASH_FILE_PATH = os.path.join(ARCHIVES_SAVE_DIR, PROJECT_DIR, HASH_FILE)
 
-LOG_FILE = 'liststat.log'
+LOG_FILE = 'aliothliststat.log'
 LOG_SAVE_DIR = '/var/log'
 LOG_PATH = os.path.join(LOG_SAVE_DIR, PROJECT_DIR)
 LOG_FILE_PATH = os.path.join(LOG_PATH, LOG_FILE)
@@ -536,9 +536,9 @@ def day_of_month_check():
         return 
 
 
-def start_logging():
+def start_logging(filename=LOG_FILE_PATH):
     """Initialize the logging."""
-    logging.basicConfig(filename=LOG_FILE_PATH,
+    logging.basicConfig(filename,
                         level=logging.INFO,
                         format='%(asctime)s %(levelname)s: %(message)s')
 

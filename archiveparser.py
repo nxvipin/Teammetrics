@@ -21,6 +21,7 @@ import updatenames
 BASE_URL = 'http://lists.debian.org/'
 FIELDS = ('From', 'Date', 'Subject', 'Message-id')
 CONFIG_FILE = '/var/cache/teammetrics/archiveparser.status'
+LOG_FILE = '/var/log/teammetrics/liststat.log'
 
 
 def read_config(name):
@@ -315,7 +316,7 @@ def main(conn, cur):
 
 
 if __name__ == '__main__':
-    liststat.start_logging()
+    liststat.start_logging(filename=LOG_FILE)
     logging.info('\t\tStarting Web Archive Parser')
 
     DATABASE = liststat.DATABASE
