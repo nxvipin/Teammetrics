@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  {% block head %}
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>{% block title %}Debian template layout{% endblock %}</title>
+
+    {% block head_meta %}
+      <link rev="made" href="mailto:webmaster@debian.org">
+      <link rel="shortcut icon" href="favicon.ico">
+    {% endblock %}
+
+    {% block head_resources %}
+      <link type="text/css" rel="stylesheet" media="all" href="{{ MEDIA_URL }}css/debian.css" />
+    {% endblock %}
+  {% endblock %}
+</head>
+<body>
+<p class="hidecss">
+<!--
+Skip navigation for text only browsers
+-->
+<a href="#content">Skip Navigation</a></p>
+
+<div id="header">
+<div id="upperheader">
+  <div id="logo">
+	<!--
+	Do not change the link or logo
+	-->
+	<a href="http://www.debian.org/" title="Debian Home"><img src= "{{ MEDIA_URL }}css/Pics/openlogo-50.png"
+		alt="Debian" width="50" height= "61"></a>
+  </div><!-- end logo -->
+
+  <p class="section">
+  <!--
+  The section flag should be the site name highlighting the potential
+  change of top nav links
+  -->
+  {% block section %}template{% endblock %}</p>
+
+  <div id="searchbox">
+  {% block searchbox %}
+	<!--
+	If your site has search functionality replace below with the correct
+	form.  For complex search with multiple choices consider using the body
+	of the page or providing a simple initial search with the ability to
+	refine on the results page. 
+	-->
+	<form name="p" method="get" action="" id="">
+	  <p><input name="P" value="" size="27"> <input type=
+	  "submit" value="Search"></p>
+	</form>
+  {% endblock %}
+  </div><!-- end searchbox -->
+
+</div><!-- end upperheader -->
+
+<div id="navbar">
+  <!-- 
+  The navbar links below can be changed to site specific links.
+  -->
+  <ul> 
+  {% block navbar %}
+	<li><a href="http://www.debian.org/intro/about">About Debian</a></li>
+
+	<li><a href="http://www.debian.org/distrib/">Getting Debian</a></li>
+
+	<li><a href="http://www.debian.org/support">Support</a></li>
+
+	<li><a href="http://www.debian.org/devel/">Developers'&nbsp;Corner</a></li>
+  {% endblock %}
+  </ul>
+</div><!-- end navbar -->
+
+<p id="breadcrumbs">
+<!--
+The breadcrumbs should always start with a slash followed by of the
+sub-domain name. Try to make your back end produce correct breadcrumbs
+Always leave one space between the slash and the link.
+-->
+{% block breadcrumbs %} template {% endblock %} </p>
+
+</div><!-- end header -->
+
+<div id="content">
+<span class="relatedpages">
+{% block relatedpages %}
+	<!--
+	A short list of related or "sibling" pages. Keep this list short, relevant and consistent
+	-->
+	<a href="./header.html">Header</a> <a href="./footer.html">Footer</a>
+	<a href="http://wiki.debian.org/DebianWebdesign" title="Read more about the
+		design and how to implement a new site">Debian web-design</a> 
+	<a href="http://wiki.debian.org/KallesDesign" title="Read about the ongoing
+		redesign work">Redesign process</a>
+{% endblock %}
+</span><!-- end relatedpages -->
+
+{% if messages %}
+{% for message in messages %}
+<div class="{% if message.tags %}{{ message.tags }}{% else %}important{% endif %}"><p>{{ message }}</p></li>
+{% endfor %}
+{% endif %}
+
+{% block content %}
+<h1>
+	<!-- 
+	Start the content with a short descriptive h1 heading
+	-->
+	Debian Website Template</h1>
+{% endblock %}
+
+<div id="footer">
+{% block footer %}
+{% endblock %}
+</div>
+</body>
+</html>
