@@ -576,10 +576,8 @@ if __name__ == '__main__':
 
     if not os.path.isdir(ARCHIVES_FILE_PATH):
         os.mkdir(ARCHIVES_FILE_PATH)
-        logging.info("Directory created '%s'" % ARCHIVES_FILE_PATH)
     if not os.path.isdir(CONF_PATH):
         os.mkdir(CONF_PATH)
-        logging.info("Directory created '%s'" % CONF_PATH)
     if not os.path.isfile(CONF_FILE_PATH):
         logging.error("File not found '%s' " % CONF_FILE_PATH)
         sys.exit()
