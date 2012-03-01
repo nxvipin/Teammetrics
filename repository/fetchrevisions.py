@@ -15,7 +15,8 @@ ALIOTH_PATH = '/srv/home/groups/teammetrics'
 PARSE_INFO_FILE = os.path.join(ALIOTH_PATH, 'parse.info')
 
 IGNORE = ('unknown', 'None', 'root')
-FORMAT = '{0},{1},{2},{3},{4},{5},{6},{7},{8}'
+FORMAT = '{0},{1},{2},{3},{4},{5},{6}'
+FORMAT_ALL = '{0},{1},{2},{3},{4},{5},{6},{7},{8}'
 SKIP_LINES = True
 
 
@@ -93,9 +94,9 @@ def parse_revision():
                         else:
                             deleted += 1
 
-                parse_f.write(FORMAT.format(change, project, package, vcs,
-                                            author, revision_date[change],
-                                            today_date, inserted, deleted))
+                parse_f.write(FORMAT_ALL.format(change, project, package, vcs,
+                                                author, revision_date[change],
+                                                today_date, inserted, deleted))
                 parse_f.write('\n')
                 parse_f.flush()
                 checkrevision.save_configuration(project, change, 'svn')
