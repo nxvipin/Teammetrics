@@ -226,6 +226,7 @@ def get_stats():
         logging.info('No SVN repositories found')
 
     # Update the names.
+    logging.info('Updating names and removing bots...')
     updatenames.update_names(conn, cur, table='commitstat')
 
     cur.close()

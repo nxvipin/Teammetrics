@@ -59,7 +59,6 @@ def update_names(conn, cur, table='listarchives'):
             conn.commit()
 
     # Remove the bots from the list.
-    logging.info('Removing bots')
     bots = parse_bots()
     for name in bots:
         query = """DELETE FROM {0}
