@@ -16,6 +16,7 @@ PARSE_INFO_FILE = os.path.join(ALIOTH_PATH, 'parse.info')
 
 IGNORE = ('unknown', 'None', 'root')
 FORMAT = '{0},{1},{2},{3},{4},{5},{6},{7},{8}'
+SKIP_LINES = True
 
 
 def parse_revision():
@@ -68,28 +69,36 @@ def parse_revision():
                 if change in done_revisions[team]:
                     continue
 
-            inserted = 0
-            deleted = 0
+            if SKIP_LINES:
+                parse_f.write(FORMAT.format(change, project, package, vcs,
+                                            author, revision_date[change], today_date))
+                parse_f.write('\n')
+                parse_f.flush()
+                checkrevision.save_configuration(project, change, 'svn')
 
-            cmd_raw = 'svn diff -c {0} file:///svn/{1}/'.format(change, team) 
-            cmd = shlex.split(cmd_raw)
-            output = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
+            else:
+                inserted = 0
+                deleted = 0
 
-            lines = [line for line in output.splitlines() 
-                                                    if line.startswith(('+', '-'))]
-            for line in lines:
-                if not line.startswith(('+++', '---')):
-                    if line.startswith('+'):
-                        inserted += 1
-                    else:
-                        deleted += 1
+                cmd_raw = 'svn diff -c {0} file:///svn/{1}/'.format(change, team)
+                cmd = shlex.split(cmd_raw)
+                output = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
 
-            parse_f.write(FORMAT.format(change, project, package, vcs,
-                                        author, revision_date[change],
-                                        today_date, inserted, deleted))
-            parse_f.write('\n')
-            parse_f.flush()
-            checkrevision.save_configuration(project, change, 'svn')
+                lines = [line for line in output.splitlines()
+                                                        if line.startswith(('+', '-'))]
+                for line in lines:
+                    if not line.startswith(('+++', '---')):
+                        if line.startswith('+'):
+                            inserted += 1
+                        else:
+                            deleted += 1
+
+                parse_f.write(FORMAT.format(change, project, package, vcs,
+                                            author, revision_date[change],
+                                            today_date, inserted, deleted))
+                parse_f.write('\n')
+                parse_f.flush()
+                checkrevision.save_configuration(project, change, 'svn')
 
     parse_f.close()
     sys.exit()
