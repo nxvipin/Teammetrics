@@ -40,7 +40,16 @@ def fetch_logs(ssh, conn, cur, teams):
 
         with open('parse.info') as f:
             try:
-                cur.copy_from(f, 'commitstat', sep=',')
+                cur.copy_from(
+                            f, 'commitstat', sep=',',
+                            columns=('commit_id',
+                                    'project',
+                                    'package',
+                                    'vcs',
+                                    'name',
+                                    'commit_date',
+                                    'today_date')
+                            )
                 conn.commit()
             except psycopg2.DataError as detail:
                 conn.rollback()
