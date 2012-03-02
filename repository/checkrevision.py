@@ -3,7 +3,7 @@
 import os
 import ConfigParser
 
-GIT_REVISION = os.path.join('/var/cache/teammetrics', 'revisions.hash')
+GIT_REVISION = os.path.join('/var/cache/teammetrics', 'gitrevisions.hash')
 
 ALIOTH_PATH = '/srv/home/groups/teammetrics'
 SVN_REVISION = os.path.join(ALIOTH_PATH, 'revisions.hash')
