@@ -75,7 +75,7 @@ def parse_revision():
                                             author, revision_date[change], today_date))
                 parse_f.write('\n')
                 parse_f.flush()
-                checkrevision.save_configuration(project, change, 'svn')
+                checkrevision.save_configuration(project, str(change), 'svn')
 
             else:
                 inserted = 0
@@ -99,7 +99,7 @@ def parse_revision():
                                                 today_date, inserted, deleted))
                 parse_f.write('\n')
                 parse_f.flush()
-                checkrevision.save_configuration(project, change, 'svn')
+                checkrevision.save_configuration(project, str(change), 'svn')
 
     parse_f.close()
     sys.exit()
