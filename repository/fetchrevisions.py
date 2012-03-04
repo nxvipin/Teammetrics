@@ -44,7 +44,7 @@ def parse_revision():
             author, date, msg = [element.text for element in info.getchildren()]
         except ValueError:
             continue
-        revision = int(info.get('revision'))
+        revision = info.get('revision')
         author_info[author].append(revision)
         revision_date[revision] = date.split('T')[0]
 
@@ -75,7 +75,7 @@ def parse_revision():
                                             author, revision_date[change], today_date))
                 parse_f.write('\n')
                 parse_f.flush()
-                checkrevision.save_configuration(project, str(change), 'svn')
+                checkrevision.save_configuration(project, change, 'svn')
 
             else:
                 inserted = 0
@@ -99,7 +99,7 @@ def parse_revision():
                                                 today_date, inserted, deleted))
                 parse_f.write('\n')
                 parse_f.flush()
-                checkrevision.save_configuration(project, str(change), 'svn')
+                checkrevision.save_configuration(project, change, 'svn')
 
     parse_f.close()
     sys.exit()

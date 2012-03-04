@@ -35,7 +35,7 @@ def fetch_logs(ssh, conn, cur, teams):
         stdin, stdout, stderr = ssh.exec_command(cmd)
         output = stdout.read()
 
-        logging.info(team)
+        logging.info('\t%s' % team)
         ftp.get('parse.info', 'parse.info')
 
         with open('parse.info') as f:
@@ -60,4 +60,4 @@ def fetch_logs(ssh, conn, cur, teams):
                 logging.error(detail)
                 continue
 
-    logging.info('SVN logs saved...')
+    logging.info('SVN logs saved')
