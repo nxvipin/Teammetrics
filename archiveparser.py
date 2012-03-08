@@ -120,7 +120,7 @@ def main(conn, cur):
             links = [tag['href'] for tag in all_links]
 
             if year_month_flag:
-                logging.info('Last run was on %s-%s/%s' % (c_year,  c_month, c_message))
+                logging.info('Last run was on %s-%s/%s' % (c_year, c_month, c_message))
                 last_link = unicode('{0}/{1}-{0}{2}/threads.html'.format(c_year, lst_name, c_month))
                 links = links[links.index(last_link):]
                 year_month_flag = False
