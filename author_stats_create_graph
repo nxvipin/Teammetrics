@@ -26,7 +26,7 @@ if [ "$4" = "pdf" ] ; then
     OUTPUTFORMAT=pdf
 fi
 
-TEXTCOLOR=black
+TEXTCOLOR=${TEXTCOLOR:-"black"}
 if [ "$5" != "" ] ; then
     TEXTCOLOR=$5
 fi
