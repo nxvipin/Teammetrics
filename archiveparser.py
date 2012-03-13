@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-"""Fetches and parses web archives from lists.debian.org."""
+"""Fetches and parses web archives for lists.debian.org mailing lists."""
 
 import re
 import sys
@@ -19,9 +19,9 @@ import spamfilter
 import updatenames
 
 BASE_URL = 'http://lists.debian.org/'
+LOG_FILE = '/var/log/teammetrics/liststat.log'
 FIELDS = ('From', 'Date', 'Subject', 'Message-id')
 CONFIG_FILE = '/var/cache/teammetrics/archiveparser.status'
-LOG_FILE = '/var/log/teammetrics/liststat.log'
 
 
 def read_config(name):
@@ -29,7 +29,7 @@ def read_config(name):
     
     Reads the configuration for list_name from CONFIG_FILE and if the list is
     present, returns the information from the last parsed messages. This helps 
-    resume the ArchiveParser from the last run.
+    resume the script from the last run.
     """
 
     parser = ConfigParser.SafeConfigParser()
@@ -82,8 +82,8 @@ def check_next_page(month_url):
 
 
 def main(conn, cur):
-    conf_info, total_lists = liststat.get_configuration(liststat.CONF_FILE_PATH,
-                                                        pipermail=False)
+    conf_info, total_lists = liststat.get_configuration(liststat.CONF_FILE_PATH, pipermail=False)
+
     counter = 0
     skipped_messages = 0
     fetched_messages = 0
@@ -93,8 +93,9 @@ def main(conn, cur):
             list_fetched_messages = 0
             lst_name = lst.rsplit('/')[-1]
 
-            # In consecutive runs, the already parsed message are skipped without even being fetched.
-            # Everything is set to type: Unicode because that is what BeautifulSoup returns.
+            # In consecutive runs, the already parsed message are skipped without
+            # even being fetched. Everything is set to type: Unicode because that
+            # is what BeautifulSoup returns.
             config_data = tuple(unicode(ele) for ele in read_config(lst_name))
             if config_data:
                 c_year = config_data[0]
@@ -120,7 +121,7 @@ def main(conn, cur):
             links = [tag['href'] for tag in all_links]
 
             if year_month_flag:
-                logging.info('Last run was on %s-%s/%s' % (c_year,  c_month, c_message))
+                logging.info('Last run was on %s-%s/%s' % (c_year, c_month, c_message))
                 last_link = unicode('{0}/{1}-{0}{2}/threads.html'.format(c_year, lst_name, c_month))
                 links = links[links.index(last_link):]
                 year_month_flag = False
@@ -157,12 +158,12 @@ def main(conn, cur):
                     messages.extend(fetch_message_links(soup))
 
                 if message_flag:
-                    upto_messages = [unicode('msg{0:05}.html'.format(e)) 
+                    upto_messages = [unicode('msg{0:05}.html'.format(e))
                                         for e in range(int(c_message[3:].strip('.html'))+1)]
                     messages = list(set(messages) - set(upto_messages))
                     message_flag = False
 
-                # Sort the list before starting so as to match up to the notion of upto_messages.
+                # Sort the list so that messages are fetched in the proper order.
                 messages.sort()
                 for message in messages:
                     # Construct the message URL:
@@ -184,7 +185,8 @@ def main(conn, cur):
                     body = soup.body.ul
                     all_elements = body.findAll('li')
                     # Fetch the text of all elements in FIELDS.
-                    all_elements_text = [element.text for element in all_elements if element.text.startswith(FIELDS)]
+                    all_elements_text = [element.text for element in all_elements
+                                                            if element.text.startswith(FIELDS)]
                     # Create a mapping of field to values.
                     fields = {}
                     for element in all_elements_text:
@@ -192,7 +194,7 @@ def main(conn, cur):
                         fields[field.strip()] = value.strip()
 
                     # From field.
-                    # In case of a missing 'From' field, just skip because we don't need to parse the message then.
+                    # In case of a missing 'From' field, just skip the message.
                     if 'From' not in fields:
                         continue
 
@@ -260,8 +262,9 @@ def main(conn, cur):
 
                     # Message-id field.
                     # If no Message-id field found, generate a random one.
-                    message_id = fields.get('Message-id', u'{0}-{1}-{2}@spam.lists.debian.org'.format(name.replace(' ', ''),
-                                                                                                      final_month, final_day))
+                    message_id = fields.get('Message-id',
+                                            u'{0}-{1}-{2}@spam.lists.debian.org'.format(name.replace(' ', ''),
+                                            final_month, final_day))
                     message_id = message_id.replace('&lt;', '').replace('&gt;', '')
 
                     is_spam = False
@@ -276,9 +279,9 @@ def main(conn, cur):
                     try:
                         cur.execute(
                                 """INSERT INTO listarchives
-                    (project, domain, name, email_addr, subject, message_id, archive_date, today_date, is_spam)
+            (project, domain, name, email_addr, subject, message_id, archive_date, today_date, is_spam)
                                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);""",
-                (lst_name, 'lists.debian.org', name, email, subject, message_id, final_date, today_date, is_spam)
+        (lst_name, 'lists.debian.org', name, email, subject, message_id, final_date, today_date, is_spam)
                                     )
                     except psycopg2.DataError as detail:
                         conn.rollback()
