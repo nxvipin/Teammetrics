@@ -13,6 +13,7 @@ import HTMLParser
 import ConfigParser
 
 from BeautifulSoup import BeautifulSoup
+from BeautifulSoup import Comment
 import psycopg2
 
 import nntpstat
