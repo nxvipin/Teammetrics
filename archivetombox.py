@@ -49,10 +49,7 @@ def create_mbox(lst_name, mbox_name, name, email_addr, raw_d, updated_d, sub, ms
         f.write("Message-ID: <{0}>\n".format(msg_id))
         f.write('\n')
         f.write(body)
-        if body[-1] == '\n':
-            f.write('\n')
-        else:
-            f.write('\n\n')
+        f.write('\n')
         f.flush()
 
 
