@@ -42,11 +42,11 @@ def create_mbox(lst_name, mbox_name, name, email_addr, raw_d, updated_d, sub, ms
         f.write("From: {0}\n".format(from_two))
         f.write("Date: {0}\n".format(raw_d))
         f.write("Subject: {0}\n".format(sub))
-        f.write("Message-ID: <{0}>\n".format(msg_id))
         if in_reply_to:
             f.write("In-Reply-To: {0}\n".format(in_reply_to))
         if references:
             f.write("References: {0}\n".format(references))
+        f.write("Message-ID: <{0}>\n".format(msg_id))
         f.write('\n')
         f.write(body)
         f.write('\n')
@@ -111,9 +111,19 @@ def check_next_page(month_url):
 
 
 def make_multiple_lines(field):
-    return '\n'.join('{0}>'.format(b) if a==0 
-                    else '\t<{0}'.format(b) 
-                    for (a, b) in enumerate(field.rsplit('<')) if b)
+    """Takes an input string of the format:
+
+        <a><b><c>
+
+    and returns:
+
+        <a>
+            <b>
+            <c>
+    """
+    return '\n'.join(['<{0}>'.format(b.strip('<>')) if a==0 
+                                    else '    <{0}>'.format(b.strip('<>')) 
+                                    for (a, b) in enumerate(field.split('><'))])
 
 
 def main():
