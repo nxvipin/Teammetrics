@@ -111,7 +111,6 @@ def main():
     counter = 0
     skipped_messages = 0
     fetched_messages = 0
-    did_not_run = True
     for names, lists in conf_info.iteritems():
         for lst in lists:
             list_fetched_messages = 0
@@ -198,9 +197,6 @@ def main():
                         logging.error('Skipping message: unable to connect to lists.d.o')
                         skipped_messages += 1
                         continue
-
-                    # Even if a single message is fetched.
-                    did_not_run = False
 
                     soup = BeautifulSoup(message_read)
 
@@ -331,10 +327,6 @@ def main():
 
     if skipped_messages:
         logging.info('Skipped %s messages in the current run' % skipped_messages)
-
-    if not did_not_run:
-        logging.info('Updating names')
-        updatenames.update_names(conn, cur)
 
     logging.info('Quit')
     sys.exit()
