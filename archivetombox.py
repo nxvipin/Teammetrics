@@ -49,7 +49,10 @@ def create_mbox(lst_name, mbox_name, name, email_addr, raw_d, updated_d, sub, ms
         f.write("Message-ID: <{0}>\n".format(msg_id))
         f.write('\n')
         f.write(body)
-        f.write('\n')
+        if body[-1] == '\n':
+            f.write('\n')
+        else:
+            f.write('\n\n')
         f.flush()
 
 
@@ -322,7 +325,7 @@ def main():
                         logging.warning('Possible spam: %s. Reason: %s' % (message_id, reason))
 
                     for element in soup.findAll('pre'):
-                        body =  list(element.findAll(text=True))
+                        body = list(element.findAll(text=True))
 
                     try:
                         body = ''.join(HTMLParser.HTMLParser().unescape(e) for e in body)
