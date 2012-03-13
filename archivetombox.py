@@ -21,30 +21,33 @@ import spamfilter
 import updatenames
 
 BASE_URL = 'http://lists.debian.org/'
-FIELDS = ('From', 'Date', 'Subject', 'Message-id')
+FIELDS = ('From', 'Date', 'Subject', 'Message-id', 'In-reply-to', 'References')
 CONFIG_FILE = '/var/cache/teammetrics/mboxarchiveparser.status'
 LOG_FILE = '/var/log/teammetrics/mboxliststat.log'
 ARCHIVE_SAVE_DIR = '/var/cache/teammetrics/archivemboxes'
 
-MESSAGE_FORMAT = """From {0}
-From: {1}
-Date: {2}
-Subject: {3}
-Message-ID: <{4}>
 
-"""
-
-def create_mbox(lst_name, mbox_name, name, email_addr, raw_d, updated_d, sub, msg_id, body):
+def create_mbox(lst_name, mbox_name, name, email_addr, raw_d, updated_d, sub, msg_id, body, in_reply_to, references):
     """Creates mbox archives for a given message article."""
     with open(os.path.join(ARCHIVE_SAVE_DIR, mbox_name), 'a') as f:
         encode_name = name.encode('utf-8')
         encode_subject = sub.encode('utf-8')
+        body = body.encode('utf-8')
 
         from_one = '{0}  {1}'.format(email_addr, updated_d)
         from_two = '{0} ({1})'.format(email_addr, encode_name)
 
-        f.write(MESSAGE_FORMAT.format(from_one, from_two, raw_d, encode_subject, msg_id))
-        f.write(body.encode('utf-8'))
+        f.write("From {0}\n".format(from_one))
+        f.write("From: {0}\n".format(from_two))
+        f.write("Date: {0}\n".format(raw_d))
+        f.write("Subject: {0}\n".format(sub))
+        f.write("Message-ID: <{0}>\n".format(msg_id))
+        if in_reply_to:
+            f.write("In-Reply-To: {0}\n".format(in_reply_to))
+        if references:
+            f.write("References: {0}\n".format(references))
+        f.write('\n')
+        f.write(body)
         f.write('\n')
         f.flush()
 
@@ -104,6 +107,12 @@ def check_next_page(month_url):
             break
 
     return total
+
+
+def make_multiple_lines(field):
+    return '\n'.join('{0}>'.format(b) if a==0 
+                    else '\t<{0}'.format(b) 
+                    for (a, b) in enumerate(field.rsplit('<')) if b)
 
 
 def main():
@@ -285,6 +294,14 @@ def main():
                                                                                                       final_month, final_day))
                     message_id = message_id.replace('&lt;', '').replace('&gt;', '')
 
+                    # In-reply-to and References field.
+                    in_reply_to = fields.get('In-reply-to', '')
+                    in_reply_to = HTMLParser.HTMLParser().unescape(in_reply_to)
+                    references = HTMLParser.HTMLParser().unescape(fields.get('References', ''))
+
+                    if '><' in references:
+                        references = make_multiple_lines(references)
+
                     is_spam = False
                     # Run it through the spam filter.
                     name, subject, reason, spam = spamfilter.check_spam(name, subject)
@@ -299,7 +316,14 @@ def main():
                     try:
                         body = ''.join(HTMLParser.HTMLParser().unescape(e) for e in body)
                     except TypeError:
-                        body = ''
+                        # For HTML messages, extract the text.
+                        start_message = soup.find(text=lambda e: isinstance(e, Comment) and e==u'X-Body-of-Message')
+                        body = []
+                        for e in start_message.findAllNext(text=True):
+                            if e == u'X-Body-of-Message-End':
+                                break
+                            body.append(e)
+                        body = HTMLParser.HTMLParser().unescape(''.join(x))
     
                     updated_date = nntpstat.asctime_update(date, message_id)
                     if updated_date is None:
@@ -310,7 +334,7 @@ def main():
                     create_mbox(lst_name, mbox_name, 
                                 name, email, 
                                 date, updated_date,
-                                subject, message_id, body)
+                                subject, message_id, body, in_reply_to, references)
 
                     list_fetched_messages += 1
                     fetched_messages += 1
