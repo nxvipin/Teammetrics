@@ -229,6 +229,7 @@ def main(conn, cur):
 
                     # Subject field.
                     subject = fields.get('Subject', '')
+                    subject = HTMLParser.HTMLParser().unescape(subject)
 
                     # Date field.
                     date = fields.get('Date')
