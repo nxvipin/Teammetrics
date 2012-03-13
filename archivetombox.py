@@ -341,7 +341,7 @@ def main():
                         logging.error('Unable to decode date, skipping message %s' % message_id)
                         continue
 
-                    mbox_name = '{0}-{1}{2}'.format(lst_name, year, month)
+                    mbox_name = '{0}.{1}{2}'.format(lst_name, year, month)
                     create_mbox(lst_name, mbox_name, 
                                 name, email, 
                                 date, updated_date,
