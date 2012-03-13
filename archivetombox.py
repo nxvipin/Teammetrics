@@ -45,6 +45,7 @@ def create_mbox(lst_name, mbox_name, name, email_addr, raw_d, updated_d, sub, ms
 
         f.write(MESSAGE_FORMAT.format(from_one, from_two, raw_d, encode_subject, msg_id))
         f.write(body.encode('utf-8'))
+        f.write('\n')
         f.flush()
 
 
