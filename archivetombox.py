@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-"""Fetches and parses web archives from lists.debian.org."""
+"""Creates mbox archives for the lists archives from lists.debian.org"""
 
 import re
 import os
@@ -10,18 +10,22 @@ import urllib2
 import logging
 import datetime
 import HTMLParser
-import email.header
+import ConfigParser
 
 from BeautifulSoup import BeautifulSoup
 import psycopg2
 
-import liststat
 import nntpstat
-
-ARCHIVE_SAVE_DIR = '/var/cache/teammetrics/'
+import liststat
+import spamfilter
+import updatenames
 
 BASE_URL = 'http://lists.debian.org/'
 FIELDS = ('From', 'Date', 'Subject', 'Message-id')
+CONFIG_FILE = '/var/cache/teammetrics/mboxarchiveparser.status'
+LOG_FILE = '/var/log/teammetrics/mboxliststat.log'
+ARCHIVE_SAVE_DIR = '/var/cache/teammetrics/archivemboxes'
+
 MESSAGE_FORMAT = """From {0}
 From: {1}
 Date: {2}
@@ -30,30 +34,100 @@ Message-ID: <{4}>
 
 """
 
-
 def create_mbox(lst_name, mbox_name, name, email_addr, raw_d, updated_d, sub, msg_id, body):
     """Creates mbox archives for a given message article."""
     with open(os.path.join(ARCHIVE_SAVE_DIR, mbox_name), 'a') as f:
-        encode_name = email.header.Header(name, 'utf-8')
-        encode_subject = email.header.Header(sub, 'utf-8')
+        encode_name = name.encode('utf-8')
+        encode_subject = sub.encode('utf-8')
 
         from_one = '{0}  {1}'.format(email_addr, updated_d)
         from_two = '{0} ({1})'.format(email_addr, encode_name)
 
         f.write(MESSAGE_FORMAT.format(from_one, from_two, raw_d, encode_subject, msg_id))
         f.write(body.encode('utf-8'))
-        f.write('\n\n\n')
         f.flush()
 
 
+def read_config(name):
+    """Read the configuration from CONFIG_FILE.
+    
+    Reads the configuration for list_name from CONFIG_FILE and if the list is
+    present, returns the information from the last parsed messages. This helps 
+    resume the ArchiveParser from the last run.
+    """
+
+    parser = ConfigParser.SafeConfigParser()
+    parser.read(CONFIG_FILE)
+
+    if parser.has_section(name):
+        return parser.get(name, 'year'), parser.get(name, 'month'), parser.get(name, 'message')
+    else:
+        return ()
+
+
+def write_config(name, year, month, message):
+    """Write the configuration file for the current run."""
+    parser = ConfigParser.SafeConfigParser()
+    parser.read(CONFIG_FILE)
+
+    if not parser.has_section(name):
+        parser.add_section(name)
+    parser.set(name, 'year', year)
+    parser.set(name, 'month', month)
+    parser.set(name, 'message', message)
+    parser.write(open(CONFIG_FILE, 'w'))
+
+
+def fetch_message_links(soup):
+    """Parse the page and return links to individual messages."""
+    message_links = soup.findAll('a', href=re.compile('msg'))
+    return [links['href'] for links in message_links]
+
+
+def check_next_page(month_url):
+    """Returns the total pages for a month in a list."""
+    total = []
+    counter = 2
+    added_url = False
+    open_url = month_url.rsplit('/', 1)[0]
+    while True:
+        try:
+            current_url = '{0}/thrd{1}.html'.format(open_url, counter)
+            urllib2.urlopen(current_url)
+            if not added_url:
+                total.append(month_url)
+            total.append(current_url)
+            added_url = True
+            counter += 1
+        except urllib2.URLError:
+            break
+
+    return total
+
+
 def main():
-    """Read a list archive message and parse it."""
     conf_info, total_lists = liststat.get_configuration(liststat.CONF_FILE_PATH,
                                                         pipermail=False)
     counter = 0
+    skipped_messages = 0
+    fetched_messages = 0
+    did_not_run = True
     for names, lists in conf_info.iteritems():
         for lst in lists:
+            list_fetched_messages = 0
             lst_name = lst.rsplit('/')[-1]
+
+            # In consecutive runs, the already parsed message are skipped without even being fetched.
+            # Everything is set to type: Unicode because that is what BeautifulSoup returns.
+            config_data = tuple(unicode(ele) for ele in read_config(lst_name))
+            if config_data:
+                c_year = config_data[0]
+                c_month = config_data[1]
+                c_message = config_data[2]
+                year_month_flag = message_flag = True
+            else:
+                year_month_flag = message_flag = False
+
             logging.info('\tList %d of %d' % (counter+1, total_lists))
             logging.info("Fetching '%s'" % lst_name)
 
@@ -66,68 +140,91 @@ def main():
 
             # Get the links to the archives.
             soup = BeautifulSoup(url_read)
-            all_links = soup.findAll('a', href=re.compile('\d'))
+            all_links = soup.findAll('a', href=re.compile('threads.html'))
             links = [tag['href'] for tag in all_links]
 
-            start = links[0].split('/')[0]
-            end = links[-1].split('/')[0]
+            if year_month_flag:
+                logging.info('Last run was on %s-%s/%s' % (c_year,  c_month, c_message))
+                last_link = unicode('{0}/{1}-{0}{2}/threads.html'.format(c_year, lst_name, c_month))
+                links = links[links.index(last_link):]
+                year_month_flag = False
+
+            all_months = soup.body.findAll('ul')[1].findAll('li')
+            start = all_months[0].text.split(None, 1)[0]
+            end = all_months[-1].text.split(None, 1)[0]
             logging.info('List archives are from %s to %s' % (start, end))
 
             for link in links:
+                # Get the year for which the messages are to be fetched.
                 month_url = '{0}{1}/{2}'.format(BASE_URL, lst_name, link)
+                year_month = link.split('/')[-2].rsplit('-')[-1]
+                year = year_month[:-2]
+                month = year_month[-2:]
+
                 try:
                     month_read = urllib2.urlopen(month_url)
                 except urllib2.URLError as detail:
-                    logging.error('Skipping message, error connecting to lists.debian.org')
+                    logging.error('Skipping month %s: unable to connect to lists.d.o' % link)
                     logging.error('%s' % detail)
                     continue
 
                 soup = BeautifulSoup(month_read)
-                message_links = soup.findAll('a', href=re.compile('msg'))
-                messages = [links['href'] for links in message_links]
 
+                messages = []
+                # There are multiple pages in an archive, check for them.
+                all_pages_month = check_next_page(month_url)
+                if all_pages_month:
+                    for each_month in all_pages_month:
+                        page_soup = BeautifulSoup(urllib2.urlopen(each_month))
+                        messages.extend(fetch_message_links(page_soup))
+                else:
+                    messages.extend(fetch_message_links(soup))
+
+                if message_flag:
+                    upto_messages = [unicode('msg{0:05}.html'.format(e)) 
+                                        for e in range(int(c_message[3:].strip('.html'))+1)]
+                    messages = list(set(messages) - set(upto_messages))
+                    message_flag = False
+
+                # Sort the list before starting so as to match up to the notion of upto_messages.
+                messages.sort()
+                print 'At messages...'
                 for message in messages:
-                    # Extract the month from the string:
-                    #   <list-name>/<year>/<list-name>-<year><month>/threads.html
-                    # and then construct the message URL:
-                    #   <list-name>/<year>/<month>/<message-url>
-                    year_month = month_url.split('/')[-2].rsplit('-')[-1]
-                    year = year_month[:-2]
-                    month = year_month[-2:]
+                    # Construct the message URL:
                     message_url = '{0}{1}/{2}/{3}/{4}'.format(BASE_URL, lst_name, 
-                                                            year, month, message)
-
+                                                                year, month, message)
                     try:
                         message_read = urllib2.urlopen(message_url)
                     except urllib2.URLError as detail:
-                        logging.error('Skipping message, error connecting to lists.debian.org')
-                        logging.error('%s' % detail)
+                        logging.error('Skipping message: unable to connect to lists.d.o')
+                        skipped_messages += 1
                         continue
 
+                    # Even if a single message is fetched.
+                    did_not_run = False
+
                     soup = BeautifulSoup(message_read)
+
                     # Now we are at a single message, so parse it.
                     body = soup.body.ul
                     all_elements = body.findAll('li')
+                    # Fetch the text of all elements in FIELDS.
                     all_elements_text = [element.text for element in all_elements if element.text.startswith(FIELDS)]
-                    all_elements_text.sort()
+                    # Create a mapping of field to values.
+                    fields = {}
+                    for element in all_elements_text:
+                        field, value = element.split(':', 1)
+                        fields[field.strip()] = value.strip()
 
-                    # The list should have four elements (fields): 
-                    #   From, Date, Subject, Message-id.
-                    # If not, this is due to a badly formed header, so just continue.
-                    if len(all_elements_text) != 4:
+                    # From field.
+                    # In case of a missing 'From' field, just skip because we don't need to parse the message then.
+                    if 'From' not in fields:
                         continue
 
-                    # Date.
-                    raw_date = all_elements_text[0].split(':', 1)[1].strip()
-                    # Name, Email.
-                    name_email = all_elements_text[1].split(':')[1]
-                    # Message-id.
-                    message_id = all_elements_text[2].split(':', 1)[1].replace('&lt;', '').replace('&gt;', '').strip()
-                    # Subject.
-                    subject = all_elements_text[3].split(':', 1)[1].strip()
-
+                    # Name, Email parsing starts here.
                     # Format the 'From' field to return the name and email address.
                     #   Foo Bar &lt;foo@bar.com&gt; 
+                    name_email = fields.get('From')
                     try:
                         if name_email.endswith(')'):
                             email_raw, name_raw = name_email.split('(', 1)
@@ -148,39 +245,103 @@ def main():
                     except ValueError:
                         # The name is the same as the email address.
                         name = email = name_email.replace('&lt;', '').replace('&gt;', '')
-
                     # Some names have the form: LastName, FirstName. 
                     if ',' in name:
                         name = ' '.join(e for e in reversed(name.split())).replace(',', '').strip()
-
                     parser = HTMLParser.HTMLParser()
                     name = parser.unescape(name).strip()
-                    email = email.replace('&lt;', '').replace('&gt;', '')
+
+                    # Subject field.
+                    subject = fields.get('Subject', '')
+
+                    # Date field.
+                    date = fields.get('Date')
+                    if date is not None:
+                        # Let's parse the date now and fetch the day the message was sent.
+                        day_find = re.findall(r'\d{1,2}', date)
+                        # Can't parse the date, so set it to a random value.
+                        if day_find:
+                            day = day_find[0]
+                        else:
+                            day = '15'
+                    # If there is no 'Date' field.
+                    else:
+                        day = '15'
+                    final_day = day
+                    final_month = month
+                    final_year = year
+
+                    final_date = '{0}-{1}-{2}'.format(final_year, final_month, final_day)
+                    # Before storing the date, ensure that it is proper. If not,
+                    # this is usually due to the issue of the last day of a given
+                    # month being counted in the next. So default the day to 1.
+                    try:
+                        time.strptime(final_date, '%Y-%m-%d')
+                    except ValueError:
+                        final_date = '{0}-{1}-1'.format(final_year, final_month)
 
                     today_raw = datetime.date.today()
                     today_date = today_raw.strftime('%Y-%m-%d')
-                    updated_date = nntpstat.asctime_update(raw_date, message_id)
+
+                    # Message-id field.
+                    # If no Message-id field found, generate a random one.
+                    message_id = fields.get('Message-id', u'{0}-{1}-{2}@spam.lists.debian.org'.format(name.replace(' ', ''),
+                                                                                                      final_month, final_day))
+                    message_id = message_id.replace('&lt;', '').replace('&gt;', '')
+
+                    is_spam = False
+                    # Run it through the spam filter.
+                    name, subject, reason, spam = spamfilter.check_spam(name, subject)
+                    # If the message is spam, set the is_spam flag.
+                    if spam:
+                        is_spam = True
+                        logging.warning('Possible spam: %s. Reason: %s' % (message_id, reason))
+
+                    for element in soup.findAll('pre'):
+                        body =  list(element.findAll(text=True))
+
+                    try:
+                        body = ''.join(HTMLParser.HTMLParser().unescape(e) for e in body)
+                    except TypeError:
+                        body = ''
+    
+                    updated_date = nntpstat.asctime_update(date, message_id)
                     if updated_date is None:
                         logging.error('Unable to decode date, skipping message %s' % message_id)
                         continue
 
-                    body_unescape = HTMLParser.HTMLParser()
-                    body = body_unescape.unescape(soup.body.pre.text)
-
                     mbox_name = '{0}-{1}{2}'.format(lst_name, year, month)
                     create_mbox(lst_name, mbox_name, 
                                 name, email, 
-                                raw_date, updated_date,
+                                date, updated_date,
                                 subject, message_id, body)
 
+                    list_fetched_messages += 1
+                    fetched_messages += 1
+
+                if messages: 
+                    write_config(lst_name, final_year, final_month, message)
+
+            logging.info("Finished processing '%s' (%s messages)" % (lst_name, list_fetched_messages))
             counter += 1
+
+    if fetched_messages:
+        logging.info('Fetched %s messages in the current run' % fetched_messages)
+    else:
+        logging.info('No messages were fetched in the current run')
+
+    if skipped_messages:
+        logging.info('Skipped %s messages in the current run' % skipped_messages)
+
+    if not did_not_run:
+        logging.info('Updating names')
+        updatenames.update_names(conn, cur)
 
     logging.info('Quit')
     sys.exit()
 
 
 if __name__ == '__main__':
-    liststat.start_logging()
-    logging.info('\t\tStarting Web Archive Parser')
-
+    liststat.start_logging(logfilepath=LOG_FILE)
+    logging.info('\t\tStarting Archive Parser (mbox)')
     main()
