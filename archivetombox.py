@@ -324,7 +324,7 @@ def main():
                             if e == u'X-Body-of-Message-End':
                                 break
                             body.append(e)
-                        body = HTMLParser.HTMLParser().unescape(''.join(x))
+                        body = HTMLParser.HTMLParser().unescape(''.join(body))
     
                     updated_date = nntpstat.asctime_update(date, message_id)
                     if updated_date is None:
