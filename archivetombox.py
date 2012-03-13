@@ -188,7 +188,6 @@ def main():
 
                 # Sort the list before starting so as to match up to the notion of upto_messages.
                 messages.sort()
-                print 'At messages...'
                 for message in messages:
                     # Construct the message URL:
                     message_url = '{0}{1}/{2}/{3}/{4}'.format(BASE_URL, lst_name, 
