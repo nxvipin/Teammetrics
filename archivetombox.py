@@ -41,7 +41,7 @@ def create_mbox(lst_name, mbox_name, name, email_addr, raw_d, updated_d, sub, ms
         f.write("From {0}\n".format(from_one))
         f.write("From: {0}\n".format(from_two))
         f.write("Date: {0}\n".format(raw_d))
-        f.write("Subject: {0}\n".format(sub))
+        f.write("Subject: {0}\n".format(encode_subject))
         if in_reply_to:
             f.write("In-Reply-To: {0}\n".format(in_reply_to))
         if references:
