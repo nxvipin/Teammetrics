@@ -25,7 +25,7 @@ BASE_URL = 'http://lists.debian.org/'
 FIELDS = ('From', 'Date', 'Subject', 'Message-id', 'In-reply-to', 'References')
 CONFIG_FILE = '/var/cache/teammetrics/mboxarchiveparser.status'
 LOG_FILE = '/var/log/teammetrics/mboxliststat.log'
-ARCHIVE_SAVE_DIR = '/var/cache/teammetrics/archivemboxes'
+ARCHIVE_SAVE_DIR = '/var/cache/teammetrics/mboxarchives'
 
 
 def create_mbox(lst_name, mbox_name, name, email_addr, raw_d, updated_d, sub, msg_id, body, in_reply_to, references):
