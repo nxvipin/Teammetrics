@@ -6,19 +6,30 @@ psql teammetrics --tuples-only --command "UPDATE listarchives SET project = 'deb
 # now remove those messages from debian-custom which were duplicated to get completely rid of this list
 psql teammetrics --tuples-only --command "DELETE FROM listarchives WHERE project = 'debian-custom';"
 
+NUM=10
+PDF=""
+if [ "$1" = "pdf" ] ; then
+    PDF="$NUM pdf"
+fi
+
 projects=`psql -t teammetrics -c 'SELECT project FROM listarchives GROUP BY project ;'`
 for proj in $projects ; do
-    ./author_stats $proj
+    ./author_stats $proj $PDF
 done
 
 projects=`psql -t teammetrics -c 'SELECT project FROM commitstat GROUP BY project ;'`
 for proj in $projects ; do
-    ./author_stats_commits $proj
-    ./author_stats_commitlines $proj
+    ./author_stats_commits $proj $PDF
+    ./author_stats_commitlines $proj $PDF
 done
 
+PDF=""
+if [ "$1" = "pdf" ] ; then
+    PDF="pdf"
+fi
+
 # Render uploaders history
-upload_history.py
+upload_history.py $PDF
 
 # Render bug closer history
-bug_close_history.py
+bug_close_history.py $PDF
