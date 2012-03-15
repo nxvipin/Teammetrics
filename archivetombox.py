@@ -325,7 +325,7 @@ def main():
                         for element in soup.findAll('pre'):
                             body = list(element.findAll(text=True))
                         body = ''.join(HTMLParser.HTMLParser().unescape(e) for e in body)
-                    except (AttributeError, TypeError)
+                    except (AttributeError, TypeError):
                         # For HTML messages, extract the text.
                         start_message = soup.find(text=lambda e: isinstance(e, Comment) and e==u'X-Body-of-Message')
                         body = []
