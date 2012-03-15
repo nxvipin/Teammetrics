@@ -321,12 +321,11 @@ def main():
                         is_spam = True
                         logging.warning('Possible spam: %s. Reason: %s' % (message_id, reason))
 
-                    for element in soup.findAll('pre'):
-                        body = list(element.findAll(text=True))
-
                     try:
+                        for element in soup.findAll('pre'):
+                            body = list(element.findAll(text=True))
                         body = ''.join(HTMLParser.HTMLParser().unescape(e) for e in body)
-                    except TypeError:
+                    except (AttributeError, TypeError)
                         # For HTML messages, extract the text.
                         start_message = soup.find(text=lambda e: isinstance(e, Comment) and e==u'X-Body-of-Message')
                         body = []
