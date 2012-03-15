@@ -328,11 +328,12 @@ def main():
                         if e == u'X-Body-of-Message-End':
                             break
                         body.append(e)
-                    body = ''.join(HTMLParser.HTMLParser().unescape(e) for e in body)
 
                     # Extra formatting that helps frame the mbox structure properly.
                     if body[-1] == u'\n' and '\n' not in body[-2]:
                         body.append(u'\n\n')
+
+                    body = ''.join(HTMLParser.HTMLParser().unescape(e) for e in body)
     
                     updated_date = nntpstat.asctime_update(date, message_id)
                     if updated_date is None:
