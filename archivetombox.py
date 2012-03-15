@@ -49,7 +49,7 @@ def create_mbox(lst_name, mbox_name, name, email_addr, raw_d, updated_d, sub, ms
         f.write("Message-ID: <{0}>\n".format(msg_id))
         f.write('\n')
         f.write(body)
-        f.write('')
+        f.write('\n')
         f.flush()
 
 
