@@ -321,19 +321,16 @@ def main():
                         is_spam = True
                         logging.warning('Possible spam: %s. Reason: %s' % (message_id, reason))
 
-                    try:
-                        for element in soup.findAll('pre'):
-                            body = list(element.findAll(text=True))
-                        body = ''.join(HTMLParser.HTMLParser().unescape(e) for e in body)
-                    except (AttributeError, TypeError):
-                        # For HTML messages, extract the text.
-                        start_message = soup.find(text=lambda e: isinstance(e, Comment) and e==u'X-Body-of-Message')
-                        body = []
-                        for e in start_message.findAllNext(text=True):
-                            if e == u'X-Body-of-Message-End':
-                                break
-                            body.append(e)
-                        body = HTMLParser.HTMLParser().unescape(''.join(body))
+                    # Now parse the message body, starting at the comment X-Body-of-Message
+                    # and continuing till X-Body-of-Message-End. This handles both plain text
+                    # as well HTML formatted messages.
+                    start_message = soup.find(text=lambda e: isinstance(e, Comment) and e==u'X-Body-of-Message')
+                    body = []
+                    for e in start_message.findAllNext(text=True):
+                        if e == u'X-Body-of-Message-End':
+                            break
+                        body.append(e)
+                    body = ''.join(HTMLParser.HTMLParser().unescape(e) for e in body)
     
                     updated_date = nntpstat.asctime_update(date, message_id)
                     if updated_date is None:
