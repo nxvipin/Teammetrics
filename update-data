@@ -1,0 +1,12 @@
+#/bin/sh
+# mailing list archives (lists.d.o)
+archiveparser.py
+
+# repositories
+#     to activate your ssh-key do:
+#   exec ssh-agent /bin/bash
+#   ssh-add ~/.ssh/<your-sec-key>
+commitstat.py -u ${USER}
+
+# mailing list archives (Alioth lists)
+liststat.py
