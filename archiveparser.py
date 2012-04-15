@@ -19,8 +19,9 @@ import spamfilter
 import updatenames
 
 BASE_URL = 'http://lists.debian.org/'
-LOG_FILE = '/var/log/teammetrics/liststat.log'
 FIELDS = ('From', 'Date', 'Subject', 'Message-id')
+
+LOG_FILE = '/var/log/teammetrics/liststat.log'
 CONFIG_FILE = '/var/cache/teammetrics/archiveparser.status'
 
 
@@ -82,8 +83,8 @@ def check_next_page(month_url):
 
 
 def main(conn, cur):
-    conf_info, total_lists = liststat.get_configuration(liststat.CONF_FILE_PATH, pipermail=False)
-
+    conf_info, total_lists = liststat.get_configuration(liststat.CONF_FILE_PATH,
+                                                        pipermail=False)
     counter = 0
     skipped_messages = 0
     fetched_messages = 0
@@ -98,9 +99,9 @@ def main(conn, cur):
             # is what BeautifulSoup returns.
             config_data = tuple(unicode(ele) for ele in read_config(lst_name))
             if config_data:
-                c_year = config_data[0]
-                c_month = config_data[1]
-                c_message = config_data[2]
+                check_year = config_data[0]
+                check_month = config_data[1]
+                check_message = config_data[2]
                 year_month_flag = message_flag = True
             else:
                 year_month_flag = message_flag = False
@@ -121,8 +122,8 @@ def main(conn, cur):
             links = [tag['href'] for tag in all_links]
 
             if year_month_flag:
-                logging.info('Last run was on %s-%s/%s' % (c_year, c_month, c_message))
-                last_link = unicode('{0}/{1}-{0}{2}/threads.html'.format(c_year, lst_name, c_month))
+                logging.info('Last run was on %s-%s/%s' % (check_year, check_month, check_message))
+                last_link = unicode('{0}/{1}-{0}{2}/threads.html'.format(check_year, lst_name, check_month))
                 links = links[links.index(last_link):]
                 year_month_flag = False
 
@@ -159,7 +160,7 @@ def main(conn, cur):
 
                 if message_flag:
                     upto_messages = [unicode('msg{0:05}.html'.format(e))
-                                        for e in range(int(c_message[3:].strip('.html'))+1)]
+                                        for e in range(int(check_message[3:].strip('.html'))+1)]
                     messages = list(set(messages) - set(upto_messages))
                     message_flag = False
 
