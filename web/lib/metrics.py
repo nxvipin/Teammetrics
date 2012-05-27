@@ -13,18 +13,22 @@ FILE = '../config/metrics.conf'
 CONF_FILE = os.path.join(os.path.dirname(sys.argv[0]),FILE)
 
 try:
-	cp.readfp(open(CONF_FILE))
+    cp.readfp(open(CONF_FILE))
 except IOError:
-	logging.error("Config File Not Found")
+    logging.error("Config File Not Found")
 else:
-	def getMetric(metricname, listname):
-		try:
-			mlist = cp.get(metricname,listname).split(' ')
-		except ConfigParser.NoSectionError:
-			logging.error("No Such Team")
-			return []
-		except ConfigParser.NoOptionError:
-			logging.error("No Such Metric")
-			return []
-		else:
-			return mlist
+    def getMetric(metricname, listname):
+        try:
+            mlist = cp.get(metricname,listname).split(',')
+            mlist = [name.strip() for name in mlist]
+        except ConfigParser.NoSectionError:
+            logging.error("No Such Team")
+            return []
+        except ConfigParser.NoOptionError:
+            logging.error("No Such Metric")
+            return []
+        else:
+            return mlist
+
+if __name__ == '__main__':
+    print getMetric('sampleteam','list')
