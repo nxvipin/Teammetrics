@@ -2,22 +2,19 @@ import ConfigParser
 import sys
 import os
 import logging
+import web.settings as settings
 
 cp = ConfigParser.ConfigParser()
 
-"""
-This is a temporary solution.
-Config file will be read from Django settings.
-"""
-FILE = '../config/metrics.conf'
-CONF_FILE = os.path.join(os.path.dirname(sys.argv[0]),FILE)
+CONF_FILE = settings.CONFIG_FILE['metrics']
 
 try:
     cp.readfp(open(CONF_FILE))
 except IOError:
     logging.error("Config File Not Found")
 else:
-    def getMetric(metricname, listname):
+    def get(metricname, listname):
+        logging.info("metrics.get called")
         try:
             mlist = cp.get(metricname,listname).split(',')
             mlist = [name.strip() for name in mlist]
@@ -31,4 +28,4 @@ else:
             return mlist
 
 if __name__ == '__main__':
-    print getMetric('sampleteam','list')
+    print get('sampleteam','list')
