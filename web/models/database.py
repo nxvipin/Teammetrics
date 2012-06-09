@@ -19,5 +19,4 @@ def connect():
                                     port=settings.PORT,
                                     user=settings.USER,
                                     database=settings.DB)
-    cur = conn.cursor()
-    return cur
+    return conn.cursor()
