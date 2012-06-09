@@ -95,6 +95,10 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
 )
 
+"""
+Application Settings
+"""
+
 CONFIG_FILE = {
     'metrics' : 'config/metrics.conf'
 }
