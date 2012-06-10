@@ -1,8 +1,10 @@
 import ConfigParser
 import sys
 import os
-import logging
+from web.lib import log
 import web.settings as settings
+
+logger = log.get(__name__)
 
 cp = ConfigParser.ConfigParser()
 
@@ -11,18 +13,18 @@ CONF_FILE = settings.CONFIG_FILE['metrics']
 try:
     cp.readfp(open(CONF_FILE))
 except IOError:
-    logging.error("Config File Not Found")
+    logger.error("Config File Not Found")
 else:
     def get(metricname, listname):
-        logging.info("metrics.get called")
+        logger.info("metrics.get called")
         try:
             mlist = cp.get(metricname,listname).split(',')
             mlist = [name.strip() for name in mlist]
         except ConfigParser.NoSectionError:
-            logging.error("No Such Team")
+            logger.error("No Such Team")
             return []
         except ConfigParser.NoOptionError:
-            logging.error("No Such Metric")
+            logger.error("No Such Metric")
             return []
         else:
             return mlist
