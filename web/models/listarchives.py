@@ -52,13 +52,7 @@ def annualTopN(team, n):
                        name,
                        count(*)
                 FROM listarchives
-                WHERE extract(YEAR
-                              FROM archive_date) IN
-                        (SELECT DISTINCT extract(YEAR
-                                                 FROM archive_date)
-                         FROM listarchives
-                         WHERE project = '%s')
-                    AND project='%s'
+                WHERE project='%s'
                     AND name IN
                         (SELECT name
                          FROM listarchives
@@ -67,5 +61,5 @@ def annualTopN(team, n):
                          ORDER BY count(*) DESC LIMIT %d)
                 GROUP BY YEAR,name
                 ORDER BY YEAR, COUNT DESC; """
-    cur.execute(sql,(team,team,team,n))
+    cur.execute(sql,(team,team,n))
     return cur.fetchall()
