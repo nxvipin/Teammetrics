@@ -12,11 +12,12 @@ def monthData(team):
                                FROM commit_date) AS MONTH,
                        count(*)
                 FROM commitstat
-                WHERE project='teammetrics'
+                WHERE project='%s'
                 GROUP BY YEAR, MONTH
                 ORDER BY YEAR; """
     cur.execute(sql,(team,team))
     return cur.fetchall()
+
 
 
 
