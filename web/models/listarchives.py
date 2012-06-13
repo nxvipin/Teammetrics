@@ -1,6 +1,8 @@
 from web.models import database
+
 cur = database.connect()
-def month(team):
+
+def monthData(team):
     """
     Returns monthly liststat data for a given team.
     """
@@ -27,5 +29,29 @@ def month(team):
     cur.execute(sql,(team,team))
     return cur.fetchall()
 
-
-
+def annualTopN(team, n):
+    """
+    Returns annual liststat data for top 'N' members of a given team.
+    """
+    sql = """   SELECT extract(YEAR
+                               FROM archive_date) AS YEAR,
+                       name,
+                       count(*)
+                FROM listarchives
+                WHERE extract(YEAR
+                              FROM archive_date) IN
+                        (SELECT DISTINCT extract(YEAR
+                                                 FROM archive_date)
+                         FROM listarchives
+                         WHERE project = '%s')
+                    AND project='%s'
+                    AND name IN
+                        (SELECT name
+                         FROM listarchives
+                         WHERE project = '%s'
+                         GROUP BY name
+                         ORDER BY count(*) DESC LIMIT %d)
+                GROUP BY YEAR,name
+                ORDER BY YEAR, COUNT DESC; """
+    cur.execute(sql,(team,team,team,n))
+    return cur.fetchall()
