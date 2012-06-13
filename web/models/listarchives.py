@@ -29,6 +29,20 @@ def monthData(team):
     cur.execute(sql,(team,team))
     return cur.fetchall()
 
+def annualData(team):
+    """
+    Return annual liststat data for a given team.
+    """
+    sql = """   SELECT extract(YEAR
+                               FROM archive_date) AS YEAR,
+                       count(*)
+                FROM listarchives
+                WHERE project = '%s'
+                GROUP BY YEAR
+                ORDER BY YEAR; """
+    cur.execute(sql,(team))
+    return cur.fetchall()
+
 def annualTopN(team, n):
     """
     Returns annual liststat data for top 'N' members of a given team.
