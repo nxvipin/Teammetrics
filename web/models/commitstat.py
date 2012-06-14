@@ -12,10 +12,10 @@ def monthData(team):
                                FROM commit_date) AS MONTH,
                        count(*)
                 FROM commitstat
-                WHERE project='%s'
+                WHERE project=%s
                 GROUP BY YEAR, MONTH
                 ORDER BY YEAR; """
-    cur.execute(sql,(team))
+    cur.execute(sql,(team,))
     return cur.fetchall()
 
 def annualData(team):
@@ -26,10 +26,10 @@ def annualData(team):
                                FROM commit_date) AS YEAR,
                        count(*)
                 FROM commitstat
-                WHERE project='%s'
+                WHERE project=%s
                 GROUP BY YEAR
                 ORDER BY YEAR; """
-    cur.execute(sql,(team))
+    cur.execute(sql,(team,))
     return cur.fetchall()
 
 def monthTopN(team, n):
@@ -43,10 +43,10 @@ def monthTopN(team, n):
                        name,
                        count(*)
                 FROM commitstat
-                WHERE project='%s'
+                WHERE project=%s
                     AND name IN (
                     SELECT name
-                    FROM commitstat WHERE project = '%s'
+                    FROM commitstat WHERE project = %s
                 GROUP BY name
                 ORDER BY count(*) DESC LIMIT %d)
                 GROUP BY YEAR, MONTH, name
@@ -63,10 +63,10 @@ def annualTopN(team, n):
                        name,
                        count(*)
                 FROM commitstat
-                WHERE project='%s'
+                WHERE project=%s
                     AND name IN (
                     SELECT name
-                    FROM commitstat WHERE project = '%s'
+                    FROM commitstat WHERE project = %s
                 GROUP BY name
                 ORDER BY count(*) DESC LIMIT %d)
                 GROUP BY YEAR, name

@@ -2,7 +2,7 @@ from web.models import database
 
 cur = database.connect()
 
-def monthData(team):
+def monthData(team,):
     """
     Returns monthly liststat data for a given team.
     """
@@ -13,13 +13,13 @@ def monthData(team):
                        sum(lines_inserted) AS LINES_INSERTED,
                        sum(lines_deleted) AS LINES_DELETED
                 FROM commitstat
-                WHERE project='%s'
+                WHERE project=%s
                 GROUP BY YEAR, MONTH
                 ORDER BY YEAR; """
-    cur.execute(sql,(team))
+    cur.execute(sql,(team,))
     return cur.fetchall()
 
-def annualData(team):
+def annualData(team,):
     """
     Returns monthly liststat data for a given team.
     """
@@ -28,10 +28,10 @@ def annualData(team):
                        sum(lines_inserted) AS LINES_INSERTED,
                        sum(lines_deleted) AS LINES_DELETED
                 FROM commitstat
-                WHERE project='%s'
+                WHERE project=%s
                 GROUP BY YEAR
                 ORDER BY YEAR; """
-    cur.execute(sql,(team))
+    cur.execute(sql,(team,))
     return cur.fetchall()
 
 def monthTopN(team, n):
@@ -46,11 +46,11 @@ def monthTopN(team, n):
                        sum(lines_inserted) AS LINES_INSERTED,
                        sum(lines_deleted) AS LINES_DELETED
                 FROM commitstat
-                WHERE project='%s'
+                WHERE project=%s
                   AND name IN
                     (SELECT name
                      FROM commitstat
-                     WHERE project = '%s'
+                     WHERE project = %s
                        AND lines_inserted IS NOT NULL
                        AND lines_deleted IS NOT NULL
                      GROUP BY name
@@ -72,11 +72,11 @@ def annualTopN(team, n):
                        sum(lines_inserted) AS LINES_INSERTED,
                        sum(lines_deleted) AS LINES_DELETED
                 FROM commitstat
-                WHERE project='%s'
+                WHERE project=%s
                   AND name IN
                     (SELECT name
                      FROM commitstat
-                     WHERE project = '%s'
+                     WHERE project = %s
                        AND lines_inserted IS NOT NULL
                        AND lines_deleted IS NOT NULL
                      GROUP BY name
