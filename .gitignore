@@ -15,3 +15,7 @@ rotate_state
 
 # Temporary files
 *~
+
+# Data
+web/models/settings.py
+web/.coverage
