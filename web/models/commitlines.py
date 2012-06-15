@@ -15,7 +15,7 @@ def monthData(team,):
                 FROM commitstat
                 WHERE project=%s
                 GROUP BY YEAR, MONTH
-                ORDER BY YEAR; """
+                ORDER BY YEAR, MONTH; """
     cur.execute(sql,(team,))
     return cur.fetchall()
 
@@ -54,7 +54,7 @@ def monthTopN(team, n):
                        AND lines_inserted IS NOT NULL
                        AND lines_deleted IS NOT NULL
                      GROUP BY name
-                     ORDER BY sum(lines_inserted)+sum(lines_deleted) DESC LIMIT %d)
+                     ORDER BY sum(lines_inserted)+sum(lines_deleted) DESC LIMIT %s)
                   AND lines_inserted IS NOT NULL
                   AND lines_deleted IS NOT NULL
                 GROUP BY YEAR, MONTH, name
@@ -80,7 +80,7 @@ def annualTopN(team, n):
                        AND lines_inserted IS NOT NULL
                        AND lines_deleted IS NOT NULL
                      GROUP BY name
-                     ORDER BY sum(lines_inserted)+sum(lines_deleted) DESC LIMIT %d)
+                     ORDER BY sum(lines_inserted)+sum(lines_deleted) DESC LIMIT %s)
                   AND lines_inserted IS NOT NULL
                   AND lines_deleted IS NOT NULL
                 GROUP BY YEAR, name

@@ -48,7 +48,7 @@ def monthTopN(team, n):
                     SELECT name
                     FROM commitstat WHERE project = %s
                 GROUP BY name
-                ORDER BY count(*) DESC LIMIT %d)
+                ORDER BY count(*) DESC LIMIT %s)
                 GROUP BY YEAR, MONTH, name
                 ORDER BY YEAR, MONTH, COUNT DESC; """
     cur.execute(sql,(team, team, n))
@@ -68,7 +68,7 @@ def annualTopN(team, n):
                     SELECT name
                     FROM commitstat WHERE project = %s
                 GROUP BY name
-                ORDER BY count(*) DESC LIMIT %d)
+                ORDER BY count(*) DESC LIMIT %s)
                 GROUP BY YEAR, name
                 ORDER BY YEAR, COUNT DESC; """
     cur.execute(sql,(team, team, n))
