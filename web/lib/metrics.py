@@ -10,16 +10,15 @@ cp = ConfigParser.ConfigParser()
 
 CONF_FILE = settings.CONFIG_FILE['metrics']
 
-try:
-    cp.readfp(open(CONF_FILE))
-except IOError:
-    logger.error("Config File Not Found")
-else:
-    def get(metricname, listname):
-        logger.info("metrics.get called")
+def get(metricname, listname):
+    logger.info("metrics.get called")
+    try:
+        cp.readfp(open(CONF_FILE))
+    except IOError:
+        logger.error("Config File Not Found")
+    else:
         try:
             mlist = cp.get(metricname,listname).split(',')
-            mlist = [name.strip() for name in mlist]
         except ConfigParser.NoSectionError:
             logger.error("No Such Team")
             return []
@@ -27,7 +26,5 @@ else:
             logger.error("No Such Metric")
             return []
         else:
+            mlist = [name.strip() for name in mlist]
             return mlist
-
-if __name__ == '__main__':
-    print get('sampleteam','list')
