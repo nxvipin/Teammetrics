@@ -8,7 +8,8 @@ logger = log.get(__name__)
 
 cp = ConfigParser.ConfigParser()
 
-CONF_FILE = settings.CONFIG_FILE['metrics']
+CONF_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                        +settings.CONFIG_FILE['metrics'])
 
 def get(metricname, listname):
     logger.info("metrics.get called")
@@ -28,3 +29,4 @@ def get(metricname, listname):
         else:
             mlist = [name.strip() for name in mlist]
             return mlist
+    return []
