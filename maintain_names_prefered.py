@@ -108,7 +108,13 @@ WHITELIST = ('Ramakrishnan Muthukrishnan',
              'Cleto Martin Angelina',
              'Christian M. Amsüss',
              'Michael Fladischer',
-             'Alexandre Mestiashvili'
+             'Alexandre Mestiashvili',
+             'Paolo Didonè',
+             'Debian PHP PEAR Maintainers',
+             'Esteban Manchado Velázquez',
+             'Magosányi Árpád',
+             'Frederik Schüler',
+             'Ahmed El-Said Atef El-Mahmoudy',
             )
 
 has_quotes_re = re.compile('".*"')
