@@ -86,6 +86,34 @@ def processMonthTopNData(dbdata, metriclist):
         data['annualdata'][d]['monthlydata'][u]['userdata'].append(userdata)
     return data
 
+def getMonthData(api_version, team, metric):
+    """
+    Returns JSON ready monthly data for a given team and metric.
+    """
+    metricname = identifyMetric(team, metric)
+    data = {'metric' : metric}
+    if metric == 'list':
+        data['data'] = [monthList(team,m) for m in metricname]
+    elif metric == 'commits':
+        data['data'] = [monthCommits(team,m) for m in metricname]
+    elif metric == 'commitlines':
+        data['data'] = [monthCommitLines(team,m) for m in metricname]
+    return data
+
+def getMonthTopNData(api_version, team, metric):
+    """
+    Returns JSON ready monthly top N data for a given team and metric.
+    """
+    metricname = identifyMetric(team, metric)
+    data = {'metric' : metric}
+    if metric == 'list':
+        data['data']['data'] = [monthTopNList(team,m,n) for m in metricname]
+    elif metric == 'commits':
+        data['data']['data'] = [monthTopNCommits(team,m,n) for m in metricname]
+    elif metric == 'commitlines':
+        data['data']['data'] = [monthTopNCommitLines(team,m,n) for m in metricname]
+    return data
+
 def monthList(team, mlist):
     dbdata=listarchives.monthData(mlist)
     data = processMonthData(dbdata, ['liststat'])
