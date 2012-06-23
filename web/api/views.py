@@ -5,8 +5,6 @@ import json
 
 logger = log.get(__name__)
 
-
-
 def month(request, api_version, team, metric):
     data = helper.getMonthData(api_version, team, metric)
     data['team'] = team
@@ -25,7 +23,28 @@ def monthTopN(request, api_version, team, metric, n):
     """
     Returns monthly data for top N members.
     """
-    data = helper.getMonthTopNData(api_version, team, metric)
+    data = helper.getMonthTopNData(api_version, team, metric, n)
     data['team'] = team
     return HttpResponse(json.dumps(data))
 
+def annual(request, api_version, team, metric):
+    data = helper.getAnnualData(api_version, team, metric)
+    data['team'] = team
+    return HttpResponse(json.dumps(data))
+
+def annualAll(request, api_version, team):
+    data = {}
+    data['team'] = team
+    data['data'] = []
+    data['data'].append(helper.getAnnualData(api_version, team, 'list'))
+    data['data'].append(helper.getAnnualData(api_version, team, 'commits'))
+    data['data'].append(helper.getAnnualData(api_version, team, 'commitlines'))
+    return HttpResponse(json.dumps(data))
+
+def annualTopN(request, api_version, team, metric, n):
+    """
+    Returns monthly data for top N members.
+    """
+    data = helper.getAnnualTopNData(api_version, team, metric, n)
+    data['team'] = team
+    return HttpResponse(json.dumps(data))
