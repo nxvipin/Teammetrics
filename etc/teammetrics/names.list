@@ -1,3 +1,4 @@
+Aaron Ucko                      :           ucko
 Achim Bohnet                    :           ach-guest
 Adam C Powell IV                :           hazelsct
 Adam Conrad                     :           adconrad
@@ -358,6 +359,7 @@ Loïc Minier                     :           lool-guest, lool
 Luca Falavigna                  :           dktrkranz
 Lucas Nussbaum                  :           lucas
 Ludovic Claude                  :           ludovicc-guest
+Luis Ibanez                     :           luisibanez-guest
 Luis Pedro Coelho               :           luispedro-guest
 Luis Rivas Vañó                 :           luinix-guest
 Luk Claes                       :           luk
@@ -375,6 +377,7 @@ Magnus Hagdorn                  :           magi-guest
 Maia Kozheva                    :           lucidfox%, Sikon
 Manoj Srivastava                :           Manoj Srivastava <Manoj Srivastava, <srivasta@debian.org(va Srivastava Manoj
 Manu Mahajan                    :           zuch-guest
+Manuel Prinz                    :           manuel
 Manuel Soukup                   :           manux-guest
 Marc 'HE' Brockschmidt          :           he-guest, he, Marc%Brockschmidt
 Marcio Roberto Teixeira         :           marciotex-guest
@@ -393,7 +396,7 @@ Martin Zobel-Helas              :           zobel
 Martin-Éric Racine              :           Martin-%ric% Racine
 Martín Ferrari                  :           tincho, tincho-guest
 Mathieu Geli                    :           matth-guest
-Mathieu Malaterre               :           malat-guest, "Mathieu Malaterre"
+Mathieu Malaterre               :           malat, malat-guest, "Mathieu Malaterre"
 Mathieu Parent                  :           mparent-guest, Mathieu PARENT, sathieu
 Matteo F. Vescovi               :           mfv%, Matteo%Vescovi
 Matthew Rosewarne               :           mukidohime-guest
@@ -467,7 +470,7 @@ Oguz Berke DURAK                :           berke-guest
 Oleksandr Moskalenko            :           malex
 Oliver Osburg                   :           oz-guest
 Olivier Langella                :           tryphon-guest
-Olivier Sallou                  :           %olivier sallou%, %sallou-guest
+Olivier Sallou                  :           osallou, %olivier sallou%, %sallou-guest
 Olivier Schwander               :           oschwand-guest
 Omar Campagne                   :           elric-guest
 Ondrej Certik                   :           certik-guest
@@ -492,7 +495,7 @@ Peter Rockai                    :           mornfall-guest
 Peter S. Galbraith              :           psg
 Peter Van Eynde                 :           pvaneynd%, Peter%Van%Eynde%
 Petter Reinholdtsen             :           pere
-Philipp Benner                  :           pbenner-guest
+Philipp Benner                  :           philipp, pbenner-guest
 Philipp Kern                    :           pkern
 Philipp Meier                   :           llucifer-guest
 Philippe Coval                  :           rzr-guest, Philippe COVAL
@@ -603,7 +606,7 @@ Thomas Koch                     :           thkoch-guest
 Thomas Lange                    :           lange
 Thomas Perl                     :           thp-guest
 Thomas Petazzoni                :           tpetazzo-guest
-Thorsten Alteholz               :           alteholz-guest
+Thorsten Alteholz               :           alteholz, alteholz-guest
 Tiago Saboga                    :           tiagosab-guest
 Tim Sutton                      :           timlinux
 Timothy Booth                   :           tbooth-guest
