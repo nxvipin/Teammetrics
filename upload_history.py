@@ -23,6 +23,7 @@ teams = {
           'pkg-common-lisp':   'pkg-common-lisp-devel@lists.alioth.debian.org'     ,
           'ocaml-maintainers': 'debian-ocaml-maint@lists.debian.org'               ,
           'pkg-games':         'pkg-games-devel@lists.alioth.debian.org'           ,
+          'pkg-exppsy':        'team@neuro.debian.net'                             ,
           'python-modules':    'python-modules-team@lists.alioth.debian.org'       ,
 #          'debian-python':     'debian-python@lists.debian.org'                    , # that's only one person
         }
