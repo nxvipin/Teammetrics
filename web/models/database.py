@@ -8,7 +8,7 @@ def connect():
     """
     try:
         conn = psycopg2.connect(database=settings.DB)
-    except psycopg2.OperationalError:
+    except psycopg2.OperationalError:   # pragma: no cover
         try:
             conn = psycopg2.connect(host=settings.HOST,
                                     port=settings.DEFAULTPORT,
