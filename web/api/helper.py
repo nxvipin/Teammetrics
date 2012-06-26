@@ -5,27 +5,6 @@ from web.api import settings
 
 logger = log.get(__name__)
 
-def identifyMetric(team, metric):
-    """
-    Identifies the metric specified in the API using the data in config file.
-    Return a list containing the metric name(s) for the team.
-    """
-    if metric == 'list':
-        return metrics.get(team,'list')
-    elif metric == 'commits':
-        return metrics.get(team,'repository')
-    elif metric == 'commitlines':
-        return metrics.get(team,'repository')
-    else:
-        logger.info('Incorrect Metric Identifier')
-        return []
-
-def version(api_version):
-    if api_version in settings.API_SUPPORTED_VERSIONS:
-        return True
-    else:
-        return False
-
 def checkKeyValueExist(dlist, key, value):
     """
     Check if a dictionary with a particular given key-value exists in a given 
