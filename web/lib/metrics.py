@@ -32,3 +32,18 @@ def get(metricname, listname):
         else:
             mlist = [name.strip() for name in mlist]
             return mlist
+
+def identify(team, metric):
+    """
+    Identifies the metric specified in the API using the data in config file.
+    Return a list containing the metric name(s) for the team.
+    """
+    if metric == 'list':
+        return get(team,'list')
+    elif metric == 'commits':
+        return get(team,'repository')
+    elif metric == 'commitlines':
+        return get(team,'repository')
+    else:
+        logger.info('Incorrect Metric Identifier')
+        return []

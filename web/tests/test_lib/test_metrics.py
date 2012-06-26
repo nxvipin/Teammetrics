@@ -28,3 +28,26 @@ class MetricsTest(unittest.TestCase):
         self.assertRaises(IOError)
         self.assertIsInstance(data,list)
         self.assertEqual(len(data),0)
+
+    def test_identify(self):
+        cdata = metrics.identify('teammetrics','list')
+        self.assertIsInstance(cdata,list)
+        self.assertTrue(len(cdata)>0)
+        self.assertIn('teammetrics-discuss', cdata)
+        
+        cdata = metrics.identify('teammetrics','commits')
+        self.assertIsInstance(cdata,list)
+        self.assertTrue(len(cdata)>0)
+        self.assertIn('teammetrics', cdata)
+        
+        idata = metrics.identify('teammetrics','RandomMetric')
+        self.assertIsInstance(idata,list)
+        self.assertEqual(len(idata), 0)
+        
+        idata = metrics.identify('RandomName','commitlines')
+        self.assertIsInstance(idata,list)
+        self.assertEqual(len(idata), 0)
+        
+        idata = metrics.identify('RandomName','RandomMetric')
+        self.assertIsInstance(idata,list)
+        self.assertEqual(len(idata), 0)
