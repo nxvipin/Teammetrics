@@ -11,8 +11,9 @@ def checkKeyValueExist(dlist, key, value):
     list of dictionaries.
     """
     for d in dlist:
-        if d[key]==value:
-            return dlist.index(d)
+        if d.has_key(key):
+            if d[key]==value:
+                return dlist.index(d)
     return -1
 
 def keyValueIndex(data, key, value):
@@ -166,11 +167,11 @@ def annualTopNCommitLines(team, repo, n):
     data['repository'] = repo
     return data
 
-def getMonthData(api_version, team, metric):
+def getMonthData(team, metric):
     """
     Returns JSON ready monthly data for a given team and metric.
     """
-    metricname = identifyMetric(team, metric)
+    metricname = metrics.identify(team, metric)
     data = {'metric' : metric}
     if metric == 'list':
         data['data'] = [monthList(team,m) for m in metricname]
@@ -180,11 +181,11 @@ def getMonthData(api_version, team, metric):
         data['data'] = [monthCommitLines(team,m) for m in metricname]
     return data
 
-def getMonthTopNData(api_version, team, metric, n):
+def getMonthTopNData(team, metric, n):
     """
     Returns JSON ready monthly top N data for a given team and metric.
     """
-    metricname = identifyMetric(team, metric)
+    metricname = metrics.identify(team, metric)
     data = {'metric' : metric}
     if metric == 'list':
         data['data'] = [monthTopNList(team,m,n) for m in metricname]
@@ -194,11 +195,11 @@ def getMonthTopNData(api_version, team, metric, n):
         data['data'] = [monthTopNCommitLines(team,m,n) for m in metricname]
     return data
 
-def getAnnualData(api_version, team, metric):
+def getAnnualData(team, metric):
     """
     Returns JSON ready monthly data for a given team and metric.
     """
-    metricname = identifyMetric(team, metric)
+    metricname = metrics.identify(team, metric)
     data = {'metric' : metric}
     if metric == 'list':
         data['data'] = [annualList(team,m) for m in metricname]
@@ -208,11 +209,11 @@ def getAnnualData(api_version, team, metric):
         data['data'] = [annualCommitLines(team,m) for m in metricname]
     return data
 
-def getAnnualTopNData(api_version, team, metric, n):
+def getAnnualTopNData(team, metric, n):
     """
     Returns JSON ready monthly top N data for a given team and metric.
     """
-    metricname = identifyMetric(team, metric)
+    metricname = metrics.identify(team, metric)
     data = {'metric' : metric}
     if metric == 'list':
         data['data'] = [annualTopNList(team,m,n) for m in metricname]
