@@ -2,7 +2,7 @@ from web.models import database
 
 cur = database.connect()
 
-def monthData(team):
+def monthData(team, startdate='epoch', enddate='now'):
     """
     Returns monthly liststat data for a given team.
     """
@@ -13,12 +13,14 @@ def monthData(team):
                        count(*)
                 FROM commitstat
                 WHERE project=%s
+                AND commit_date >= date(%s) 
+                AND commit_date <= date(%s) + interval '1 month' - interval '1 day
                 GROUP BY YEAR, MONTH
                 ORDER BY YEAR; """
-    cur.execute(sql,(team,))
+    cur.execute(sql,(team, startdate, enddate))
     return cur.fetchall()
 
-def annualData(team):
+def annualData(team, startdate='epoch', enddate='now'):
     """
     Returns monthly liststat data for a given team.
     """
@@ -27,12 +29,14 @@ def annualData(team):
                        count(*)
                 FROM commitstat
                 WHERE project=%s
+                AND commit_date >= date(%s) 
+                AND commit_date <= date(%s) + interval '1 month' - interval '1 day
                 GROUP BY YEAR
                 ORDER BY YEAR; """
-    cur.execute(sql,(team,))
+    cur.execute(sql,(team, startdate, enddate))
     return cur.fetchall()
 
-def monthTopN(team, n):
+def monthTopN(team, n, startdate='epoch', enddate='now'):
     """
     Returns monthly liststat data for Top 'N' members a given team.
     """
@@ -47,14 +51,18 @@ def monthTopN(team, n):
                     AND name IN (
                     SELECT name
                     FROM commitstat WHERE project = %s
+                    AND commit_date >= date(%s) 
+                    AND commit_date <= date(%s) + interval '1 month' - interval '1 day
                 GROUP BY name
                 ORDER BY count(*) DESC LIMIT %s)
+                AND commit_date >= date(%s) 
+                AND commit_date <= date(%s) + interval '1 month' - interval '1 day
                 GROUP BY YEAR, MONTH, name
                 ORDER BY YEAR, MONTH, COUNT DESC; """
-    cur.execute(sql,(team, team, n))
+    cur.execute(sql,(team, team, startdate, enddate, n, startdate, enddate))
     return cur.fetchall()
 
-def annualTopN(team, n):
+def annualTopN(team, n, startdate='epoch', enddate='now'):
     """
     Returns annual liststat data for Top 'N' members a given team.
     """
@@ -67,9 +75,13 @@ def annualTopN(team, n):
                     AND name IN (
                     SELECT name
                     FROM commitstat WHERE project = %s
+                    AND commit_date >= date(%s) 
+                    AND commit_date <= date(%s) + interval '1 month' - interval '1 day
                 GROUP BY name
                 ORDER BY count(*) DESC LIMIT %s)
+                AND commit_date >= date(%s) 
+                AND commit_date <= date(%s) + interval '1 month' - interval '1 day
                 GROUP BY YEAR, name
                 ORDER BY YEAR, COUNT DESC; """
-    cur.execute(sql,(team, team, n))
+    cur.execute(sql,(team, team, startdate, enddate, n, startdate, enddate))
     return cur.fetchall()
