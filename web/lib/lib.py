@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, QueryDict
 from web.api import settings
 from web.lib import log
 import json
@@ -52,3 +52,25 @@ def versionCheck(func):
             return data
     return check
 
+def dateRange(request):
+    """
+    Returns a valid date range to passed to the SQL query by analyzing the 
+    GET request.GET parameters.
+    """
+    startyear = request.GET.get('startyear', 'epoch')
+    startmonth = request.GET.get('startmonth', '01')
+    endyear = request.GET.get('endyear', 'now')
+    endmonth = request.GET.get('endmonth', '12')
+    startdate = 'epoch'
+    enddate = 'now'
+    if startyear is not 'epoch':
+        if int(startyear) in range (1970,2050):
+            if int(startmonth) in range(1,13):
+                startdate = startyear + '-' + startmonth + '-' + '01'
+    
+    if endyear is not 'now':
+        if int(endyear) in range (1970,2050):
+            if int(endmonth) in range(1,13):
+                enddate = endyear + '-' + endmonth + '-' + '01'
+    
+    return (startdate,enddate)
