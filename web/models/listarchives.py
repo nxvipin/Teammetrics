@@ -1,6 +1,8 @@
 from web.models import database
+from web.lib import log
 
 cur = database.connect()
+logger = log.get(__name__)
 
 def monthData(team, startdate='epoch', enddate='now'):
     """
@@ -92,6 +94,7 @@ def get(team, startdate='epoch', enddate='now', n=None, datascale='month'):
     """
     Unified interface to extract data from the database.
     """
+    logger.info('listarchives.get called')
     if datascale == 'month':
         if n is None:
             return monthData(team, startdate, enddate)
