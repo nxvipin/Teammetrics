@@ -85,3 +85,20 @@ def annualTopN(team, n, startdate='epoch', enddate='now'):
                 ORDER BY YEAR, COUNT DESC; """
     cur.execute(sql,(team, team, startdate, enddate, n, startdate, enddate))
     return cur.fetchall()
+
+def get(team, startdate='epoch', enddate='now', n=None, datascale='month'):
+    """
+    Unified interface to extract data from the database.
+    """
+    if datascale == 'month':
+        if n is None:
+            return monthData(team, startdate, enddate)
+        else:
+            return monthTopN(team, n, startdate, enddate)
+    elif datascale == 'annual':
+        if n is not None:
+            return annualData(team, startdate, enddate)
+        else:
+            return annualTopN(team, n, startdate, enddate)
+    else:
+        return None
