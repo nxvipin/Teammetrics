@@ -14,7 +14,7 @@ def monthData(team, startdate='epoch', enddate='now'):
                 FROM commitstat
                 WHERE project=%s
                 AND commit_date >= date(%s) 
-                AND commit_date <= date(%s) + interval '1 month' - interval '1 day
+                AND commit_date <= date(%s) + interval '1 month' - interval '1 day'
                 GROUP BY YEAR, MONTH
                 ORDER BY YEAR; """
     cur.execute(sql,(team, startdate, enddate))
@@ -30,7 +30,7 @@ def annualData(team, startdate='epoch', enddate='now'):
                 FROM commitstat
                 WHERE project=%s
                 AND commit_date >= date(%s) 
-                AND commit_date <= date(%s) + interval '1 month' - interval '1 day
+                AND commit_date <= date(%s) + interval '1 month' - interval '1 day'
                 GROUP BY YEAR
                 ORDER BY YEAR; """
     cur.execute(sql,(team, startdate, enddate))
@@ -52,11 +52,11 @@ def monthTopN(team, n, startdate='epoch', enddate='now'):
                     SELECT name
                     FROM commitstat WHERE project = %s
                     AND commit_date >= date(%s) 
-                    AND commit_date <= date(%s) + interval '1 month' - interval '1 day
+                    AND commit_date <= date(%s) + interval '1 month' - interval '1 day'
                 GROUP BY name
                 ORDER BY count(*) DESC LIMIT %s)
                 AND commit_date >= date(%s) 
-                AND commit_date <= date(%s) + interval '1 month' - interval '1 day
+                AND commit_date <= date(%s) + interval '1 month' - interval '1 day'
                 GROUP BY YEAR, MONTH, name
                 ORDER BY YEAR, MONTH, COUNT DESC; """
     cur.execute(sql,(team, team, startdate, enddate, n, startdate, enddate))
@@ -76,11 +76,11 @@ def annualTopN(team, n, startdate='epoch', enddate='now'):
                     SELECT name
                     FROM commitstat WHERE project = %s
                     AND commit_date >= date(%s) 
-                    AND commit_date <= date(%s) + interval '1 month' - interval '1 day
+                    AND commit_date <= date(%s) + interval '1 month' - interval '1 day'
                 GROUP BY name
                 ORDER BY count(*) DESC LIMIT %s)
                 AND commit_date >= date(%s) 
-                AND commit_date <= date(%s) + interval '1 month' - interval '1 day
+                AND commit_date <= date(%s) + interval '1 month' - interval '1 day'
                 GROUP BY YEAR, name
                 ORDER BY YEAR, COUNT DESC; """
     cur.execute(sql,(team, team, startdate, enddate, n, startdate, enddate))
