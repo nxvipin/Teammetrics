@@ -33,15 +33,15 @@ def keyValueIndex(data, key, value):
 def processMonthData(dbdata, metriclist):
     data = {'annualdata' : []}
     for i in dbdata:
-        d = keyValueIndex(data['annualdata'],'year',int(float(i[0])))
+        d = keyValueIndex(data['annualdata'],'year',i[0])
         if not data['annualdata'][d].has_key('monthlydata'):
             data['annualdata'][d]['monthlydata']=[]
             
         metricdata={}
-        metricdata['month'] = int(float(i[1]))
-        metricdata[metriclist[0]] = int(float(i[2]))
+        metricdata['month'] = i[1]
+        metricdata[metriclist[0]] = i[2]
         try:
-            metricdata[metriclist[1]] = int(float(i[3]))
+            metricdata[metriclist[1]] = i[3]
         except IndexError:
             pass
         data['annualdata'][d]['monthlydata'].append(metricdata)
@@ -50,17 +50,17 @@ def processMonthData(dbdata, metriclist):
 def processMonthTopNData(dbdata, metriclist):
     data = {'annualdata' : []}
     for i in dbdata:
-        d = keyValueIndex(data['annualdata'],'year',int(float(i[0])))
+        d = keyValueIndex(data['annualdata'],'year',i[0])
         if not data['annualdata'][d].has_key('monthlydata'):
             data['annualdata'][d]['monthlydata']=[]
-        u = keyValueIndex(data['annualdata'][d]['monthlydata'],'month',int(float(i[1])))
+        u = keyValueIndex(data['annualdata'][d]['monthlydata'],'month',i[1])
         if not data['annualdata'][d]['monthlydata'][u].has_key('userdata'):
             data['annualdata'][d]['monthlydata'][u]['userdata']=[]
         userdata = {}
         userdata['name'] = i[2]
-        userdata[metriclist[0]] = int(float(i[3]))
+        userdata[metriclist[0]] = i[3]
         try:
-            userdata[metriclist[1]] = int(float(i[4]))
+            userdata[metriclist[1]] = i[4]
         except IndexError:
             pass
         data['annualdata'][d]['monthlydata'][u]['userdata'].append(userdata)
@@ -70,10 +70,10 @@ def processAnnualData(dbdata, metriclist):
     data = {'annualdata' : []}
     for i in dbdata:
         metricdata = {}
-        metricdata['year'] = int(float(i[0]))
-        metricdata[metriclist[0]] = int(float(i[1]))
+        metricdata['year'] = i[0]
+        metricdata[metriclist[0]] = i[1]
         try:
-            metricdata[metriclist[1]] = int(float(i[2]))
+            metricdata[metriclist[1]] = i[2]
         except IndexError:
             pass
         data['annualdata'].append(metricdata)
@@ -82,14 +82,14 @@ def processAnnualData(dbdata, metriclist):
 def processAnnualTopNData(dbdata, metriclist):
     data = {'annualdata' : []}
     for i in dbdata:
-        d = keyValueIndex(data['annualdata'], 'year', int(float(i[0])))
+        d = keyValueIndex(data['annualdata'], 'year', i[0])
         if not data['annualdata'][d].has_key('userdata'):
             data['annualdata'][d]['userdata'] = []
         userdata = {}
         userdata['name'] = i[1]
-        userdata[metriclist[0]] = int(float(i[2]))
+        userdata[metriclist[0]] = i[2]
         try:
-            userdata[metriclist[1]] = int(float(i[3]))
+            userdata[metriclist[1]] = i[3]
         except IndexError:
             pass
         data['annualdata'][d]['userdata'].append(userdata)
