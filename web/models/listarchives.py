@@ -97,13 +97,17 @@ def get(team, startdate='epoch', enddate='now', n=None, datascale='month'):
     logger.info('listarchives.get called')
     if datascale == 'month':
         if n is None:
+            logger.info('month')
             return monthData(team, startdate, enddate)
         else:
+            logger.info('month n')
             return monthTopN(team, n, startdate, enddate)
     elif datascale == 'annual':
-        if n is not None:
+        if n is None:
+            logger.info('annual')
             return annualData(team, startdate, enddate)
         else:
+            logger.info('annual n')
             return annualTopN(team, n, startdate, enddate)
     else:
         return None
