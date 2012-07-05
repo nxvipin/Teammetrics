@@ -117,59 +117,15 @@ def Commitlines(team, n=None, datascale='month'):
     data['repository'] = team
     return data
 
-
-def getMonthData(team, metric):
-    """
-    Returns JSON ready monthly data for a given team and metric.
-    """
+def getData(team, metric, n, datascale):
+    logger.info('getData called')
     metricname = metrics.identify(team, metric)
     data = {'metric' : metric}
     if metric == 'list':
-        data['data'] = [List(m, datascale='month') for m in metricname]
+        data['data'] = [List(team=m, n=n, datascale=datascale) for m in metricname]
     elif metric == 'commits':
-        data['data'] = [Commits(m, datascale='month') for m in metricname]
+        data['data'] = [Commits(team=m, n=n, datascale=datascale) for m in metricname]
     elif metric == 'commitlines':
-        data['data'] = [Commitlines(m, datascale='month') for m in metricname]
+        data['data'] = [Commitlines(team=m, n=n, datascale=datascale) for m in metricname]
     return data
 
-def getMonthTopNData(team, metric, n):
-    """
-    Returns JSON ready monthly top N data for a given team and metric.
-    """
-    metricname = metrics.identify(team, metric)
-    data = {'metric' : metric}
-    if metric == 'list':
-        data['data'] = [List(m,n=n,datascale='month') for m in metricname]
-    elif metric == 'commits':
-        data['data'] = [Commits(m,n=n,datascale='month') for m in metricname]
-    elif metric == 'commitlines':
-        data['data'] = [Commitlines(m,n=n,datascale='month') for m in metricname]
-    return data
-
-def getAnnualData(team, metric):
-    """
-    Returns JSON ready monthly data for a given team and metric.
-    """
-    metricname = metrics.identify(team, metric)
-    data = {'metric' : metric}
-    if metric == 'list':
-        data['data'] = [List(m,n=None,datascale='annual') for m in metricname]
-    elif metric == 'commits':
-        data['data'] = [Commits(m,n=None,datascale='annual') for m in metricname]
-    elif metric == 'commitlines':
-        data['data'] = [Commitlines(m,n=None,datascale='annual') for m in metricname]
-    return data
-
-def getAnnualTopNData(team, metric, n):
-    """
-    Returns JSON ready monthly top N data for a given team and metric.
-    """
-    metricname = metrics.identify(team, metric)
-    data = {'metric' : metric}
-    if metric == 'list':
-        data['data'] = [List(m,n=n, datascale='annual') for m in metricname]
-    elif metric == 'commits':
-        data['data'] = [Commits(m,n=n, datascale='annual') for m in metricname]
-    elif metric == 'commitlines':
-        data['data'] = [Commitlines(m,n=n, datascale='annual') for m in metricname]
-    return data
