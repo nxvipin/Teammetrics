@@ -9,7 +9,7 @@ logger = log.get(__name__)
 @lib.jsonify
 @lib.versionCheck
 def month(request, api_version, team, metric):
-    data = helper.getMonthData(team, metric)
+    data = helper.getData(team, metric, n=None, datascale='month')
     data['team'] = team
     return data
 
@@ -20,9 +20,9 @@ def monthAll(request, api_version, team):
     data = {}
     data['team'] = team
     data['data'] = []
-    data['data'].append(helper.getMonthData(team, 'list'))
-    data['data'].append(helper.getMonthData(team, 'commits'))
-    data['data'].append(helper.getMonthData(team, 'commitlines'))
+    data['data'].append(helper.getData(team, 'list', n=None, datascale='month'))
+    data['data'].append(helper.getData(team, 'commits', n=None, datascale='month'))
+    data['data'].append(helper.getData(team, 'commitlines', n=None, datascale='month'))
     return data
 
 @lib.respond('JSON')
@@ -32,7 +32,7 @@ def monthTopN(request, api_version, team, metric, n):
     """
     Returns monthly data for top N members.
     """
-    data = helper.getMonthTopNData(team, metric, n)
+    data = helper.getData(team, metric, n=n, datascale='month')
     data['team'] = team
     return data
 
@@ -40,7 +40,7 @@ def monthTopN(request, api_version, team, metric, n):
 @lib.jsonify
 @lib.versionCheck
 def annual(request, api_version, team, metric):
-    data = helper.getAnnualData(team, metric)
+    data = helper.getData(team, metric, n=None, datascale='annual')
     data['team'] = team
     return data
 
@@ -51,9 +51,9 @@ def annualAll(request, api_version, team):
     data = {}
     data['team'] = team
     data['data'] = []
-    data['data'].append(helper.getAnnualData(team, 'list'))
-    data['data'].append(helper.getAnnualData(team, 'commits'))
-    data['data'].append(helper.getAnnualData(team, 'commitlines'))
+    data['data'].append(helper.getData(team, 'list', n=None, datascale='annual'))
+    data['data'].append(helper.getData(team, 'commits', n=None, datascale='annual'))
+    data['data'].append(helper.getData(team, 'commitlines', n=None, datascale='annual'))
     return data
 
 @lib.respond('JSON')
@@ -63,6 +63,6 @@ def annualTopN(request, api_version, team, metric, n):
     """
     Returns monthly data for top N members.
     """
-    data = helper.getAnnualTopNData(team, metric, n)
+    data = helper.getAnnualTopNData(team, metric, n=n, datascale='annual')
     data['team'] = team
     return data
