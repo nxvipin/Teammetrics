@@ -47,3 +47,19 @@ def identify(team, metric):
     else:
         logger.info('Incorrect Metric Identifier')
         return []
+
+def name(metric):
+    """
+    Returns the metric name as used in the server.
+    """
+    print metric
+    if metric == 'list':
+        return 'authorstat'
+    elif metric == 'commits':
+        return 'commitstat'
+    elif metric == 'bugs':
+        return 'bugs'
+    elif metric == 'uploaders':
+        return uploaders
+    else:
+        return ''
