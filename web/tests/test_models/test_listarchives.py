@@ -4,21 +4,23 @@ import unittest
 class ListArchivesTest(unittest.TestCase):
     def setUp(self):
         #Correct Monthly Data
-        self.cmdata = listarchives.monthData('teammetrics-discuss')
+        self.cmdata = listarchives.get(team='teammetrics-discuss', n=None, datascale='month')
         #Correct Monthly Data for Top 'N' Contributors
-        self.cmdataN = listarchives.monthTopN('teammetrics-discuss', 5)
+        self.cmdataN = listarchives.get(team='teammetrics-discuss', n=5, datascale='month')
         #Correct Annual Data
-        self.cadata = listarchives.annualData('teammetrics-discuss')
+        self.cadata = listarchives.get(team='teammetrics-discuss', n=None, datascale='annual')
         #Correct Annual Data for Top 'N' Contributors
-        self.cadataN = listarchives.annualTopN('teammetrics-discuss', 5)
+        self.cadataN = listarchives.get(team='teammetrics-discuss', n=5, datascale='annual')
         #Incorrect Monthly Data
-        self.imdata = listarchives.monthData('SomeRandomNameNotInDatabase')
+        self.imdata = listarchives.get(team='RandomName', n=None, datascale='month')
         #Incorrect Monthly Data for Top 'N' Contributors
-        self.imdataN = listarchives.monthTopN('SomeRandomNameNotInDatabase', 5)
+        self.imdataN = listarchives.get(team='RandomName', n=5, datascale='month')
         #Incorrect Annual Data
-        self.iadata = listarchives.annualData('SomeRandomNameNotInDatabase')
+        self.iadata = listarchives.get(team='RandomName', n=None, datascale='annual')
         #Incorrect Annual Data for Top 'N' Contributors
-        self.iadataN = listarchives.annualTopN('SomeRandomNameNotInDatabase', 5)
+        self.iadataN = listarchives.get(team='RandomName', n=5, datascale='annual')
+        #Incorrect datascale
+        self.ids = listarchives.get(team='teammetrics-discuss', n=None, datascale='WrongScale')
 
     def test_correctMonthData(self):
         self.assertEqual(type(self.cmdata),list)
@@ -53,4 +55,10 @@ class ListArchivesTest(unittest.TestCase):
         self.assertEqual(len(self.iadata),0)
         self.assertEqual(type(self.iadataN),list)
         self.assertEqual(len(self.iadataN),0)
+        self.assertEqual(self.ids,None)
 
+    def test_getTopN(self):
+        data = listarchives.getTopN('teammetrics-discuss')
+        self.assertIsInstance(data,list)
+        self.assertTrue(len(data)>0)
+        self.assertIsInstance(data[0],tuple)

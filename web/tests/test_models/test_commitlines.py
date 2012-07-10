@@ -4,21 +4,23 @@ import unittest
 class CommitLinesTest(unittest.TestCase):
     def setUp(self):
         #Correct Monthly Data
-        self.cmdata = commitlines.monthData('teammetrics')
+        self.cmdata = commitlines.get(team='teammetrics', n=None, datascale='month')
         #Correct Monthly Data for Top 'N' Contributors
-        self.cmdataN = commitlines.monthTopN('teammetrics', 5)
+        self.cmdataN = commitlines.get(team='teammetrics', n=5, datascale='month')
         #Correct Annual Data
-        self.cadata = commitlines.annualData('teammetrics')
+        self.cadata = commitlines.get(team='teammetrics', n=None, datascale='annual')
         #Correct Annual Data for Top 'N' Contributors
-        self.cadataN = commitlines.annualTopN('teammetrics', 5)
+        self.cadataN = commitlines.get(team='teammetrics', n=5, datascale='annual')
         #Incorrect Monthly Data
-        self.imdata = commitlines.monthData('SomeRandomNameNotInDatabase')
+        self.imdata = commitlines.get(team='RandomName', n=None, datascale='month')
         #Incorrect Monthly Data for Top 'N' Contributors
-        self.imdataN = commitlines.monthTopN('SomeRandomNameNotInDatabase', 5)
+        self.imdataN = commitlines.get(team='RandomName', n=5, datascale='month')
         #Incorrect Annual Data
-        self.iadata = commitlines.annualData('SomeRandomNameNotInDatabase')
+        self.iadata = commitlines.get(team='RandomName', n=None, datascale='annual')
         #Incorrect Annual Data for Top 'N' Contributors
-        self.iadataN = commitlines.annualTopN('SomeRandomNameNotInDatabase', 5)
+        self.iadataN = commitlines.get(team='RandomName', n=5, datascale='annual')
+        #Incorrect datascale
+        self.ids = commitlines.get(team='teammetrics', n=None, datascale='WrongScale')
 
     def test_correctMonthData(self):
         self.assertEqual(type(self.cmdata),list)
@@ -53,4 +55,11 @@ class CommitLinesTest(unittest.TestCase):
         self.assertEqual(len(self.iadata),0)
         self.assertEqual(type(self.iadataN),list)
         self.assertEqual(len(self.iadataN),0)
+        self.assertEqual(self.ids,None)
+
+    def test_getTopN(self):
+        data = commitlines.getTopN('teammetrics')
+        self.assertIsInstance(data,list)
+        self.assertTrue(len(data)>0)
+        self.assertIsInstance(data[0],tuple)
 

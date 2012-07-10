@@ -4,21 +4,23 @@ import unittest
 class CommitStatTest(unittest.TestCase):
     def setUp(self):
         #Correct Monthly Data
-        self.cmdata = commitstat.monthData('teammetrics')
+        self.cmdata = commitstat.get(team='teammetrics', n=None, datascale='month')
         #Correct Monthly Data for Top 'N' Contributors
-        self.cmdataN = commitstat.monthTopN('teammetrics', 5)
+        self.cmdataN = commitstat.get(team='teammetrics', n=5, datascale='month')
         #Correct Annual Data
-        self.cadata = commitstat.annualData('teammetrics')
+        self.cadata = commitstat.get(team='teammetrics', n=None, datascale='annual')
         #Correct Annual Data for Top 'N' Contributors
-        self.cadataN = commitstat.annualTopN('teammetrics', 5)
+        self.cadataN = commitstat.get(team='teammetrics', n=5, datascale='annual')
         #Incorrect Monthly Data
-        self.imdata = commitstat.monthData('SomeRandomNameNotInDatabase')
+        self.imdata = commitstat.get(team='RandomName', n=None, datascale='month')
         #Incorrect Monthly Data for Top 'N' Contributors
-        self.imdataN = commitstat.monthTopN('SomeRandomNameNotInDatabase', 5)
+        self.imdataN = commitstat.get(team='RandomName', n=5, datascale='month')
         #Incorrect Annual Data
-        self.iadata = commitstat.annualData('SomeRandomNameNotInDatabase')
+        self.iadata = commitstat.get(team='RandomName', n=None, datascale='annual')
         #Incorrect Annual Data for Top 'N' Contributors
-        self.iadataN = commitstat.annualTopN('SomeRandomNameNotInDatabase', 5)
+        self.iadataN = commitstat.get(team='RandomName', n=5, datascale='annual')
+        #Incorrect datascale
+        self.ids = commitstat.get(team='teammetrics', n=None, datascale='WrongScale')
 
     def test_correctMonthData(self):
         self.assertEqual(type(self.cmdata),list)
@@ -53,4 +55,11 @@ class CommitStatTest(unittest.TestCase):
         self.assertEqual(len(self.iadata),0)
         self.assertEqual(type(self.iadataN),list)
         self.assertEqual(len(self.iadataN),0)
+        self.assertEqual(self.ids,None)
+
+    def test_getTopN(self):
+        data = commitstat.getTopN('teammetrics')
+        self.assertIsInstance(data,list)
+        self.assertTrue(len(data)>0)
+        self.assertIsInstance(data[0],tuple)
 
