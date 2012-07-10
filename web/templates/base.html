@@ -49,15 +49,15 @@
               </a>
           </div>
           <div class="span6" style="position:absolute;right:0px;">
-            <form class="form-inline" style="Padding-top:3px;">
-                    <select>
-                        <option value="teammetrics">teammetrics</option>
-                        <option value="teammetrics">teammetrics</option>
+            <form class="form-inline" style="Padding-top:3px;" action="/getdata">
+                    <select name="team">
+                        <option value="teammetrics">Teammetrics</option>
+                        <option value="teammetrics">Teammetrics</option>
                   </select>
-                  <select>
-                        <option value="teammetrics">Mailing List</option>
-                        <option value="teammetrics">Commits</option>
-                        <option value="teammetrics">Commit Lines</option>
+                  <select name="metric">
+                        <option value="list">Mailing List</option>
+                        <option value="commits">Commits</option>
+                        <option value="commitlines">Commit Lines</option>
                   </select>
                   <input class="btn" type="submit" value="Go">
                 </form>
@@ -74,8 +74,8 @@
             </div>
             <div class="span4">
                 
-                <h1 style="font-family: 'PT Sans Narrow', sans-serif; color:#333;">{{teamname|capfirst}} Team</h1><br/>
-                <p>Upload statistics for {{teamname|capfirst}} team.</p>
+                <h1 style="font-family: 'PT Sans Narrow', sans-serif; color:#333;">{{team|capfirst}} Team</h1><br/>
+                <p>{{metric|capfirst}} statistics for {{team|capfirst}}.</p>
                 <table class="table">
                     <thead>
                         <tr><th>#</th><th>Person</th><th>Stats</th></tr>
