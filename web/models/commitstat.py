@@ -110,7 +110,7 @@ def get(team, startdate='epoch', enddate='now', n=None, datascale='month'):
     else:
         return None
 
-def getTopN(team, startdate='epoch', enddate='now', n=10)
+def getTopN(team, startdate='epoch', enddate='now', n=10):
     """
     Returns a list of Top N members of a team.
     """
@@ -120,5 +120,5 @@ def getTopN(team, startdate='epoch', enddate='now', n=10)
                     AND commit_date <= date(%s) + interval '1 month' - interval '1 day'
                 GROUP BY name
                 ORDER BY count(*) DESC LIMIT %s"""
-    cur.execute(sql,(team,startdate,enddate,n)
+    cur.execute(sql,(team,startdate,enddate,n))
     return cur.fetchall()
