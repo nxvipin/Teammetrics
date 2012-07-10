@@ -22,6 +22,8 @@ def teamdata(request, team, metric):
     namelist = helper.getTopNNames(teamname[0], metric)
     t = loader.get_template('base.html')
     c = Context({
+        'metric': metric,
+        'team': team,
         'metricname': metricname,
         'teamname': teamname[0],
         'namelist': namelist
