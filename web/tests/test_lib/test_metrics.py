@@ -51,3 +51,15 @@ class MetricsTest(unittest.TestCase):
         idata = metrics.identify('RandomName','RandomMetric')
         self.assertIsInstance(idata,list)
         self.assertEqual(len(idata), 0)
+
+    def test_name(self):
+        x = metrics.name('list')
+        self.assertEqual(x,'authorstat')
+        x = metrics.name('commits')
+        self.assertEqual(x,'commitstat')
+        x = metrics.name('bugs')
+        self.assertEqual(x,'bugs')
+        x = metrics.name('uploaders')
+        self.assertEqual(x,'uploaders')
+        x = metrics.name('WrongMetric')
+        self.assertEqual(x,'')
