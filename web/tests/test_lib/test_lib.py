@@ -1,14 +1,16 @@
+import os
+os.environ['DJANGO_SETTINGS_MODULE'] = 'web.settings'
+
 from django.http import HttpResponse
+from django.test.client import RequestFactory
 from web.api import settings
 from web.lib import lib
 import unittest
-import os
+
 
 class LibTest(unittest.TestCase):
 
     def setUp(self):
-        
-        os.environ['DJANGO_SETTINGS_MODULE'] = 'web.settings'
         
         def jsontest():
             @lib.jsonify
@@ -71,3 +73,19 @@ class LibTest(unittest.TestCase):
         self.assertIsInstance(res, HttpResponse)
         self.assertTrue(res.status_code,200)
         self.assertTrue(res.get('Content-Type').startswith('application/json'))
+
+    def test_dateRange(self):
+        factory = RequestFactory()
+        request = factory.get('/?startyear=2012&startmonth=01&endyear=2014&endmonth=12')
+        x = lib.dateRange(request)
+        self.assertIsInstance(x,tuple)
+        self.assertEqual(len(x),2)
+        self.assertEqual(x[0],'2012-01-01')
+        self.assertEqual(x[1],'2014-12-01')
+        
+        request = factory.get('/')
+        x = lib.dateRange(request)
+        self.assertIsInstance(x,tuple)
+        self.assertEqual(len(x),2)
+        self.assertEqual(x[0],'epoch')
+        self.assertEqual(x[1],'now')
