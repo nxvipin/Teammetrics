@@ -117,7 +117,7 @@ def Commitlines(team, n=None, datascale='month'):
     data['repository'] = team
     return data
 
-def getData(team, metric, n, datascale):
+def getData(team, metric, n=None, datascale='month'):
     logger.info('getData called')
     metricname = metrics.identify(team, metric)
     data = {'metric' : metric}
