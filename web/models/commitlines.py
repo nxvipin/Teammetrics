@@ -123,3 +123,19 @@ def get(team, startdate='epoch', enddate='now', n=None, datascale='month'):
             return annualTopN(team, n, startdate, enddate)
     else:
         return None
+
+def getTopN(team, startdate='epoch', enddate='now', n=10)
+    """
+    Returns a list of Top N members of a team.
+    """
+    sql = """   SELECT name, sum(lines_inserted), sum(lines_deleted)
+                     FROM commitstat
+                     WHERE project = %s
+                       AND lines_inserted IS NOT NULL
+                       AND lines_deleted IS NOT NULL
+                       AND commit_date >= date(%s) 
+                       AND commit_date <= date(%s) + interval '1 month' - interval '1 day'
+                     GROUP BY name
+                     ORDER BY sum(lines_inserted)+sum(lines_deleted) DESC LIMIT %s"""
+    cur.execute(sql,(team,startdate,enddate,n)
+    return cur.fetchall()
