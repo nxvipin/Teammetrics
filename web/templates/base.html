@@ -81,17 +81,9 @@
                         <tr><th>#</th><th>Person</th><th>Stats</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td>1</td><td>Gregor H</td><td>2611</td></tr>
-                        <tr><td>2</td><td>Jonathan Y</td><td>1111</td></tr>
-                        <tr><td>3</td><td>Ansgar B</td><td>884</td></tr>
-                        <tr><td>4</td><td>Salvatore B</td><td>768</td></tr>
-                        <tr><td>5</td><td>Krzysztof K</td><td>720</td></tr>
-                        <tr><td>6</td><td>Damyan I</td><td>590</td></tr>
-                        <tr><td>7</td><td>Jonas S</td><td>482</td></tr>
-                        <tr><td>8</td><td>Gunnar W</td><td>426</td></tr>
-                        <tr><td>9</td><td>Ardo Van R</td><td>425</td></tr>
-                        <tr><td>10</td><td>Nicholas B</td><td>382</td></tr>
-                        
+                    {% for name in namelist %}
+                        <tr><td>{{forloop.counter}}</td><td>{{name.0}}</td><td>{{name.1}}</td></tr>
+                    {% endfor %}
                     </tbody>
                 </table>
             </div>
