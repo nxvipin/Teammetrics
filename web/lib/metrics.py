@@ -60,6 +60,6 @@ def name(metric):
     elif metric == 'bugs':
         return 'bugs'
     elif metric == 'uploaders':
-        return uploaders
+        return 'uploaders'
     else:
         return ''
