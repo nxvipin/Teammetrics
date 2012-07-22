@@ -63,6 +63,6 @@ def annualTopN(request, api_version, team, metric, n):
     """
     Returns monthly data for top N members.
     """
-    data = helper.getAnnualTopNData(team, metric, n=n, datascale='annual')
+    data = helper.getData(team, metric, n=n, datascale='annual')
     data['team'] = team
     return data
