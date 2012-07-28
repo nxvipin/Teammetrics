@@ -1,4 +1,4 @@
-from web.models import listarchives, commitstat, commitlines
+from web.models import listarchives, commitstat, commitlines, uploadstats
 from web.lib import metrics
 from web.lib import metrics, log
 from web.api import settings
@@ -32,6 +32,7 @@ def keyValueIndex(data, key, value):
 
 def processData(dbdata, metriclist, n=None, datascale='month'):
     logger.info('helper.processData ')
+    members = set()
     if datascale == 'month':
         if n is None:
             data = {'annualdata' : []}
@@ -60,12 +61,14 @@ def processData(dbdata, metriclist, n=None, datascale='month'):
                     data['annualdata'][d]['monthlydata'][u]['userdata']=[]
                 userdata = {}
                 userdata['name'] = i[2]
+                members.add(i[2])
                 userdata[metriclist[0]] = i[3]
                 try:
                     userdata[metriclist[1]] = i[4]
                 except IndexError:
                     pass
                 data['annualdata'][d]['monthlydata'][u]['userdata'].append(userdata)
+                data['members'] = list(members)
             return data
     elif datascale == 'annual':
         if n is None:
@@ -88,12 +91,14 @@ def processData(dbdata, metriclist, n=None, datascale='month'):
                     data['annualdata'][d]['userdata'] = []
                 userdata = {}
                 userdata['name'] = i[1]
+                members.add(i[1])
                 userdata[metriclist[0]] = i[2]
                 try:
                     userdata[metriclist[1]] = i[3]
                 except IndexError:
                     pass
                 data['annualdata'][d]['userdata'].append(userdata)
+                data['members'] = list(members)
             return data
 
 def List(team, n=None, datascale='month'):
@@ -117,6 +122,13 @@ def Commitlines(team, n=None, datascale='month'):
     data['repository'] = team
     return data
 
+def Uploadstats(team, n=None, datascale='month'):
+    logger.info('Uploadstats called')
+    dbdata=uploadstats.get(team=team, n=n, datascale=datascale)
+    data = processData(dbdata, ['uploads'], n=n, datascale=datascale)
+    data['repository'] = team
+    return data
+
 def getData(team, metric, n=None, datascale='month'):
     logger.info('getData called')
     metricname = metrics.identify(team, metric)
@@ -127,5 +139,7 @@ def getData(team, metric, n=None, datascale='month'):
         data['data'] = [Commits(team=m, n=n, datascale=datascale) for m in metricname]
     elif metric == 'commitlines':
         data['data'] = [Commitlines(team=m, n=n, datascale=datascale) for m in metricname]
+    elif metric == 'uploads':
+        data['data'] = [Uploadstats(team=m, n=n, datascale=datascale) for m in metricname]
     return data
 
