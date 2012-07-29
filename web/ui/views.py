@@ -20,6 +20,9 @@ def teamdata(request, team, metric):
     teamname = metrics.identify(team,metric)
     metricname = metrics.name(metric)
     namelist = helper.getTopNNames(teamname[0], metric)
+    if metric == 'uploads':
+        teamname = metrics.identify(team,'uploadsname')
+        print metrics.identify(team,'uploadsname')
     t = loader.get_template('base.html')
     c = Context({
         'metric': metric,
