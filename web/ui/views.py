@@ -32,3 +32,20 @@ def teamdata(request, team, metric):
         'namelist': namelist
     })
     return HttpResponse(t.render(c))
+
+def teamdatajs(request, team, metric):
+    teamname = metrics.identify(team,metric)
+    metricname = metrics.name(metric)
+    namelist = helper.getTopNNames(teamname[0], metric)
+    if metric == 'uploads':
+        teamname = metrics.identify(team,'uploadsname')
+        print metrics.identify(team,'uploadsname')
+    t = loader.get_template('js.html')
+    c = Context({
+        'metric': metric,
+        'team': team,
+        'metricname': metricname,
+        'teamname': teamname[0],
+        'namelist': namelist
+    })
+    return HttpResponse(t.render(c))
