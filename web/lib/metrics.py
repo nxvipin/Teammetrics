@@ -44,6 +44,10 @@ def identify(team, metric):
         return get(team,'repository')
     elif metric == 'commitlines':
         return get(team,'repository')
+    elif metric == 'uploads':
+        return get(team,'uploads')
+    elif metric == 'uploadsname':
+        return get(team,'uploadsname')
     else:
         logger.info('Incorrect Metric Identifier')
         return []
@@ -59,7 +63,7 @@ def name(metric):
         return 'commitstat'
     elif metric == 'bugs':
         return 'bugs'
-    elif metric == 'uploaders':
+    elif metric == 'uploads':
         return 'uploaders'
     else:
         return ''
