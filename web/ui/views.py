@@ -23,6 +23,9 @@ def teamdata(request, team, metric):
     if metric == 'uploads':
         teamname = metrics.identify(team,'uploadsname')
         print metrics.identify(team,'uploadsname')
+    elif metric == 'bugs':
+        teamname = metrics.identify(team,'bugsname')
+        print metrics.identify(team,'bugssname')
     t = loader.get_template('base.html')
     c = Context({
         'metric': metric,

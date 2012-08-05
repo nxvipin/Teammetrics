@@ -1,4 +1,4 @@
-from web.models import listarchives, commitstat, commitlines, uploadstats
+from web.models import listarchives, commitstat, commitlines, uploadstats, bugstats
 
 def getTopNNames(team, metric, n=10):
     if metric == 'list':
@@ -9,5 +9,7 @@ def getTopNNames(team, metric, n=10):
         return commitlines.getTopN(team)
     elif metric == 'uploads':
         return uploadstats.getTopN(team)
+    elif metric == 'bugs':
+        return bugstats.getTopN(team)
     else:
         return []
