@@ -48,6 +48,10 @@ def identify(team, metric):
         return get(team,'uploads')
     elif metric == 'uploadsname':
         return get(team,'uploadsname')
+    elif metric == 'bugs':
+        return get(team,'bugs')
+    elif metric == 'bugsname':
+        return get(team,'bugsname')
     else:
         logger.info('Incorrect Metric Identifier')
         return []
