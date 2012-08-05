@@ -1,4 +1,4 @@
-from web.models import listarchives, commitstat, commitlines, uploadstats
+from web.models import listarchives, commitstat, commitlines, uploadstats, bugstats
 from web.lib import metrics
 from web.lib import metrics, log
 from web.api import settings
@@ -129,6 +129,13 @@ def Uploadstats(team, n=None, datascale='month'):
     data['repository'] = team
     return data
 
+def Bugstats(team, n=None, datascale='month'):
+    logger.info('Bugstats called')
+    dbdata=bugstats.get(team=team, n=n, datascale=datascale)
+    data = processData(dbdata, ['bugs_closed'], n=n, datascale=datascale)
+    data['repository'] = team
+    return data
+
 def getData(team, metric, n=None, datascale='month'):
     logger.info('getData called')
     metricname = metrics.identify(team, metric)
@@ -141,5 +148,7 @@ def getData(team, metric, n=None, datascale='month'):
         data['data'] = [Commitlines(team=m, n=n, datascale=datascale) for m in metricname]
     elif metric == 'uploads':
         data['data'] = [Uploadstats(team=m, n=n, datascale=datascale) for m in metricname]
+    elif metric == 'bugs':
+        data['data'] = [Bugstats(team=m, n=n, datascale=datascale) for m in metricname]
     return data
 
