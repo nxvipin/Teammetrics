@@ -37,7 +37,7 @@ CONF_FILE_PATH = os.path.join('/etc/teammetrics', CONF_FILE)
 
 SERVER = 'vasks.debian.org'
 USER_CMD = False
-USER = ''
+USER = 'sukhbir-guest'
 
 SSH_CONFIG = os.path.join(os.path.expanduser('~'), '.ssh', 'config')
 
