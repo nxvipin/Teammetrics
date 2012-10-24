@@ -1,0 +1,530 @@
+#!/usr/bin/perl
+# this was the original perl script which was used to create the statistics
+# it is kept here for historical reasons
+#
+# It needs the file blends-commit_old.dat.gz and so this is kept here as well
+
+use strict;
+use warnings;
+use LWP::UserAgent;
+use URI;
+use Cwd;
+use DBI;
+
+# on dedibox PostgreSQL is running on port 5441 to test UDD
+my $port=5441;
+# my $port=5432;
+
+my $BASEURL  = "http://lists.debian.org/debian" ;
+my @PROJECTS = (
+		'accessibility' ,
+                'amd64',
+                'arm',
+                'blends', 'custom', # Keep both, they are turned into 'blends' both!
+                'boot',
+                'ctte',
+                'curiosa',
+		'derivatives',
+		'desktop',
+                'devel',
+                'devel-announce',
+                'devel-games',
+		'edu',
+    		'embedded',
+		'enterprise',
+                'firewall',
+                'gis',
+                'i18n',
+                'isp',
+		'jr',
+                'kde',
+                'kernel',
+                'l10n-german',
+                'laptop',
+                'legal',
+		'lex',
+        	'live',
+		'med', 
+                'mentors',
+    		'mips',
+                'multimedia',
+                'newmaint',
+                'ocaml-maint',
+                'openoffice',
+                'perl',
+                'policy',
+                'project',
+                'python',
+                'qa',
+                'release',
+    		'russian',
+                'science',
+                'security',
+                'testing',
+                'user',
+                'user-french',
+                'user-german',
+                'user-portuguese',
+		'user-spanish',
+                'vote',
+    		'women',
+                'www',
+		'x',
+) ;
+# List closed                'nonprofit' ) ; 
+
+# news* lists have a yearly and no monthly structure and thus do
+# not work with this script
+# @PROJECTS = ( ) ;
+
+# Well, there is also interest in alioth lists ...
+my $BASEALIOTH = 'http://lists.alioth.debian.org/pipermail/';
+my @ALIOTHPRJ  = ('blends-commit',
+                  'debian-med-commit',
+                  'debian-med-packaging',
+                  'debian-science-commits',
+                  'debian-science-maintainers',
+                  'debichem-commits',
+                  'debichem-devel',
+                  'debtags-devel',
+                  'pkg-grass-devel',
+                  'pkg-java-maintainers',
+                  'pkg-multimedia-commits',
+                  'pkg-multimedia-maintainers',
+                  'pkg-samba-maint',
+                  'pkg-scicomp-commits',
+                  'pkg-scicomp-devel',
+                  'pkg-games-devel',
+                  'pkg-games-commits',
+ ) ;
+#                  'pkg-grass-general',
+
+# @ALIOTHPRJ = (  ) ;
+
+## http://lists.alioth.debian.org/pipermail/debichem-devel/2008-August/thread.html
+## http://lists.alioth.debian.org/pipermail/pkg-grass-general/2008-July/thread.html
+
+my %monthdict= ('01' => 'January',
+                '02' => 'February',
+                '03' => 'March',
+                '04' => 'April',
+		'05' => 'May',
+		'06' => 'June',
+		'07' => 'July',
+		'08' => 'August',
+		'09' => 'September',
+		'10' => 'October',
+		'11' => 'November',
+		'12' => 'December');
+
+my @MONTHES  = ('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12');
+my @ROBOTS   = ('Debian Installer', 'bugzilla-skolelinux', 'Archive Administrator', 'hostmaster',
+                'Debian-med-request', 'Debian testing watch', 'Debian Bug Tracking System',
+                'Skolelinux archive Installer', 'Debian Wiki', 'gentoo-\w+\+help',
+                'Debichem-commits', 'Weekly infolist of updatable packages for the debichem project',
+                'bts-link-upstream at lists.alioth.debian.org', 'DDPOMail robot',
+                'samba-bugs at samba.org', 'Cron Daemon', 'BugScan reporter', 'wnpp',
+                'Debian Package Tracking System', '[Dd]ebian[- ][Bb]oot CVS',
+                'X Strike Force SVN.*Admin', 'Debian Openoffice CVS', 'Master of CVS',
+                'Debian Policy CVS', 'bts-link-upstream', '.*anti.*virus.*', 'debbts', 'bts',
+                'Debian BTS', 'debian-bts', 'Debian External Health System',
+                'spam_filter', 'spam', 'NO.*SPAM', '.*Anti-Spam Center',
+                'drift', 'Mail Delivery .*', 'Debian Archive Maintenance', 'Mini-Dinstall',
+                'akavanagh',   # strange "spammer" on Debian-med-packaging mailing list Subject: "ImageJ ports on kasilas" in February 2020
+                'NM Front Desk', 'DebianGis CVS Commit', 'Debian FTP Masters',
+                'Debian Pure Blends Subversion' # Older Mails all from same sender, this is fixed manually later
+                );
+
+## TODO: just consider mails containing these strings as SPAM
+##       This has to be implemented in the code below
+my @SPAMAUTHORS  = ('Pls check this new site', 'Tim.com.br');
+my @SPAMSUBJECTS = ('File blocked - ScanMail for Lotus Notes',
+		    'FINAL NOTIFICATION',
+		    'WINNINGS.*live.com',
+		    '^GOOD NEWS!+$',
+		    '^Dear Email User (Important Notification)$',
+                    '^u?n?subscribe\s+.?$');
+
+# if != 0 then extract of mailing list archives is stored in files in dirs
+# The prefered method is to use only the database
+my $storefiles = 0;
+
+# Debian-Devel starts in 1995
+my $YEARSTART = 1995;
+
+my ($sec,$min,$hour,$day,$MONTHEND,$YEAREND,$wday,$yday,$isdst) = localtime(time);
+$MONTHEND++;
+$YEAREND +=1900;
+# $day++;
+my $today = "$YEAREND-$MONTHEND-$day";
+
+my $dbname = 'listarchives';
+my $dbh    = DBI->connect("dbi:Pg:dbname=$dbname;port=$port");
+
+my $ua = LWP::UserAgent->new( agent => 'varbot');
+$ua->env_proxy;
+
+my $cdw = getcwd;
+my $project;
+my $insert = "INSERT INTO listarchive (project, yearmonth, author, subject, url, ts) VALUES (?, ?, ?, ?, ?, '$today')";
+my $datain = $dbh->prepare_cached($insert);
+my ( $robot, $robotflag );
+
+my %ALLPROJECTS;
+
+my $spamurls = "spamurls.txt" ;
+unless ( open(SPAMURLS, ">$spamurls") ) { die("Unable to open $spamurls"); }
+
+foreach $project (@PROJECTS) {
+    $ALLPROJECTS{$project} = { 'url'     => "${BASEURL}-${project}",
+			       'type'    => 0, # == lists.debian.org
+    };
+}
+
+foreach $project (@ALIOTHPRJ) {
+    $ALLPROJECTS{$project} = { 'url'     => "${BASEALIOTH}/${project}",
+			       'type'    => 1 # == lists.alioth.debian.org
+    };
+}
+
+my $SEPARATOR='<!-- -->';
+# different mailing list systems use different separators between message URL, subject and author
+my @SEP1 = ( '<li><strong>.*href="', '\s*' );
+my @SEP2 = ( '">',                   "\\s*<!-- -->\\s*" );
+my @SEP3 = ( '</a></strong>\s*<em>', '\s*<I>\s*');
+my @SEP4 = ( '</em>',                '\s*');
+
+#foreach $project (keys %ALLPROJECTS) {
+#    print "$project: $ALLPROJECTS{$project}{'url'}, $ALLPROJECTS{$project}{'type'}\n"
+#}
+
+my ($query, $daten);
+
+my $regard_utf8_spam = 1;
+
+foreach $project (keys %ALLPROJECTS) {
+    if ( $project =~ /russian/ ) {
+	$regard_utf8_spam = 0;
+    } else {
+	$regard_utf8_spam = 1;
+    }
+    # Remove database entries for this project
+    $query = "DELETE FROM listarchive WHERE project = '$project'";
+    $daten = $dbh->prepare_cached($query);
+    $daten->execute() ;
+    $daten->finish() ;
+
+    if ( $storefiles ) {
+	mkdir($project,0777);
+	chdir($project);
+    }
+    my $URL="$ALLPROJECTS{$project}{'url'}";
+    my ( $year, $month, $url, @data, @lines ) ;
+    my ($content, $msgurl, $subject, $author, $messages, $pages, $page, $line) ;
+    my $type = $ALLPROJECTS{$project}{'type'};
+    for ( $year = $YEARSTART ; $year <= $YEAREND; $year++ ) {
+	foreach $month (@MONTHES) {
+	    if ( $year == $YEAREND && $month == $MONTHEND ) {
+		last;
+	    }
+	    if ( $type == 0 ) {
+		$url = "${URL}/${year}/${month}/";
+	    } else {
+		$url = "${URL}/${year}-$monthdict{$month}/";
+	    }
+	    my $datafile = "${year}-${month}" ;
+	    if ( $storefiles ) {
+		unless ( open(HTMLSNIP, ">$datafile") ) { die("Unable to open $datafile"); }
+	    }
+	    my $messagelines = 0;
+	    my $spamlines    = 0;
+	    my $robotlines   = 0;
+	    while ( $url =~ /.+/ ) { # if only one page $url is set to ''
+		# print "DEBUG: $year-$month: $url\n";
+		my $uri = URI->new($url);
+		my $indexpage = $ua->get($url, Host => $uri->host );
+		unless ( $indexpage->is_success ) { # some mailing lists startet later ...
+		    $url = '';
+		    if ( $storefiles ) { close HTMLSNIP ; }
+		    # remove empty file
+		    unlink($datafile);
+		    next;
+		} ; 
+		if ( $type == 1 ) {
+		    # make sure the loop will end in case of Alioth lists.  Seems these list do
+		    # not feature more than one page per Month so there is no point in looping over them
+		    $url = '';
+		}
+		if ( $type == 0 ) {
+		    @data = $indexpage->content =~ m#.*<!--TNAVEND-->\n(.+)<hr>.*<!--BNAVSTART-->.*#gs;
+		} else {
+
+#          <b>Ending:</b> <i>Tue Feb 28 08:06:40 CEST 2006</i><br>
+#      <a name="end"><b>Last message date:</b></a> 
+		    my @tmpdata = $indexpage->content =~ m#.*<b>Ending:</b>\s*<i>[ \w]+ [ \d:]+ [A-Z]+ [\d]+</i><br>\n(.+)<a name="end"><b>Last message date:</b></a>.*#gs;
+		    my $tmpdata = '';
+                    my $tmpline = '';
+		    foreach $content (@tmpdata) {
+			@lines = split(/(\n)/, $content);
+			foreach $line (@lines) {
+			    $_ = $line;
+			    s/\s+/ /g;
+			    if ( $_ =~ /^\s*$/   || $_ =~ /^<!--\d+ /      ||
+				 $_ =~ /^<\/I>$/ || $_ =~ /^\s*<\/?p>\s*$/ ||
+                                 $_ =~ /^\s*<\/?UL>\s*$/i ||
+				 $_ =~ /^<\/A><A NAME="\d+">&nbsp;<\/A>$/ ) { next ; }
+			    if ( ($msgurl, $subject) = $_ =~ /^\s*<LI><A HREF="(\d+.html)">(.+)$/ ) {
+				$_ = $subject ;
+				s/^\s*\[[-\w]+\]\s*// ; # Remove list name in [] if exists
+				s/^\s*Re:\s*//i ;       # Remove Re:
+				s/^\s*//i ;             # Remove blanks
+				$tmpline = $msgurl . $SEPARATOR . $subject ;
+			    } else {
+				if ( $_ =~ /<I>/ || $_ =~ /<b>Messages:<\/b>/ ) {
+				    $tmpline = "$_\n"  ;
+				} else {
+				    $tmpline = "$_"  ;
+				}
+			    }
+			    $tmpdata = $tmpdata . $tmpline;
+			}
+		    }
+		    @data = ($tmpdata);
+		}
+		$messages = 0;
+		foreach $content (@data) {
+		    @lines = split(/(\n)/, $content);
+		    my $linestart = '';
+		    foreach $line (@lines) {
+			if ( $line =~ /^\s*$/) { next ; }
+			if ( $linestart =~ /.+/ && $type == 0 ) {
+			    if ( $line =~ /^\s*<\/?ul>\s*$/ || 
+				 $line =~ /^\s*<\/?li>\s*$/ ) {
+				# fix broken formatting if there is a useless EOL and next line is <ul> or </li>
+				$line = $linestart;
+			    } else {
+				# Append next line
+				$line = $linestart . $line;
+			    }
+			    $linestart = '';
+			}
+			if ( $line =~ /^\s*<\/?ul>\s*$/ || 
+			     $line =~ /^\s*<\/?li>\s*$/ ||
+			     $line =~ /^\s*<li>[^<]+<\/li>\s*$/ ||
+			     $line =~ /^\s*<li><em>Message not available<\/em>/ ||
+			     $line =~ /<em>\(continued\)<\/em>\s*$/ ||
+			     $line =~ /^\s*$/) { next ; }
+			if ( $storefiles ) {
+			    print HTMLSNIP "$line\n";
+			}
+			if ( ($msgurl, $subject, $author) = 
+                              $line =~ m#$SEP1[$type]([msg]*\d+\.html)$SEP2[$type](.+)$SEP3[$type](.+)$SEP4[$type]#gs ) {
+			    $_ = $subject ;
+			    $_ =~ s/^Re:\s*//i ;       # Remove Re:
+			    $_ =~ s/^\[[^\]]+\]\s*([^\s]+)/$1/ ; # Remove other list markers (but only if something is following)
+			    $_ =~ s/\s*\(fwd\)\s*//i ; # Remove (fwd)
+			    $subject = $_ ;
+			    if ( $subject =~ /^[-&#x\d;\sA-F\?:,]+$/ ) {
+				# print "Potential SPAM line - strange subject: $project $year-$month: $subject\n";
+				print SPAMURLS "${URL}/${year}/${month}/$msgurl\n" if ( $regard_utf8_spam );
+				$spamlines++ ;
+			    } else {
+			        # Certain authors are just spammers
+			        my $spamauthor;
+			        my $numspamauthors = 0;
+				foreach $spamauthor (@SPAMAUTHORS) {
+				    if ( $author =~ /$spamauthor/ ) {
+					$numspamauthors = 1;
+					last;
+				    }
+				}
+			        my $spamsubject;
+			        my $numspamsubjects = 0;
+				foreach $spamsubject (@SPAMSUBJECTS) {
+				    if ( $subject =~ /$spamsubject/ ) {
+					$numspamsubjects = 1;
+					last;
+				    }
+				}
+				
+				# authors with strange names also provide spam
+			        my $countstrangechars = 0;
+			        while ($author =~ /;\s*&#x[\dA-F][\dA-F][\dA-F]/g) { $countstrangechars++ }
+			        
+				if ( $author =~ /^[-&#x\d;\sA-F\?:,]+$/ || $countstrangechars > 7 || $numspamauthors > 0 || $numspamsubjects > 0 ) {
+                                    # $author =~ /info/i ) { # never had a non-spam message from an author whos name contains info
+                                    # This is not reliable: We have for instance
+                                    #   http://lists.debian.org/debian-security/2003/07/msg00054.html
+                                    # with From: Luis Gomez - InfoEmergencias <lgomez@infoemergencias.com>
+				    # print "Potential SPAM line - strange author: $project $year-$month: $author\n";
+				    print SPAMURLS "${URL}/${year}/${month}/$msgurl\n" if ( $regard_utf8_spam );
+				    $spamlines++ ;
+				} else {
+				    if ( $author =~ /^Tille, Andreas$/ )    { $author = 'Andreas Tille'; }
+				    if ( $author =~ /Steffen M&#xF6;ller/ ) { $author = 'Steffen Moeller'; }
+				    $_ = $author;
+				    $_ = s/&#xF6;/ö/g ; 
+				    $_ = s/&#xFC;/ü/g ; 
+				    $robotflag = 0;
+				    foreach $robot (@ROBOTS) {
+					if ( $author =~ /$robot/i ) { # we are not interested in automatic mails
+					    $robotlines++ ;
+					    $robotflag = 1 ;
+					    last;
+					}
+				    }
+				    if ( $robotflag == 0 ) {
+					if ( $storefiles ) {
+					    print HTMLSNIP "$subject ; $author\n";
+					}
+					$_ = $author;     # remove ' at .* from email addresses
+					s/^(.+) at .*/$1/;
+					s/'/_/g;          # ' in names disturbs SQL query ...
+					$author = $_ ;
+					# $subject = trim($subject);
+					$subject =~ s/^\s+//;
+					$subject =~ s/\s+$//;
+					if ( ! $datain->execute($project, "$year-$month-01", 
+                                                         HTMLcode2UTF8($author), HTMLcode2UTF8($subject),
+							 "${URL}/${year}/${month}/$msgurl") ) {
+					   if ( $DBI::err == 7 ) {
+					      if ( $DBI::errstr =~ /UTF8/ ) {
+					         # print "Potential SPAM with broken encoding $project $year/$month in ${URL}/${year}/${month}/$msgurl .\n";
+					         print SPAMURLS "${URL}/${year}/${month}/$msgurl\n" if ( $regard_utf8_spam );
+					      } else {
+					         print "DBI::err == 7, but errstr does not contain 'UTF8'.\n";
+					         exit;
+					      }
+					   } else {
+					      print "Subject = '$subject'\n" ;
+					      print "Problems inserting: $project, $year-$month-01, HTMLcode2UTF8($author), HTMLcode2UTF8($subject), ${URL}/${year}/${month}/$msgurl\n\n";
+					      print "DBI::err=" . $DBI::err . ", DBI::errstr=" . $DBI::errstr . "\n";
+					      exit;
+					   }
+					}
+					$messagelines++ ;
+				    }
+				}
+			    }
+			} else {
+			    if ( $type == 0 ) {
+				if ( ($messages, $page, $pages) = $line 
+				     =~ m#The last update .* There are (\d+) messages. Page (\d+) of (\d+).<br>#gs ) {
+				    if ( $page != $pages ) { # handle following pages
+					print "Warning: Page $page of $pages in $year/$month of $project\n";
+					$page++;
+					$url = "${URL}/${year}/${month}/thrd${page}.html";
+				    } else {
+					$url = '';
+				    }
+				    if ( $storefiles ) {
+					print HTMLSNIP "$messages Messages ($messagelines real messages, $spamlines SPAM, $robotlines messages by robots)\n";
+				    }
+				    if ( $messages != $messagelines + $spamlines + $robotlines ) {
+					print "Warning: $project $year/$month counted $messagelines Messages, $spamlines SPAM and $robotlines robots but page says $messages\n";
+				    }
+				} else {
+				    unless ( $line =~ /<\/em>\s*<\/li>\s*$/ ) { # sometimes there are continued lines ...
+					$linestart = $line;
+					##next ; ##### ??????? if this line is missing line we get $linestart$linestart ...
+				    } else {
+					# if ( $line =~ /<em>\s*<\/em>\s*<\/li>\s*$/ ) { # sometimes SPAM has no sender ...
+					# ... but parse the line for msgurl and subject anyway to enable printing SPAM urls
+                       			if ( ($msgurl, $subject) =
+		                            $line =~ m#$SEP1[$type]([msg]*\d+\.html)$SEP2[$type](.+)$SEP3[$type]\s*$SEP4[$type]#gs ) {
+					    print "Potential SPAM line - no author: $project $year-$month $msgurl / $subject \n";
+					    print SPAMURLS "${URL}/${year}/${month}/$msgurl\n";
+					    $spamlines++ ;
+					} else {
+					    print "Warning: unknown Line: $line\n";
+					    print "DEBUG: $SEP1[$type]([msg]*\\d+\.html)$SEP2[$type](.+)$SEP3[$type]\\s*$SEP4[$type]\n";
+					}
+				    }
+				}
+			    } else {
+				if ( $messages == 0 ) {
+				    if ( ($messages) = $line =~ m#^\s*<b>Messages:</b>\s*(\d+)<p>#gs ) {
+					if ( $storefiles ) {
+					    print HTMLSNIP "$messages Messages ($messagelines real messages, $spamlines SPAM, $robotlines messages by robots)\n";
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	    if ( $storefiles ) { close HTMLSNIP ; }
+	}
+    }
+    if ( $storefiles ) { chdir($cdw); }
+}
+
+$datain->finish;
+# Insert old data from blends-commit list which had a badly configured SVN hook so that the parsing algorithm above did not worked
+# $datain = $dbh->prepare_cached("COPY listarchive FROM '/home/tille/debian-maintain/liststats/blends-commit_old.dat' ;");
+#$datain->execute();
+#$datain->finish;
+system("zcat blends-commit_old.dat.gz | psql listarchives -c 'COPY listarchive FROM STDIN'");
+
+# It turned out that several people are posting under different names
+# This is fixed for active posters to keep the stats clean
+system("psql listarchives < replace_names.sql");
+
+$daten->finish() ;
+
+
+# Just do the graphing of all lists we got
+foreach $project (keys %ALLPROJECTS) {
+    if ( $project =~ /custom/ ) {
+	# debian-custom was renamed to debian-blends
+	next;
+    }
+    system("./author_stats $project") ;
+}
+
+sub HTMLcode2UTF8 {
+
+  $_ = $_[0]  ;
+
+  s/&#xE4;/ä/g;
+  s/&#xE0;/à/g;
+  s/&#xE1;/á/g;
+  s/&#xE3;/ã/g;
+  s/&#xE5;/å/g;
+  s/&#xC1;/Á/g;
+  s/&#xE7;/ç/g;
+  s/&#x10C;/C/g; # C with v on top, but cut-n-paste does not work
+  s/&#xE9;/é/g;
+  s/&#xEB;/ë/g;
+  s/&#xE8;/è/g;
+  s/&#232;/è/g;  # this is alioths way to express the same character
+  s/&#233;/é/g;
+  s/&#xC9;/É/g;
+  s/&#xEF;/ï/g;
+  s/&#xED;/í/g;  
+  s/&#xF6;/ö/g;
+  s/&#246;/ö/g;  # this is alioths way to express the same character
+  s/&#xF4;/ô/g;
+  s/&#xF1;/ñ/g;
+  s/&#xF3;/ó/g;
+  s/&#x159;/r/g; # r with v on top but cut-n-paste does not work
+  s/&#x219;/s/g; # s with something below - but cut-n-paste does not work :-(
+  s/&#xDF;/ß/g;
+  s/&#223;/ß/g;  # this is alioths way to express the same character
+  s/&#xFC;/ü/g;
+  s/&#xFA;/ú/g;
+  s/&#xAE;/®/g;
+  s/&#x15F;/ş/g;
+  s/&#xF8;/ø/g;
+  s/&#x17C;/z/g;
+  s/&#x17D;/Z/g; # Z with v on top
+  s/&#x61001;//g; # character is not even displayed correctly in my browser
+  s/&#224;/à/g;
+  s/&#225;/á/g;
+  s/&#237;/í/g;
+  s/&#353;/š/g;
+  s/&#239;/ï/g;
+
+  return ($_);
+}
