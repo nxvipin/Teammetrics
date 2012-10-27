@@ -113,9 +113,10 @@ try:
     curs.execute(query)
 except psycopg2.ProgrammingError, err:
     if crosstab_missing_re.match(str(err)):
-        print >>stderr, """Please do
-	psql udd < /usr/share/postgresql/<pgversion>/contrib/tablefunc.sql
-before calling this program."""
+#	print >>stderr, """Please do
+#	psql udd < /usr/share/postgresql/<pgversion>/contrib/tablefunc.sql
+#before calling this program."""
+        print >>stderr, "Please do `psql udd -c 'CREATE EXTENSION tablefunc;'` before calling this program.\n", err, query, nuploaders
     else:
         print >>stderr, "To few authors in %s %s.\n%s" % (project, mode, err)
     exit(-1)
