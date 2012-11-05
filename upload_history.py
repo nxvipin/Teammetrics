@@ -131,7 +131,7 @@ for team in teams.keys():
 #	    print >>stderr, """Please do
 #	psql udd < /usr/share/postgresql/<pgversion>/contrib/tablefunc.sql
 #before calling this program."""
-	    print >>stderr, "Please do `psql udd -c 'CREATE EXTENSION tablefunc;'` before calling this program.\n", err, query, nuploaders
+	    print >>stderr, "Did you `psql udd -c 'CREATE EXTENSION tablefunc; GRANT EXECUTE ON FUNCTION crosstab(text,text) TO guest;'` before calling this program?\n", err, query, nuploaders
 	    exit(-1)
 	else:
 	    m = re.match(".*\n.*Query-specified return tuple has (\d+) columns but crosstab returns (\d+).*", str(err))

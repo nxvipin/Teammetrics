@@ -9,6 +9,10 @@ psql $DB <<EOF
 BEGIN;
 
 CREATE EXTENSION tablefunc;
+GRANT EXECUTE ON FUNCTION crosstab(text,text) TO guest;
+-- may be this is needed as well
+-- GRANT EXECUTE ON FUNCTION crosstab(text) TO guest;
+-- GRANT EXECUTE ON FUNCTION crosstab(text,integer) TO guest;
 
 CREATE TABLE listarchives (
     project             text,
