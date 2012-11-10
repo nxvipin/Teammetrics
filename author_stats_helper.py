@@ -19,7 +19,7 @@ if mode not in ('list','commit','commitlines'):
 
 project = argv[2]
 
-PORT=5441
+PORT=5452
 DEFAULTPORT=5432
 DB='teammetrics'
 

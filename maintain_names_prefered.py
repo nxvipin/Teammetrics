@@ -11,7 +11,7 @@
 # which contains the spelling of the name which should
 # be prefered for such applications.
 
-PORT=5441
+PORT=5452
 DEFAULTPORT=5432
 import psycopg2
 from sys import stderr, exit

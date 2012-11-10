@@ -44,7 +44,7 @@ SSH_CONFIG = os.path.join(os.path.expanduser('~'), '.ssh', 'config')
 DATABASE = {
             'name':        'teammetrics',
             'defaultport': 5432,
-            'port':        5441, # ... use this on blends.debian.net / udd.debian.net
+            'port':        5452, # ... use this on blends.debian.net / udd.debian.net
            }
 
 

@@ -33,7 +33,7 @@ teams = {
 #          'debian-science':    ('debian-science-maintainers@lists.alioth.debian.org', 35),
 #        }
 
-PORT=5441
+PORT=5452
 DEFAULTPORT=5432
 
 from sys import argv, stderr, exit
