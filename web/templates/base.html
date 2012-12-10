@@ -1,74 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Debian Team Activity Metrics</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link href="/static/css/bootstrap.css" rel="stylesheet">
-    <style>
-    body { padding-top: 60px; }
-    </style>
-    <link href="/static/css/bootstrap-responsive.css" rel="stylesheet">
-    <link rel="shortcut icon" href="ico/favicon.ico">
-    <link href='http://fonts.googleapis.com/css?family=PT+Sans+Narrow:700' rel='stylesheet' type='text/css'>
-  </head>
-  <body>
-    <div class="navbar navbar-fixed-top">
-      <div class="navbar-inner" style="background:#fff;max-height:46px;box-shadow:none;border-bottom:1px solid #ddd;">
-        <div class="container-fluid">
-          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </a>
-          <div class="span3">
-              <a class="brand" href="#" style="font-family: 'PT Sans Narrow', sans-serif; color:#333;">
-                <img src="/static/img/logo.png" class="form-inline">
-                Debian Team Activity Metrics
-              </a>
-          </div>
-          <div class="span6" style="position:absolute;right:0px;">
-            <form class="form-inline" style="Padding-top:3px;" action="/getdata">
-                    <select name="team">
-                        <option value="teammetrics">Teammetrics</option>
-                        <option value="teammetrics">Teammetrics</option>
-                  </select>
-                  <select name="metric">
-                        <option value="list">Mailing List</option>
-                        <option value="commits">Commits</option>
-                        <option value="commitlines">Commit Lines</option>
-                  </select>
-                  <input class="btn" type="submit" value="Go">
-                </form>
-           </div>
-          </div>
-      </div>
-    </div>
-    <div class="container-fluid">
-        <div class="row-fluid">
-            <div class="span8">
-            <img src='http://blends.debian.net/liststats/{{metricname}}_{{teamname}}.png' height=600 width=800>
-            </div>
-            <div class="span4">
-                
-                <h1 style="font-family: 'PT Sans Narrow', sans-serif; color:#333;">{{team|capfirst}} Team</h1><br/>
-                <p>{{metric|capfirst}} statistics for {{team|capfirst}}.</p>
-                <table class="table">
-                    <thead>
-                        <tr><th>#</th><th>Person</th><th>Stats</th></tr>
-                    </thead>
-                    <tbody>
-                    {% for name in namelist %}
-                        <tr><td>{{forloop.counter}}</td><td>{{name.0}}</td><td>{{name.1}}</td></tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-  </body>
+	<head>
+		<meta charset="utf-8">
+		<title>Debian Team Activity Metrics</title>
+		<link href="{{ STATIC_URL }}/css/bootstrap.css" rel="stylesheet">
+		<style>
+			body { padding-top: 60px; }
+		</style>
+		<link href="/static/css/bootstrap-responsive.css" rel="stylesheet">
+		<link rel="shortcut icon" href="ico/favicon.ico">
+		<link href="http://fonts.googleapis.com/css?family=PT+Sans+Narrow:700" rel="stylesheet" type="text/css">
+	</head>
+	<body>
+		<div class="navbar navbar-fixed-top">
+			<div class="navbar-inner" style="background:#fff;max-height:46px;box-shadow:none;border-bottom:1px solid #ddd;">
+				<div class="container-fluid">
+					<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</a>
+					<div class="span3">
+							<a class="brand" href="#" style="font-family: 'PT Sans Narrow', sans-serif; color:#333;">
+								<img src="/static/img/logo.png" class="form-inline">
+								Debian{{ STATIC_URL }} Team Activity Metrics
+							</a>
+					</div>
+					<div class="span6" style="position:absolute;right:0px;">
+						<form class="form-inline" style="Padding-top:3px;" action="{% url home%}/getdata">
+										<select name="team">
+												<option value="teammetrics">Teammetrics</option>
+												<option value="teammetrics">Teammetrics</option>
+									</select>
+									<select name="metric">
+												<option value="list">Mailing List</option>
+												<option value="commits">Commits</option>
+												<option value="commitlines">Commit Lines</option>
+									</select>
+									<input class="btn" type="submit" value="Go">
+								</form>
+					 </div>
+					</div>
+			</div>
+		</div>
+		<div class="container-fluid">
+				<div class="row-fluid">
+						<div class="span8">
+						<img src='http://blends.debian.net/liststats/{{metricname}}_{{teamname}}.png' height=600 width=800>
+						</div>
+						<div class="span4">
+								
+								<h1 style="font-family: 'PT Sans Narrow', sans-serif; color:#333;">{{team|capfirst}} Team</h1><br/>
+								<p>{{metric|capfirst}} statistics for {{team|capfirst}}.</p>
+								<table class="table">
+										<thead>
+												<tr><th>#</th><th>Person</th><th>Stats</th></tr>
+										</thead>
+										<tbody>
+										{% for name in namelist %}
+												<tr><td>{{forloop.counter}}</td><td>{{name.0}}</td><td>{{name.1}}</td></tr>
+										{% endfor %}
+										</tbody>
+								</table>
+						</div>
+				</div>
+		</div>
+	</body>
 </html>
 
 

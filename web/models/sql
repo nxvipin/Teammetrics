@@ -1,0 +1,314 @@
+SELECT year AS row_name, name AS bucket, count AS value
+                     FROM bug_closer_per_year_of_pkggroup('debian-med-packaging@lists.alioth.debian.org', 7) AS (name text, year int, count int)',
+             'SELECT * FROM bug_closer_names_of_pkggroup('debian-med-packaging@lists.alioth.debian.org', 1000) AS (category text)
+             
+
+SELECT name, sum(count) FROM bug_closer_per_year_of_pkggroup('debian-med-packaging@lists.alioth.debian.org', 1000) AS (name text, year int, count int) group by name order by sum(count) desc limit 4
+
+
+
+
+------------------------------------------------------------------------------------------------
+#Month Data
+SELECT db.year, db.month, COUNT(*)::int FROM
+--    (SELECT source, EXTRACT(year FROM done_date)::int AS year, EXTRACT(month FROM done_date)::int AS month,done_email   -- done_date is always 1970-01-01
+    (SELECT id, source, EXTRACT(year FROM last_modified)::int AS year, EXTRACT(month FROM last_modified)::int AS month,done_email FROM archived_bugs
+     UNION
+     SELECT id, source, EXTRACT(year FROM last_modified)::int AS year, EXTRACT(month FROM last_modified)::int AS month,done_email FROM bugs WHERE status = 'done'
+    ) db
+    JOIN carnivore_emails ce ON ce.email = db.done_email
+    JOIN (SELECT * FROM carnivore_names
+           WHERE id IN (SELECT idupl FROM bug_closer_ids_of_pkggroup('debian-med-packaging@lists.alioth.debian.org', 1000) AS (idupl int, count int))
+    )  cn ON ce.id    = cn.id
+    JOIN carnivore_names_prefered cnp ON cn.id = cnp.id
+   WHERE source IN (    -- source packages that are maintained by the team
+       SELECT DISTINCT source FROM upload_history
+        WHERE maintainer_email = 'debian-med-packaging@lists.alioth.debian.org'
+          AND nmu = 'f'
+     )
+     AND done_email IN ( -- email of uploaders who at least once uploaded on behalf of the team
+      SELECT DISTINCT ce.email FROM upload_history uh
+        JOIN carnivore_emails ce ON ce.email = uh.changed_by_email
+       WHERE maintainer_email = 'debian-med-packaging@lists.alioth.debian.org'
+     )
+     AND cn.name = cnp.name
+   GROUP BY  db.year, db.month
+   ORDER BY year, month, count DESC
+
+
+
+#Annual Data
+SELECT db.year,
+       COUNT(*)::int
+FROM
+  (SELECT id, SOURCE, EXTRACT(YEAR
+                              FROM last_modified)::int AS YEAR,
+                      done_email
+   FROM archived_bugs
+   UNION SELECT id, SOURCE, EXTRACT(YEAR
+                                    FROM last_modified)::int AS YEAR,
+                            done_email
+   FROM bugs
+   WHERE status = 'done'
+     AND last_modified >= date(%s)
+     AND last_modified <= date(%s) ) db
+JOIN carnivore_emails ce ON ce.email = db.done_email
+JOIN
+  (SELECT *
+   FROM carnivore_names
+   WHERE id IN
+       (SELECT idupl
+        FROM bug_closer_ids_of_pkggroup('debian-med-packaging@lists.alioth.debian.org', 1000) AS (idupl int, COUNT int)) ) cn ON ce.id = cn.id
+JOIN carnivore_names_prefered cnp ON cn.id = cnp.id
+WHERE SOURCE IN (-- source packages that are maintained by the team
+
+                 SELECT DISTINCT SOURCE
+                 FROM upload_history
+                 WHERE maintainer_email = 'debian-med-packaging@lists.alioth.debian.org'
+                   AND nmu = 'f' )
+  AND done_email IN (-- email of uploaders who at least once uploaded on behalf of the team
+
+                     SELECT DISTINCT ce.email
+                     FROM upload_history uh
+                     JOIN carnivore_emails ce ON ce.email = uh.changed_by_email
+                     WHERE maintainer_email = 'debian-med-packaging@lists.alioth.debian.org' )
+  AND cn.name = cnp.name
+GROUP BY db.YEAR
+ORDER BY YEAR, COUNT DESC
+
+
+
+#Month Top N
+SELECT db.year,
+       db.month,
+       cn.name,
+       COUNT(*)::int
+FROM
+  (SELECT id, SOURCE, EXTRACT(YEAR
+                              FROM last_modified)::int AS YEAR,
+                      EXTRACT(MONTH
+                              FROM last_modified)::int AS MONTH,
+                      done_email
+   FROM archived_bugs
+   UNION SELECT id, SOURCE, EXTRACT(YEAR
+                                    FROM last_modified)::int AS YEAR,
+                            EXTRACT(MONTH
+                                    FROM last_modified)::int AS MONTH,
+                            done_email
+   FROM bugs
+   WHERE status = 'done'
+     AND last_modified >= date(%s)
+     AND last_modified <= date(%s) ) db
+JOIN carnivore_emails ce ON ce.email = db.done_email
+JOIN
+  (SELECT *
+   FROM carnivore_names
+   WHERE id IN
+       (SELECT idupl
+        FROM bug_closer_ids_of_pkggroup('debian-med-packaging@lists.alioth.debian.org', 1000) AS (idupl int, COUNT int)) ) cn ON ce.id = cn.id
+JOIN carnivore_names_prefered cnp ON cn.id = cnp.id
+WHERE SOURCE IN (-- source packages that are maintained by the team
+
+                 SELECT DISTINCT SOURCE
+                 FROM upload_history
+                 WHERE maintainer_email = 'debian-med-packaging@lists.alioth.debian.org'
+                   AND nmu = 'f' )
+  AND done_email IN (-- email of uploaders who at least once uploaded on behalf of the team
+
+                     SELECT DISTINCT ce.email
+                     FROM upload_history uh
+                     JOIN carnivore_emails ce ON ce.email = uh.changed_by_email
+                     WHERE maintainer_email = 'debian-med-packaging@lists.alioth.debian.org' )
+  AND cn.name = cnp.name
+  AND cn.name IN
+    (SELECT name
+     FROM bug_closer_per_year_of_pkggroup('debian-med-packaging@lists.alioth.debian.org', 1000) AS (name text, YEAR int, COUNT int)
+     GROUP BY name
+     ORDER BY sum(COUNT) DESC LIMIT 2)
+GROUP BY db.YEAR, db.MONTH, cn.name
+ORDER BY YEAR, MONTH, COUNT DESC
+
+# Annual Top N
+
+SELECT db.year,
+       cn.name,
+       COUNT(*)::int
+FROM
+  (SELECT id, SOURCE, EXTRACT(YEAR
+                              FROM last_modified)::int AS YEAR,
+                      done_email
+   FROM archived_bugs
+   UNION SELECT id, SOURCE, EXTRACT(YEAR
+                                    FROM last_modified)::int AS YEAR,
+                            done_email
+   FROM bugs
+   WHERE status = 'done'
+     AND last_modified >= date(%s)
+     AND last_modified <= date(%s) ) db
+JOIN carnivore_emails ce ON ce.email = db.done_email
+JOIN
+  (SELECT *
+   FROM carnivore_names
+   WHERE id IN
+       (SELECT idupl
+        FROM bug_closer_ids_of_pkggroup('debian-med-packaging@lists.alioth.debian.org', 1000) AS (idupl int, COUNT int)) ) cn ON ce.id = cn.id
+JOIN carnivore_names_prefered cnp ON cn.id = cnp.id
+WHERE SOURCE IN (-- source packages that are maintained by the team
+
+                 SELECT DISTINCT SOURCE
+                 FROM upload_history
+                 WHERE maintainer_email = 'debian-med-packaging@lists.alioth.debian.org'
+                   AND nmu = 'f' )
+  AND done_email IN (-- email of uploaders who at least once uploaded on behalf of the team
+
+                     SELECT DISTINCT ce.email
+                     FROM upload_history uh
+                     JOIN carnivore_emails ce ON ce.email = uh.changed_by_email
+                     WHERE maintainer_email = 'debian-med-packaging@lists.alioth.debian.org' )
+  AND cn.name = cnp.name
+  AND cn.name IN
+    (SELECT name
+     FROM bug_closer_per_year_of_pkggroup('debian-med-packaging@lists.alioth.debian.org', 1000) AS (name text, YEAR int, COUNT int)
+     GROUP BY name
+     ORDER BY sum(COUNT) DESC LIMIT 10)
+GROUP BY db.YEAR, cn.name
+ORDER BY YEAR, COUNT DESC
+
+
+#Get Top N
+SELECT name FROM bug_closer_per_year_of_pkggroup('debian-med-packaging@lists.alioth.debian.org', 1000) AS (name text, year int, count int) group by name order by sum(count) desc limit 4
+
+
+------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Month Data
+SELECT uh.year, uh.month, COUNT(*)::int FROM
+    (SELECT source, EXTRACT(year FROM date)::int AS year, EXTRACT(month FROM date)::int AS month, changed_by_email
+       FROM upload_history
+      WHERE nmu = 'f' and date >= date(%s) and date <= date(%s)
+    ) uh
+    JOIN carnivore_emails ce ON ce.email = uh.changed_by_email
+    JOIN (SELECT * FROM carnivore_names
+           WHERE id IN (SELECT idupl FROM active_uploader_ids_of_pkggroup('debian-med-packaging@lists.alioth.debian.org', 35) AS (idupl int, count int))
+    )  cn ON ce.id    = cn.id
+    JOIN carnivore_names_prefered cnp ON cn.id = cnp.id
+   WHERE source IN (           -- source packages that are maintained by the team
+      SELECT DISTINCT source FROM upload_history
+      WHERE maintainer_email = 'debian-med-packaging@lists.alioth.debian.org'
+        AND nmu = 'f'
+     )
+     AND changed_by_email IN ( -- email of uploaders who at least once uploaded on behalf of the team
+      SELECT DISTINCT ce.email FROM upload_history uh
+        JOIN carnivore_emails ce ON ce.email = uh.changed_by_email
+       WHERE maintainer_email = 'debian-med-packaging@lists.alioth.debian.org'
+     )
+     AND cn.name = cnp.name
+   GROUP BY  uh.year, uh.month
+   ORDER BY year, month, count DESC
+
+
+#Month Top N
+SELECT cn.name, uh.year, uh.month, COUNT(*)::int FROM
+    (SELECT source, EXTRACT(year FROM date)::int AS year, EXTRACT(month FROM date)::int AS month, changed_by_email
+       FROM upload_history
+      WHERE nmu = 'f' and date >= date(%s) and date <= date(%s)
+    ) uh
+    JOIN carnivore_emails ce ON ce.email = uh.changed_by_email
+    JOIN (SELECT * FROM carnivore_names
+           WHERE id IN (SELECT idupl FROM active_uploader_ids_of_pkggroup('debian-med-packaging@lists.alioth.debian.org', 35) AS (idupl int, count int))
+    )  cn ON ce.id    = cn.id
+    JOIN carnivore_names_prefered cnp ON cn.id = cnp.id
+   WHERE source IN (           -- source packages that are maintained by the team
+      SELECT DISTINCT source FROM upload_history
+      WHERE maintainer_email = 'debian-med-packaging@lists.alioth.debian.org'
+        AND nmu = 'f'
+     )
+     AND changed_by_email IN ( -- email of uploaders who at least once uploaded on behalf of the team
+      SELECT DISTINCT ce.email FROM upload_history uh
+        JOIN carnivore_emails ce ON ce.email = uh.changed_by_email
+       WHERE maintainer_email = 'debian-med-packaging@lists.alioth.debian.org'
+     )
+     AND cn.name = cnp.name
+     AND cn.name in (SELECT name FROM active_uploader_per_year_of_pkggroup('debian-med-packaging@lists.alioth.debian.org', 35) AS (name text, _ int, count int) group by name order by sum(count) desc limit 5)
+   GROUP BY cn.name, uh.year, uh.month
+   ORDER BY year, month, count DESC, cn.name
+
+
+#Annual Data
+SELECT uh.year, COUNT(*)::int FROM
+    (SELECT source, EXTRACT(year FROM date)::int AS year,  changed_by_email
+       FROM upload_history
+      WHERE nmu = 'f' and date >= date(%s) and date <= date(%s)
+    ) uh
+    JOIN carnivore_emails ce ON ce.email = uh.changed_by_email
+    JOIN (SELECT * FROM carnivore_names
+           WHERE id IN (SELECT idupl FROM active_uploader_ids_of_pkggroup('debian-med-packaging@lists.alioth.debian.org', 35) AS (idupl int, count int))
+    )  cn ON ce.id    = cn.id
+    JOIN carnivore_names_prefered cnp ON cn.id = cnp.id
+   WHERE source IN (           -- source packages that are maintained by the team
+      SELECT DISTINCT source FROM upload_history
+      WHERE maintainer_email = 'debian-med-packaging@lists.alioth.debian.org'
+        AND nmu = 'f'
+     )
+     AND changed_by_email IN ( -- email of uploaders who at least once uploaded on behalf of the team
+      SELECT DISTINCT ce.email FROM upload_history uh
+        JOIN carnivore_emails ce ON ce.email = uh.changed_by_email
+       WHERE maintainer_email = 'debian-med-packaging@lists.alioth.debian.org'
+     )
+     AND cn.name = cnp.name
+     
+   GROUP BY uh.year
+   ORDER BY year, count DESC
+
+
+#Annual Top N
+SELECT cn.name, uh.year, COUNT(*)::int FROM
+    (SELECT source, EXTRACT(year FROM date)::int AS year, changed_by_email
+       FROM upload_history
+      WHERE nmu = 'f'
+    ) uh
+    JOIN carnivore_emails ce ON ce.email = uh.changed_by_email
+    JOIN (SELECT * FROM carnivore_names
+           WHERE id IN (SELECT idupl FROM active_uploader_ids_of_pkggroup('debian-med-packaging@lists.alioth.debian.org', 35) AS (idupl int, count int))
+    )  cn ON ce.id    = cn.id
+    JOIN carnivore_names_prefered cnp ON cn.id = cnp.id
+   WHERE source IN (           -- source packages that are maintained by the team
+      SELECT DISTINCT source FROM upload_history
+      WHERE maintainer_email = 'debian-med-packaging@lists.alioth.debian.org'
+        AND nmu = 'f'
+     )
+     AND changed_by_email IN ( -- email of uploaders who at least once uploaded on behalf of the team
+      SELECT DISTINCT ce.email FROM upload_history uh
+        JOIN carnivore_emails ce ON ce.email = uh.changed_by_email
+       WHERE maintainer_email = 'debian-med-packaging@lists.alioth.debian.org'
+     )
+     AND cn.name = cnp.name
+     AND cn.name in (SELECT name FROM active_uploader_per_year_of_pkggroup('debian-med-packaging@lists.alioth.debian.org', 35) AS (name text, _ int, count int) group by name order by sum(count) desc limit 5)
+   GROUP BY cn.name, uh.year
+   ORDER BY year, count DESC, cn.name
+
+#TOP N
+SELECT name, sum(count) as sum FROM active_uploader_per_year_of_pkggroup('debian-med-packaging@lists.alioth.debian.org', 35) AS (name text, _ int, count int) group by name order by sum desc

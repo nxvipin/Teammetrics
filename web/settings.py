@@ -46,12 +46,19 @@ USE_L10N = True
 
 SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
 MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
-MEDIA_URL = '/static/'
-
+#MEDIA_URL = '/teammetrics/static/'
+STATICFILES_DIRS = (
+"/home/swvist/codes/teammetrics/web/static/",
+)
+TEMPLATE_CONTEXT_PROCESSORS = (
+'django.core.context_processors.static',
+)
+STATIC_ROOT = '/teammetrics/'
+STATIC_URL = '/static/'
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
-ADMIN_MEDIA_PREFIX = '/media/'
+ADMIN_MEDIA_PREFIX = '/teammetrics/media/'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'g2o6u@3@j+sw^!*e_3ve-$0v3r^%)$d(#poq1#e_va%z3-k)fm'
@@ -81,7 +88,7 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-    #'django.contrib.auth',
+    'django.contrib.staticfiles',
     #'django.contrib.contenttypes',
     #'django.contrib.sessions',
     #'django.contrib.sites',
@@ -100,3 +107,4 @@ Application Settings
 CONFIG_FILE = {
     'metrics' : 'config/metrics.conf'
 }
+

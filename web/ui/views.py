@@ -14,7 +14,7 @@ def getData(request):
     team = request.GET.get('team','')
     metric = request.GET.get('metric','')
     if team is not '' and metric is not '':
-        return HttpResponseRedirect("/%s/%s/"%(team,metric))
+        return HttpResponseRedirect("/teammetrics/%s/%s/"%(team,metric))
 
 def teamdata(request, team, metric):
     teamname = metrics.identify(team,metric)
