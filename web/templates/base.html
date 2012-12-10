@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+		<meta charset='utf-8'>
+		<title>Debian Team Activity Metrics</title>
+		<link href='{{url_for('static', filename='css/bootstrap.css')}}' rel='stylesheet'>
+		<link href='{{url_for('static', filename='css/bootstrap-responsive.css')}}' rel='stylesheet'>
+		<link href='{{url_for('static', filename='css/custom.css')}}' rel='stylesheet'>
+		<style>
+		body {
+			padding-top: 0px; /* 60px to make the container go all the way to the bottom of the topbar */
+			margin: 0px;
+		}
+		</style>
+		<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,300' rel='stylesheet' type='text/css'>
+	</head>
+
+	<body>
+
+		<div class='navbar'>
+			<div class='navbar-inner'>
+				<div class='container'>
+					<div class='span4'>
+					<a class='brand' href='#'><img src='{{url_for('static', filename='img/debian.png')}}'> Debian Team Activity Metrics</a>
+					</div>
+					<div class='span6 pull-right'>
+					
+					</div>
+				</div>
+			</div>
+		</div>
+
+		{% block main %}
+		{% endblock %}
+
+	</body>
+</html>
+
