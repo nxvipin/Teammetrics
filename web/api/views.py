@@ -10,6 +10,8 @@ logger = log.get(__name__)
 @lib.versionCheck
 def month(request, api_version, team, metric):
     data = helper.getData(team, metric, n=None, datascale='month')
+    startdate, enddate = lib.dateRange(request)
+    data = helper.getMonthData(team, metric, startdate, enddate)
     data['team'] = team
     return data
 
