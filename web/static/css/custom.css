@@ -1,0 +1,14 @@
+.btn-custom{
+	border-top-width: 1px;
+	border-bottom-width: 1px;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	height: 28px;
+	margin-bottom: 10px;
+}
+input,
+button,
+select,
+textarea {
+	font-family: 'Open Sans', sans-serif;
+}
