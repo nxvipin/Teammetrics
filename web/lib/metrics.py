@@ -33,6 +33,16 @@ def get(metricname, listname):
             mlist = [name.strip() for name in mlist]
             return mlist
 
+def check_team_exists(team):
+    try:
+        cp.readfp(open(CONF_FILE))
+    except IOError:
+        logger.error("Config File Not Found")
+        logger.error("PATH : "+CONF_FILE)
+        return False
+    else:
+        return cp.has_section(team)
+
 def identify(team, metric):
     """
     Identifies the metric specified in the API using the data in config file.
