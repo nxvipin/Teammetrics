@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{%block main%}
+		<div class='container'>
+			<div class='span5'>
+				<h1>Error</h1>
+			</div>
+			<div class='span7'>
+				<p>
+				<form class='pull-right' action='{{url_for('getdata')}}'>
+						<select name='team'>
+							<option>Team</option>
+							{% for team in teamlist %}
+								<option value='{{team}}'>{{team}}</option>
+							{% endfor %}
+						</select>
+						<select name='metric'>
+							<option>Metric</option>
+							<option value='list'>Mailing List Statistics</option>
+							<option value='commits'>Commit Statistics</option>
+							<option value='bugs'>Bug Statistics</option>
+							<option value='uploads'>Upload Statistics</option>
+						</select>
+						<input type='submit' value='Go' class='btn btn-custom'>
+				</form>
+				</p>
+			</div>
+			<div class='span8'>
+			{{error_msg}}
+			</div>
+			<div class='span4'>
+			</div>
+		</div> 
+{%endblock%}
