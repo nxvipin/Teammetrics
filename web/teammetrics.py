@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/home/swvist/codes/teammetricsweb/')
+sys.path.append('/home/swvist/codes/teammetrics/')
 
 from flask import Flask
 app = Flask(__name__)
