@@ -6,6 +6,8 @@ import json
 logger = log.get(__name__)
 
 @lib.jsonify
+@lib.metricCheck
+@lib.teamCheck
 @lib.versionCheck
 def metric(api_version, team, metric):
     n = request.args.get('n', None)
@@ -15,6 +17,8 @@ def metric(api_version, team, metric):
     return data
 
 @lib.jsonify
+@lib.metricCheck
+@lib.teamCheck
 @lib.versionCheck
 def metric_all(api_version, team):
     n = request.args.get('n', None)
