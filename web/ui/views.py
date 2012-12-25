@@ -16,6 +16,12 @@ def get_data():
 
 def teamdata(team, metric):
     logger.info('teamdata')
+    if not metrics.check_team_exists(team):
+        msg = "No such team or data not available."
+        return render_template('error.html', error_msg = msg)
+    if not metrics.check_metric_exist(team, metric):
+        msg = "No such metric or data not available."
+        return render_template('error.html', error_msg = msg)
     teamname = metrics.identify(team,metric)
     metricname = metrics.name(metric)
     namelist = helper.getTopNNames(teamname[0], metric)
