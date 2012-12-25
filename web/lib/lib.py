@@ -1,5 +1,5 @@
 from web import settings
-from web.lib import log
+from web.lib import log, metrics
 import json
 
 logger = log.get(__name__)
@@ -13,6 +13,35 @@ def jsonify(func):
         data = func(*args, **kwargs)
         return json.dumps(data)
     return toJson
+
+def metricCheck(func):
+    """
+    Checks if the input metric data for input team is present in config file.
+    """
+    logger.info('metricCheck called')
+    def check(*args, **kwargs):
+        team = kwargs.get('team')
+        metric = kwargs.get('metric')
+        if metrics.check_metric_exist(team, metric):
+            data = func(*args, **kwargs)
+        else:
+            data = {'error' : 'No such metric.'}
+        return data
+    return check
+
+def teamCheck(func):
+    """
+    Checks if the data for input team is present in config file.
+    """
+    logger.info('teamCheck called')
+    def check(*args, **kwargs):
+        team = kwargs.get('team')
+        if metrics.check_team_exists(team):
+            data = func(*args, **kwargs)
+        else:
+            data = {'error' : 'No such team.'}
+        return data
+    return check
 
 def versionCheck(func):
     """
