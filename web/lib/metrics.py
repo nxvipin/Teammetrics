@@ -43,6 +43,32 @@ def check_team_exists(team):
     else:
         return cp.has_section(team)
 
+#TODO: Code needs to be refactored
+def check_metric_exist(team,metric):
+    try:
+        cp.readfp(open(CONF_FILE))
+    except IOError:
+        logger.error("Config File Not Found")
+        logger.error("PATH : "+CONF_FILE)
+        return False
+    else:
+        if metric == 'list':
+            metricname = 'list'
+        elif metric == 'commits' or metric == 'commitlines':
+            metricname = 'repository'
+        elif metric == 'uploads':
+            metricname = 'uploads'
+        elif metric == 'uploadsname':
+            metricname = 'uploadsname'
+        elif metric == 'bugs':
+            metricname = 'bugs'
+        elif metric == 'bugsname':
+            metricname = 'bugsname'
+        else:
+            logger.info('Incorrect Metric Identifier')
+            metricname = ''
+        return cp.has_option(team, metricname)
+
 def identify(team, metric):
     """
     Identifies the metric specified in the API using the data in config file.
